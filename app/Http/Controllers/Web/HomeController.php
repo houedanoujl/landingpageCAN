@@ -25,7 +25,11 @@ class HomeController extends Controller
 
     public function matches()
     {
-        $matches = MatchGame::orderBy('match_date', 'asc')->get();
+        $matches = MatchGame::orderBy('group_name', 'asc')
+            ->orderBy('match_date', 'asc')
+            ->get()
+            ->groupBy('group_name');
+        
         return view('matches', compact('matches'));
     }
 
