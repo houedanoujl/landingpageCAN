@@ -1,8 +1,7 @@
 <x-layouts.app title="Accueil">
-    
+
     <!-- Hero Section - CAN 2025 Celebration -->
-    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden hero-gradient" 
-             x-data="{ 
+    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden hero-gradient" x-data="{ 
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
                  targetDate: new Date('2025-12-21T20:00:00').getTime(),
                  init() {
@@ -26,82 +25,98 @@
                      };
                  }
              }">
-        
+
         <!-- Background -->
         <div class="absolute inset-0">
-            <div class="absolute inset-0 bg-gradient-to-b from-soboa-blue via-soboa-blue/90 to-soboa-blue"></div>
+            <img src="/images/bg.webp" alt="" class="absolute inset-0 w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-b from-soboa-blue/90 via-soboa-blue/80 to-soboa-blue/95"></div>
         </div>
-        
+
         <!-- Animated Shapes -->
-        <div class="absolute top-20 left-10 w-64 h-64 bg-soboa-orange/20 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute top-20 left-10 w-64 h-64 bg-soboa-orange/20 rounded-full blur-3xl animate-pulse-slow">
+        </div>
         <div class="absolute bottom-20 right-10 w-80 h-80 bg-soboa-orange/10 rounded-full blur-3xl animate-float"></div>
         <div class="absolute top-1/2 left-1/3 w-40 h-40 bg-white/5 rounded-full blur-2xl animate-bounce-slow"></div>
-        
+
         <!-- Content -->
         <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
             <!-- CAN 2025 Badge -->
-            <div class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/20">
+            <div
+                class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/20">
                 <span class="text-3xl">🏆</span>
                 <span class="text-white font-bold text-lg">COUPE D'AFRIQUE DES NATIONS</span>
             </div>
-            
+
             <!-- Main Heading -->
             <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
                 Pronostiquez<br>
                 <span class="gradient-text">& Gagnez!</span>
             </h1>
-            
+
             <p class="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto font-medium">
                 Devinez les scores des matchs, visitez nos lieux partenaires et remportez des cadeaux exclusifs!
             </p>
-            
+
             <!-- Countdown Timer -->
             <div class="mb-10">
-                <p class="text-soboa-orange font-bold text-sm uppercase tracking-widest mb-4">Premier match - Maroc vs Comores</p>
+                <p class="text-soboa-orange font-bold text-sm uppercase tracking-widest mb-4">Premier match - Maroc vs
+                    Comores</p>
                 <div class="flex justify-center gap-3 md:gap-6">
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
+                    <div
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
                         <span class="text-3xl md:text-5xl font-black text-white block" x-text="countdown.days">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Jours</span>
                     </div>
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
-                        <span class="text-3xl md:text-5xl font-black text-white block" x-text="countdown.hours">00</span>
+                    <div
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
+                        <span class="text-3xl md:text-5xl font-black text-white block"
+                            x-text="countdown.hours">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Heures</span>
                     </div>
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
-                        <span class="text-3xl md:text-5xl font-black text-white block" x-text="countdown.minutes">00</span>
+                    <div
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
+                        <span class="text-3xl md:text-5xl font-black text-white block"
+                            x-text="countdown.minutes">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Minutes</span>
                     </div>
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
-                        <span class="text-3xl md:text-5xl font-black text-soboa-orange block" x-text="countdown.seconds">00</span>
+                    <div
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
+                        <span class="text-3xl md:text-5xl font-black text-soboa-orange block"
+                            x-text="countdown.seconds">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Secondes</span>
                     </div>
                 </div>
             </div>
-            
+
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 @if(session('user_id'))
-                <a href="/matches" class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
-                    <span>⚽</span> Faire un pronostic
-                </a>
-                <a href="/dashboard" class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
-                    <span>📊</span> Mon tableau de bord
-                </a>
+                    <a href="/matches"
+                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
+                        <span>⚽</span> Faire un pronostic
+                    </a>
+                    <a href="/dashboard"
+                        class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
+                        <span>📊</span> Mon tableau de bord
+                    </a>
                 @else
-                <a href="/login" class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
-                    <span>🎮</span> Jouer & Gagner
-                </a>
-                <a href="/map" class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
-                    <span>📍</span> Lieux partenaires
-                </a>
+                    <a href="/login"
+                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
+                        <span>🎮</span> Jouer & Gagner
+                    </a>
+                    <a href="/map"
+                        class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
+                        <span>📍</span> Lieux partenaires
+                    </a>
                 @endif
             </div>
         </div>
-        
+
         <!-- Scroll Indicator -->
         <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
             <svg class="w-8 h-8 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3">
+                </path>
             </svg>
         </div>
     </section>
@@ -114,25 +129,28 @@
                     <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">CAN 2025</span>
                     <h2 class="text-3xl md:text-4xl font-black text-soboa-blue mt-2">Prochains Matchs</h2>
                 </div>
-                <a href="/matches" class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
+                <a href="/matches"
+                    class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
                     Voir tous les matchs
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                     </svg>
                 </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 @forelse($upcomingMatches as $match)
-                <x-match-card :match="$match" />
+                    <x-match-card :match="$match" />
                 @empty
-                <div class="col-span-3 text-center py-16 bg-white rounded-2xl shadow">
-                    <div class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-4xl">⚽</span>
+                    <div class="col-span-3 text-center py-16 bg-white rounded-2xl shadow">
+                        <div
+                            class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-4xl">⚽</span>
+                        </div>
+                        <p class="text-gray-500 font-medium">Aucun match programmé pour le moment.</p>
+                        <p class="text-gray-400 text-sm mt-2">Revenez bientôt pour voir le calendrier complet!</p>
                     </div>
-                    <p class="text-gray-500 font-medium">Aucun match programmé pour le moment.</p>
-                    <p class="text-gray-400 text-sm mt-2">Revenez bientôt pour voir le calendrier complet!</p>
-                </div>
                 @endforelse
             </div>
         </div>
@@ -143,34 +161,40 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
-                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Qui sera le meilleur?</span>
+                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Qui sera le
+                        meilleur?</span>
                     <h2 class="text-3xl md:text-4xl font-black text-white mt-2">Classement</h2>
                 </div>
-                <a href="/leaderboard" class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
+                <a href="/leaderboard"
+                    class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
                     Classement complet
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                     </svg>
                 </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 @forelse($topUsers as $index => $user)
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10 {{ $index === 0 ? 'ring-2 ring-soboa-orange' : '' }}">
-                    <div class="text-3xl mb-2">
-                        @if($index == 0) 🥇 @elseif($index == 1) 🥈 @elseif($index == 2) 🥉 @else {{ $index + 1 }} @endif
+                    <div
+                        class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10 {{ $index === 0 ? 'ring-2 ring-soboa-orange' : '' }}">
+                        <div class="text-3xl mb-2">
+                            @if($index == 0) 🥇 @elseif($index == 1) 🥈 @elseif($index == 2) 🥉 @else {{ $index + 1 }}
+                            @endif
+                        </div>
+                        <div
+                            class="w-16 h-16 bg-soboa-orange/20 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-white">
+                            {{ mb_substr($user->name, 0, 1) }}
+                        </div>
+                        <h3 class="font-bold text-white text-lg truncate">{{ $user->name }}</h3>
+                        <p class="text-soboa-orange font-black text-xl">{{ $user->points_total }} pts</p>
                     </div>
-                    <div class="w-16 h-16 bg-soboa-orange/20 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-white">
-                        {{ mb_substr($user->name, 0, 1) }}
-                    </div>
-                    <h3 class="font-bold text-white text-lg truncate">{{ $user->name }}</h3>
-                    <p class="text-soboa-orange font-black text-xl">{{ $user->points_total }} pts</p>
-                </div>
                 @empty
-                <div class="col-span-5 text-center py-10">
-                    <p class="text-white/60">Aucun joueur inscrit pour le moment.</p>
-                    <a href="/login" class="text-soboa-orange font-bold hover:underline">Soyez le premier !</a>
-                </div>
+                    <div class="col-span-5 text-center py-10">
+                        <p class="text-white/60">Aucun joueur inscrit pour le moment.</p>
+                        <a href="/login" class="text-soboa-orange font-bold hover:underline">Soyez le premier !</a>
+                    </div>
                 @endforelse
             </div>
         </div>
@@ -183,49 +207,61 @@
                 <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Simple & Fun</span>
                 <h2 class="text-3xl md:text-5xl font-black text-soboa-blue mt-2">Comment ça marche?</h2>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <!-- Step 1 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
+                    <div
+                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
                         <span class="text-4xl group-hover:scale-125 transition-transform">📱</span>
                     </div>
-                    <div class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">1</div>
+                    <div
+                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        1</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Inscrivez-vous</h3>
                     <p class="text-gray-600">Créez votre compte avec votre numéro. C'est gratuit!</p>
                 </div>
-                
+
                 <!-- Step 2 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
+                    <div
+                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
                         <span class="text-4xl group-hover:scale-125 transition-transform">⚽</span>
                     </div>
-                    <div class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">2</div>
+                    <div
+                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        2</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Pronostiquez</h3>
                     <p class="text-gray-600">Prédisez les scores des matchs de la CAN.</p>
                 </div>
-                
+
                 <!-- Step 3 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
+                    <div
+                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
                         <span class="text-4xl group-hover:scale-125 transition-transform">🍺</span>
                     </div>
-                    <div class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">3</div>
+                    <div
+                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        3</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Visitez les lieux</h3>
                     <p class="text-gray-600">+4 points bonus en visitant nos lieux partenaires.</p>
                 </div>
-                
+
                 <!-- Step 4 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
+                    <div
+                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
                         <span class="text-4xl group-hover:scale-125 transition-transform">🏆</span>
                     </div>
-                    <div class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">4</div>
+                    <div
+                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        4</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Gagnez</h3>
                     <p class="text-gray-600">Accumulez des points et remportez des cadeaux!</p>
                 </div>
             </div>
-            
+
             <!-- Points Breakdown -->
             <div class="mt-16 bg-soboa-blue rounded-2xl p-8 text-white">
                 <h3 class="text-center font-black text-2xl mb-8">Système de Points</h3>
@@ -247,15 +283,18 @@
                         <p class="text-sm text-white/80 mt-2">Visite lieu</p>
                     </div>
                 </div>
-                <p class="text-center text-white/60 text-sm mt-4">Maximum 7 points par match + 4 points bonus par visite</p>
+                <p class="text-center text-white/60 text-sm mt-4">Maximum 7 points par match + 4 points bonus par visite
+                </p>
             </div>
-            
+
             <!-- CTA -->
             <div class="text-center mt-12">
-                <a href="/login" class="inline-flex items-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg">
+                <a href="/login"
+                    class="inline-flex items-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg">
                     Commencer maintenant
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                     </svg>
                 </a>
             </div>
