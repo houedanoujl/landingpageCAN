@@ -16,15 +16,32 @@ class BarResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
 
+    protected static ?string $navigationLabel = 'Lieux partenaires';
+
+    protected static ?string $modelLabel = 'Lieu';
+
+    protected static ?string $pluralModelLabel = 'Lieux partenaires';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\TextInput::make('address')->required(),
-                Forms\Components\TextInput::make('latitude')->numeric()->required(),
-                Forms\Components\TextInput::make('longitude')->numeric()->required(),
-                Forms\Components\Toggle::make('is_active'),
+                Forms\Components\TextInput::make('name')
+                    ->label('Nom')
+                    ->required(),
+                Forms\Components\TextInput::make('address')
+                    ->label('Adresse')
+                    ->required(),
+                Forms\Components\TextInput::make('latitude')
+                    ->label('Latitude')
+                    ->numeric()
+                    ->required(),
+                Forms\Components\TextInput::make('longitude')
+                    ->label('Longitude')
+                    ->numeric()
+                    ->required(),
+                Forms\Components\Toggle::make('is_active')
+                    ->label('Actif'),
             ]);
     }
 

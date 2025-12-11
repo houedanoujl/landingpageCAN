@@ -17,14 +17,27 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
+    protected static ?string $navigationLabel = 'Utilisateurs';
+
+    protected static ?string $modelLabel = 'Utilisateur';
+
+    protected static ?string $pluralModelLabel = 'Utilisateurs';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\TextInput::make('phone')->required(),
-                Forms\Components\TextInput::make('points_total')->disabled(),
-                Forms\Components\Toggle::make('is_admin'),
+                Forms\Components\TextInput::make('name')
+                    ->label('Nom')
+                    ->required(),
+                Forms\Components\TextInput::make('phone')
+                    ->label('Téléphone')
+                    ->required(),
+                Forms\Components\TextInput::make('points_total')
+                    ->label('Points total')
+                    ->disabled(),
+                Forms\Components\Toggle::make('is_admin')
+                    ->label('Administrateur'),
             ]);
     }
 
@@ -38,7 +51,7 @@ class UserResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('top_5')
-                    ->query(fn (Builder $query): Builder => $query->orderBy('points_total', 'desc')->take(5))
+                    ->query(fn(Builder $query): Builder => $query->orderBy('points_total', 'desc')->take(5))
                     ->label('Top 5 Users'),
             ])
             ->actions([
