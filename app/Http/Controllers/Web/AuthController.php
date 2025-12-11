@@ -7,8 +7,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Twilio\Rest\Client;
+use Twilio\Exceptions\TwilioException;
 
 class AuthController extends Controller
 {
@@ -24,52 +25,132 @@ class AuthController extends Controller
     }
 
     /**
-     * Callback après authentification Firebase
-     * Reçoit le token Firebase et crée/connecte l'utilisateur
+     * Envoie un code OTP via Twilio Verify
      */
-    public function firebaseCallback(Request $request)
+    public function sendOtp(Request $request)
     {
         $request->validate([
-            'firebase_token' => 'required|string',
             'phone' => 'required|string',
             'name' => 'required|string|max:255',
-            'firebase_uid' => 'required|string',
         ]);
 
         try {
-            // Vérifier le token Firebase (optionnel mais recommandé en production)
-            $verified = $this->verifyFirebaseToken($request->firebase_token);
-            
-            if (!$verified) {
-                Log::warning('Firebase token verification skipped or failed', [
-                    'phone' => $request->phone
-                ]);
-            }
-
             $phone = $this->formatPhone($request->phone);
             
-            // Trouver ou créer l'utilisateur
-            $user = User::where('phone', $phone)->first();
+            // Stocker le nom en session pour l'utiliser après vérification
+            session(['pending_name' => $request->name, 'pending_phone' => $phone]);
+
+            $twilio = new Client(
+                config('services.twilio.sid'),
+                config('services.twilio.token')
+            );
+
+            $verification = $twilio->verify->v2
+                ->services(config('services.twilio.verify_sid'))
+                ->verifications
+                ->create($phone, "sms");
+
+            Log::info('OTP envoyé via Twilio', [
+                'phone' => $phone,
+                'status' => $verification->status,
+                'sid' => $verification->sid
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Code envoyé par SMS',
+                'phone' => $phone
+            ]);
+
+        } catch (TwilioException $e) {
+            Log::error('Erreur Twilio: ' . $e->getMessage(), [
+                'code' => $e->getCode(),
+                'phone' => $request->phone
+            ]);
+
+            $errorMessage = 'Erreur lors de l\'envoi du SMS.';
             
+            // Messages d'erreur plus spécifiques
+            if (str_contains($e->getMessage(), 'Invalid parameter')) {
+                $errorMessage = 'Numéro de téléphone invalide.';
+            } elseif (str_contains($e->getMessage(), 'unverified')) {
+                $errorMessage = 'Ce numéro ne peut pas recevoir de SMS pour le moment.';
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+                'error' => $e->getMessage()
+            ], 400);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur envoi OTP: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi du code. Veuillez réessayer.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Vérifie le code OTP et connecte l'utilisateur
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string',
+            'code' => 'required|string|size:6',
+        ]);
+
+        try {
+            $phone = $this->formatPhone($request->phone);
+            $name = session('pending_name', 'Utilisateur');
+
+            $twilio = new Client(
+                config('services.twilio.sid'),
+                config('services.twilio.token')
+            );
+
+            $verificationCheck = $twilio->verify->v2
+                ->services(config('services.twilio.verify_sid'))
+                ->verificationChecks
+                ->create([
+                    'to' => $phone,
+                    'code' => $request->code
+                ]);
+
+            Log::info('Vérification OTP Twilio', [
+                'phone' => $phone,
+                'status' => $verificationCheck->status
+            ]);
+
+            if ($verificationCheck->status !== 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Code incorrect. Veuillez réessayer.'
+                ], 400);
+            }
+
+            // Code vérifié, créer ou connecter l'utilisateur
+            $user = User::where('phone', $phone)->first();
+
             if (!$user) {
                 // Nouvel utilisateur
                 $user = User::create([
-                    'name' => $request->name,
+                    'name' => $name,
                     'phone' => $phone,
-                    'firebase_uid' => $request->firebase_uid,
                     'password' => Hash::make(Str::random(16)),
                     'points_total' => 0,
                     'phone_verified' => true,
                 ]);
-                Log::info('Nouvel utilisateur créé via Firebase', ['user_id' => $user->id, 'phone' => $phone]);
+                Log::info('Nouvel utilisateur créé via Twilio', ['user_id' => $user->id, 'phone' => $phone]);
             } else {
                 // Mettre à jour l'utilisateur existant
                 $user->update([
-                    'firebase_uid' => $request->firebase_uid,
                     'phone_verified' => true,
                     'last_login_at' => now(),
                 ]);
-                Log::info('Utilisateur connecté via Firebase', ['user_id' => $user->id, 'phone' => $phone]);
+                Log::info('Utilisateur connecté via Twilio', ['user_id' => $user->id, 'phone' => $phone]);
             }
 
             // Stocker les infos utilisateur en session
@@ -77,11 +158,16 @@ class AuthController extends Controller
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'user_phone' => $user->phone,
+                'predictor_name' => $user->name,
+                'user_points' => $user->points_total,
             ]);
+
+            // Nettoyer les données temporaires
+            session()->forget(['pending_name', 'pending_phone']);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Connexion réussie',
+                'message' => 'Connexion réussie !',
                 'redirect' => '/matches',
                 'user' => [
                     'id' => $user->id,
@@ -89,40 +175,25 @@ class AuthController extends Controller
                 ]
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('Firebase callback error: ' . $e->getMessage());
+        } catch (TwilioException $e) {
+            Log::error('Erreur vérification Twilio: ' . $e->getMessage());
+            
+            $errorMessage = 'Code incorrect ou expiré.';
+            if (str_contains($e->getMessage(), 'not found')) {
+                $errorMessage = 'Code expiré. Veuillez demander un nouveau code.';
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la connexion. Veuillez réessayer.'
-            ], 500);
-        }
-    }
+                'message' => $errorMessage
+            ], 400);
 
-    /**
-     * Vérifie le token Firebase via l'API Google
-     */
-    private function verifyFirebaseToken(string $token): bool
-    {
-        $projectId = config('services.firebase.project_id');
-        
-        if (!$projectId) {
-            // Firebase non configuré, on fait confiance au client
-            return true;
-        }
-
-        try {
-            // Vérifier le token via Firebase Admin (simplifié)
-            // En production, utilisez firebase-php/php-jwt ou kreait/firebase-php
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token
-            ])->get("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=" . config('services.firebase.api_key'), [
-                'idToken' => $token
-            ]);
-
-            return $response->successful();
         } catch (\Exception $e) {
-            Log::warning('Firebase token verification failed: ' . $e->getMessage());
-            return false;
+            Log::error('Erreur vérification OTP: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la vérification. Veuillez réessayer.'
+            ], 500);
         }
     }
 
@@ -136,7 +207,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Formate le numéro de téléphone
+     * Formate le numéro de téléphone au format E.164
      */
     private function formatPhone(string $phone): string
     {
