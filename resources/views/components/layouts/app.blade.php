@@ -110,7 +110,7 @@
                     <a href="/" class="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg font-semibold text-sm transition-all">Accueil</a>
                     <a href="/matches" class="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg font-semibold text-sm transition-all">Pronostics</a>
                     <a href="/leaderboard" class="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg font-semibold text-sm transition-all">Classement</a>
-                    <a href="/map" class="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg font-semibold text-sm transition-all">Bars</a>
+                    <a href="/map" class="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg font-semibold text-sm transition-all">Lieux</a>
                 </div>
                 
                 <!-- User Actions -->
@@ -156,7 +156,7 @@
                 <a href="/" class="block px-4 py-3 text-white hover:bg-white/10 rounded-lg font-semibold transition-colors">🏠 Accueil</a>
                 <a href="/matches" class="block px-4 py-3 text-white hover:bg-white/10 rounded-lg font-semibold transition-colors">⚽ Pronostics</a>
                 <a href="/leaderboard" class="block px-4 py-3 text-white hover:bg-white/10 rounded-lg font-semibold transition-colors">🏆 Classement</a>
-                <a href="/map" class="block px-4 py-3 text-white hover:bg-white/10 rounded-lg font-semibold transition-colors">🍺 Bars</a>
+                <a href="/map" class="block px-4 py-3 text-white hover:bg-white/10 rounded-lg font-semibold transition-colors">📍 Lieux partenaires</a>
                 
                 @if(session('user_id'))
                     <div class="pt-4 border-t border-white/10">
@@ -203,7 +203,7 @@
                     <ul class="space-y-2 text-white/70 text-sm">
                         <li><a href="/matches" class="hover:text-white transition-colors">Faire un pronostic</a></li>
                         <li><a href="/leaderboard" class="hover:text-white transition-colors">Voir le classement</a></li>
-                        <li><a href="/map" class="hover:text-white transition-colors">Trouver un bar</a></li>
+                        <li><a href="/map" class="hover:text-white transition-colors">Lieux partenaires</a></li>
                     </ul>
                 </div>
                 <div>
@@ -212,13 +212,12 @@
                         <li>⚽ +1 pt / pronostic</li>
                         <li>🎯 +3 pts / bon vainqueur</li>
                         <li>🏆 +3 pts / score exact</li>
-                        <li>🍺 +4 pts / visite bar partenaire</li>
+                        <li>📍 +4 pts / visite lieu partenaire</li>
                     </ul>
                 </div>
             </div>
             <div class="border-t border-white/10 pt-6 text-center">
                 <p class="text-white/50 text-xs">© {{ date('Y') }} SOBOA. Tous droits réservés. | CAN 2025 - Maroc</p>
-                <p class="text-soboa-orange/70 text-xs mt-1">L'abus d'alcool est dangereux pour la santé. À consommer avec modération.</p>
             </div>
         </div>
     </footer>

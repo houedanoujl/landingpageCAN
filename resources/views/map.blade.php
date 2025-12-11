@@ -43,7 +43,7 @@
                         if (response.ok) {
                             this.checkInResult = { success: true, message: data.message };
                         } else {
-                            this.checkInResult = { success: false, message: data.message || 'Aucun bar partenaire à proximité.' };
+                            this.checkInResult = { success: false, message: data.message || 'Aucun lieu partenaire à proximité.' };
                         }
                     } catch (error) {
                         this.checkInResult = { success: false, message: 'Erreur de connexion. Réessayez.' };
@@ -78,7 +78,7 @@
                 <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Gagnez +4 points</span>
                 <h1 class="text-3xl md:text-5xl font-black text-white mt-2">Points de Vente Partenaires</h1>
                 <p class="text-white/70 mt-4 max-w-2xl mx-auto">
-                    Visitez nos bars partenaires pendant la CAN et gagnez 4 points bonus par jour!
+                    Visitez nos lieux partenaires pendant la CAN et gagnez 4 points bonus par jour!
                 </p>
             </div>
         </div>
@@ -92,7 +92,7 @@
                             <span class="text-3xl">📍</span>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-soboa-blue">Vous êtes dans un bar partenaire?</h2>
+                            <h2 class="text-xl font-bold text-soboa-blue">Vous êtes dans un lieu partenaire?</h2>
                             <p class="text-gray-600 text-sm">Activez votre position pour gagner vos points bonus!</p>
                         </div>
                     </div>
@@ -150,7 +150,7 @@
         
         <!-- Venues List -->
         <div class="max-w-7xl mx-auto px-4 pb-16">
-            <h3 class="text-2xl font-bold text-soboa-blue mb-6">Nos Bars Partenaires</h3>
+            <h3 class="text-2xl font-bold text-soboa-blue mb-6">Nos Lieux Partenaires</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($venues as $venue)
@@ -167,7 +167,7 @@
                 </div>
                 @empty
                 <div class="col-span-3 text-center py-10 bg-white rounded-xl">
-                    <p class="text-gray-500">Aucun bar partenaire pour le moment.</p>
+                    <p class="text-gray-500">Aucun lieu partenaire pour le moment.</p>
                 </div>
                 @endforelse
             </div>

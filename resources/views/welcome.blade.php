@@ -52,7 +52,7 @@
             </h1>
             
             <p class="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto font-medium">
-                Devinez les scores des matchs, visitez nos bars partenaires et remportez des cadeaux exclusifs!
+                Devinez les scores des matchs, visitez nos lieux partenaires et remportez des cadeaux exclusifs!
             </p>
             
             <!-- Countdown Timer -->
@@ -92,7 +92,7 @@
                     <span>🎮</span> Jouer & Gagner
                 </a>
                 <a href="/map" class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
-                    <span>🍺</span> Trouver un bar
+                    <span>📍</span> Lieux partenaires
                 </a>
                 @endif
             </div>
@@ -211,8 +211,8 @@
                         <span class="text-4xl group-hover:scale-125 transition-transform">🍺</span>
                     </div>
                     <div class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">3</div>
-                    <h3 class="font-bold text-soboa-blue text-xl mb-2">Visitez les bars</h3>
-                    <p class="text-gray-600">+4 points bonus en visitant nos bars partenaires.</p>
+                    <h3 class="font-bold text-soboa-blue text-xl mb-2">Visitez les lieux</h3>
+                    <p class="text-gray-600">+4 points bonus en visitant nos lieux partenaires.</p>
                 </div>
                 
                 <!-- Step 4 -->
@@ -244,10 +244,10 @@
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+4</span>
-                        <p class="text-sm text-white/80 mt-2">Visite bar</p>
+                        <p class="text-sm text-white/80 mt-2">Visite lieu</p>
                     </div>
                 </div>
-                <p class="text-center text-white/60 text-sm mt-4">Maximum 7 points par match + 4 points bonus par visite en bar</p>
+                <p class="text-center text-white/60 text-sm mt-4">Maximum 7 points par match + 4 points bonus par visite</p>
             </div>
             
             <!-- CTA -->

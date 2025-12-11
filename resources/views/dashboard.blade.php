@@ -41,7 +41,7 @@
                 <div class="bg-white rounded-xl p-4 shadow-lg text-center">
                     <span class="text-3xl">🍺</span>
                     <p class="text-2xl font-black text-soboa-blue mt-2">{{ $venueVisits ?? 0 }}</p>
-                    <p class="text-gray-500 text-sm">Visites Bar</p>
+                    <p class="text-gray-500 text-sm">Visites Lieux</p>
                 </div>
             </div>
         </div>
@@ -85,7 +85,7 @@
                             ⚽ Faire un pronostic
                         </a>
                         <a href="/map" class="block bg-soboa-blue text-white rounded-xl p-4 font-bold hover:bg-soboa-blue-dark transition-colors shadow-lg">
-                            🍺 Trouver un bar (+4 pts)
+                            📍 Lieux partenaires (+4 pts)
                         </a>
                         <a href="/leaderboard" class="block bg-white text-soboa-blue rounded-xl p-4 font-bold hover:bg-gray-50 transition-colors shadow-lg border border-gray-200">
                             🏆 Voir le classement

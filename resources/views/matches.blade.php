@@ -63,9 +63,15 @@
                 <div class="flex items-center justify-between">
                     <!-- Team A -->
                     <div class="flex-1 flex flex-col items-center">
-                        <div class="w-16 h-16 bg-soboa-blue/10 rounded-full flex items-center justify-center mb-2 shadow-inner">
-                            <span class="text-xl font-bold text-soboa-blue">{{ mb_substr($match->team_a, 0, 2) }}</span>
+                        @if($match->homeTeam)
+                        <img src="https://flagcdn.com/w80/{{ $match->homeTeam->iso_code }}.png" 
+                             alt="{{ $match->team_a }}" 
+                             class="w-16 h-12 object-cover rounded shadow mb-2">
+                        @else
+                        <div class="w-16 h-12 bg-soboa-blue/10 rounded flex items-center justify-center mb-2 shadow-inner">
+                            <span class="text-lg font-bold text-soboa-blue">{{ mb_substr($match->team_a, 0, 3) }}</span>
                         </div>
+                        @endif
                         <span class="font-bold text-lg text-center leading-tight text-gray-800">{{ $match->team_a }}</span>
                     </div>
 
@@ -83,9 +89,15 @@
 
                     <!-- Team B -->
                     <div class="flex-1 flex flex-col items-center">
-                        <div class="w-16 h-16 bg-soboa-blue/10 rounded-full flex items-center justify-center mb-2 shadow-inner">
-                            <span class="text-xl font-bold text-soboa-blue">{{ mb_substr($match->team_b, 0, 2) }}</span>
+                        @if($match->awayTeam)
+                        <img src="https://flagcdn.com/w80/{{ $match->awayTeam->iso_code }}.png" 
+                             alt="{{ $match->team_b }}" 
+                             class="w-16 h-12 object-cover rounded shadow mb-2">
+                        @else
+                        <div class="w-16 h-12 bg-soboa-blue/10 rounded flex items-center justify-center mb-2 shadow-inner">
+                            <span class="text-lg font-bold text-soboa-blue">{{ mb_substr($match->team_b, 0, 3) }}</span>
                         </div>
+                        @endif
                         <span class="font-bold text-lg text-center leading-tight text-gray-800">{{ $match->team_b }}</span>
                     </div>
                 </div>
