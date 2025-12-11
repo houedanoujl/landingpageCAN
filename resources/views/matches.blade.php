@@ -107,73 +107,85 @@
                     @if(session('user_id'))
                         @php
                             $userPrediction = $userPredictions[$match->id] ?? null;
+                            $lockTime = $match->match_date->copy()->subHour();
+                            $isLocked = now()->gte($lockTime);
                         @endphp
                         
-                        @if($userPrediction)
-                        <!-- L'utilisateur a déjà pronostiqué sur ce match -->
+                        @if($isLocked)
+                        <!-- Match verrouillé (moins d'1h avant le coup d'envoi) -->
                         <div class="text-center">
-                            <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-                                <div class="flex items-center justify-center gap-2 text-green-700 mb-2">
+                            <div class="bg-gray-100 border border-gray-200 rounded-xl p-4">
+                                <div class="flex items-center justify-center gap-2 text-gray-600 mb-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>
-                                    <span class="font-bold">Pronostic enregistré</span>
+                                    <span class="font-bold">Pronostics fermés</span>
                                 </div>
+                                @if($userPrediction)
                                 <div class="text-gray-700">
                                     <span class="font-medium">Votre pronostic :</span>
                                     <span class="text-xl font-black text-soboa-orange mx-2">
                                         {{ $userPrediction->score_a }} - {{ $userPrediction->score_b }}
                                     </span>
                                 </div>
-                                <a href="/mes-pronostics" class="inline-block mt-3 text-sm text-soboa-blue hover:underline">
-                                    Voir tous mes pronostics →
-                                </a>
+                                @else
+                                <p class="text-gray-500 text-sm">Vous n'avez pas pronostiqué sur ce match</p>
+                                @endif
                             </div>
                         </div>
                         @else
-                        <!-- Formulaire de pronostic pour utilisateur connecté -->
-                    <form action="{{ route('predictions.store') }}" method="POST" class="space-y-4">
-                        @csrf
-                        <input type="hidden" name="match_id" value="{{ $match->id }}">
-                        
-                        <p class="text-sm text-gray-600 text-center font-medium">Entrez votre pronostic :</p>
-                        
-                        <div class="flex items-center justify-center gap-4">
-                            <!-- Score équipe A -->
-                            <div class="flex flex-col items-center">
-                                <label class="text-xs text-gray-500 mb-1">{{ $match->team_a }}</label>
-                                <input type="number"
-                                       name="score_a"
-                                       min="0"
-                                       max="20"
-                                       value="0"
-                                       class="w-16 h-12 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-soboa-orange focus:ring-soboa-orange"
-                                       required>
+                        <!-- Formulaire de pronostic (création ou modification) -->
+                        <form action="{{ route('predictions.store') }}" method="POST" class="space-y-4">
+                            @csrf
+                            <input type="hidden" name="match_id" value="{{ $match->id }}">
+                            
+                            @if($userPrediction)
+                            <div class="flex items-center justify-center gap-2 text-green-600 text-sm mb-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="font-medium">Pronostic enregistré - Vous pouvez le modifier</span>
+                            </div>
+                            @else
+                            <p class="text-sm text-gray-600 text-center font-medium">Entrez votre pronostic :</p>
+                            @endif
+                            
+                            <div class="flex items-center justify-center gap-4">
+                                <!-- Score équipe A -->
+                                <div class="flex flex-col items-center">
+                                    <label class="text-xs text-gray-500 mb-1">{{ $match->team_a }}</label>
+                                    <input type="number"
+                                           name="score_a"
+                                           min="0"
+                                           max="20"
+                                           value="{{ $userPrediction ? $userPrediction->score_a : 0 }}"
+                                           class="w-16 h-12 text-center text-2xl font-bold border-2 {{ $userPrediction ? 'border-green-400 bg-green-50' : 'border-gray-300' }} rounded-lg focus:border-soboa-orange focus:ring-soboa-orange"
+                                           required>
+                                </div>
+                                
+                                <span class="text-2xl font-bold text-gray-400">-</span>
+                                
+                                <!-- Score équipe B -->
+                                <div class="flex flex-col items-center">
+                                    <label class="text-xs text-gray-500 mb-1">{{ $match->team_b }}</label>
+                                    <input type="number"
+                                           name="score_b"
+                                           min="0"
+                                           max="20"
+                                           value="{{ $userPrediction ? $userPrediction->score_b : 0 }}"
+                                           class="w-16 h-12 text-center text-2xl font-bold border-2 {{ $userPrediction ? 'border-green-400 bg-green-50' : 'border-gray-300' }} rounded-lg focus:border-soboa-orange focus:ring-soboa-orange"
+                                           required>
+                                </div>
                             </div>
                             
-                            <span class="text-2xl font-bold text-gray-400">-</span>
-                            
-                            <!-- Score équipe B -->
-                            <div class="flex flex-col items-center">
-                                <label class="text-xs text-gray-500 mb-1">{{ $match->team_b }}</label>
-                                <input type="number"
-                                       name="score_b"
-                                       min="0"
-                                       max="20"
-                                       value="0"
-                                       class="w-16 h-12 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-soboa-orange focus:ring-soboa-orange"
-                                       required>
-                            </div>
-                        </div>
-                        
-                        <button type="submit"
-                                class="w-full bg-soboa-orange hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg shadow transition transform active:scale-95 flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Valider mon pronostic
-                        </button>
-                    </form>
+                            <button type="submit"
+                                    class="w-full {{ $userPrediction ? 'bg-green-600 hover:bg-green-700' : 'bg-soboa-orange hover:bg-orange-600' }} text-white font-bold py-3 px-4 rounded-lg shadow transition transform active:scale-95 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                {{ $userPrediction ? 'Modifier mon pronostic' : 'Valider mon pronostic' }}
+                            </button>
+                        </form>
                         @endif
                     @else
                     <!-- Message pour inviter à se connecter -->

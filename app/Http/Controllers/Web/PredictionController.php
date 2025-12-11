@@ -26,15 +26,6 @@ class PredictionController extends Controller
         $match = MatchGame::findOrFail($request->match_id);
         $userId = session('user_id');
 
-        // Vérifier si l'utilisateur a déjà pronostiqué sur ce match
-        $existingPrediction = Prediction::where('user_id', $userId)
-            ->where('match_id', $request->match_id)
-            ->first();
-
-        if ($existingPrediction) {
-            return back()->with('error', 'Vous avez déjà fait un pronostic sur ce match. Un seul pronostic par match est autorisé.');
-        }
-
         // Vérifier que le match n'a pas encore commencé
         if ($match->status === 'finished') {
             return back()->with('error', 'Ce match est déjà terminé.');
@@ -58,7 +49,27 @@ class PredictionController extends Controller
             $predictedWinner = 'team_b';
         }
 
-        // Créer le pronostic (pas de mise à jour possible)
+        // Vérifier si l'utilisateur a déjà pronostiqué sur ce match
+        $existingPrediction = Prediction::where('user_id', $userId)
+            ->where('match_id', $request->match_id)
+            ->first();
+
+        if ($existingPrediction) {
+            // Mettre à jour le pronostic existant
+            $existingPrediction->update([
+                'predicted_winner' => $predictedWinner,
+                'score_a' => $request->score_a,
+                'score_b' => $request->score_b,
+            ]);
+            
+            return back()->with('toast', json_encode([
+                'type' => 'success',
+                'message' => 'Pronostic modifié !',
+                'description' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b
+            ]));
+        }
+
+        // Créer un nouveau pronostic
         Prediction::create([
             'user_id' => $userId,
             'match_id' => $request->match_id,
@@ -67,7 +78,11 @@ class PredictionController extends Controller
             'score_b' => $request->score_b,
         ]);
 
-        return back()->with('success', 'Votre pronostic a été enregistré !');
+        return back()->with('toast', json_encode([
+            'type' => 'success',
+            'message' => 'Pronostic enregistré !',
+            'description' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b
+        ]));
     }
 
     public function myPredictions()
