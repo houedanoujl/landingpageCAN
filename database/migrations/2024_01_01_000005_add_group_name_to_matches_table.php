@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('matches', function (Blueprint $table) {
-            $table->string('group_name')->nullable()->after('stadium');
-            $table->string('phase')->default('group_stage')->after('group_name'); // group_stage, round_of_16, quarter_final, semi_final, third_place, final
+            $table->string('group_name')->nullable()->after('id');
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('matches', function (Blueprint $table) {
-            $table->dropColumn(['group_name', 'phase']);
+            $table->dropColumn('group_name');
         });
     }
 };

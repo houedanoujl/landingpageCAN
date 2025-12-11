@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bar;
 use App\Models\MatchGame;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -17,10 +18,13 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        // Fetch top 3 users for a mini leaderboard
-        $topUsers = User::orderBy('points_total', 'desc')->take(3)->get();
+        // Fetch top 5 users for leaderboard
+        $topUsers = User::orderBy('points_total', 'desc')->take(5)->get();
+        
+        // Count venues for stats
+        $venueCount = Bar::where('is_active', true)->count();
 
-        return view('welcome', compact('upcomingMatches', 'topUsers'));
+        return view('welcome', compact('upcomingMatches', 'topUsers', 'venueCount'));
     }
 
     public function matches()
@@ -37,5 +41,11 @@ class HomeController extends Controller
     {
         $users = User::orderBy('points_total', 'desc')->paginate(20);
         return view('leaderboard', compact('users'));
+    }
+
+    public function map()
+    {
+        $venues = Bar::where('is_active', true)->orderBy('name')->get();
+        return view('map', compact('venues'));
     }
 }

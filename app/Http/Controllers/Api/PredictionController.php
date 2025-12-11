@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\MatchGame;
 use App\Models\Prediction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 
 class PredictionController extends Controller
 {
@@ -13,14 +15,38 @@ class PredictionController extends Controller
     {
         $request->validate([
             'match_id' => 'required|exists:matches,id',
-            'predicted_winner' => 'required|in:team_a,team_b,draw',
-            'score_a' => 'required|integer|min:0',
-            'score_b' => 'required|integer|min:0',
+            'score_a' => 'required|integer|min:0|max:20',
+            'score_b' => 'required|integer|min:0|max:20',
         ]);
 
         $user = Auth::user();
+        $match = MatchGame::findOrFail($request->match_id);
 
-        // Check if match has already started? (optional logic)
+        // Lock predictions 1 hour before match starts
+        $lockTime = Carbon::parse($match->match_date)->subHour();
+        
+        if (Carbon::now()->gte($lockTime)) {
+            return response()->json([
+                'error' => 'Les pronostics sont fermés 1 heure avant le match.',
+                'match_date' => $match->match_date,
+                'lock_time' => $lockTime,
+            ], 422);
+        }
+
+        // Check if match is already finished
+        if ($match->status === 'finished') {
+            return response()->json([
+                'error' => 'Ce match est déjà terminé.',
+            ], 422);
+        }
+
+        // Derive predicted_winner from scores
+        $predictedWinner = 'draw';
+        if ($request->score_a > $request->score_b) {
+            $predictedWinner = 'team_a';
+        } elseif ($request->score_b > $request->score_a) {
+            $predictedWinner = 'team_b';
+        }
 
         $prediction = Prediction::updateOrCreate(
             [
@@ -28,17 +54,16 @@ class PredictionController extends Controller
                 'match_id' => $request->match_id,
             ],
             [
-                'predicted_winner' => $request->predicted_winner,
+                'predicted_winner' => $predictedWinner,
                 'score_a' => $request->score_a,
                 'score_b' => $request->score_b,
-                // Assuming +1 point for participation is awarded immediately or kept pending until match finishes?
-                // The PointsService logic seemed to handle calculations on match finish.
-                // However, if we want to give +1 immediately, we could do it here.
-                // But typically, we wait for results or batch processing.
-                // Based on "Trigger this calculation when a Match is updated to 'finished'", I'll leave the points calculation there.
             ]
         );
 
-        return response()->json($prediction);
+        return response()->json([
+            'success' => true,
+            'prediction' => $prediction,
+            'message' => 'Pronostic enregistré avec succès!',
+        ]);
     }
 }

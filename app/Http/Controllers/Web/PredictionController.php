@@ -30,8 +30,10 @@ class PredictionController extends Controller
             return back()->with('error', 'Ce match est déjà terminé.');
         }
 
-        if ($match->match_date <= now()) {
-            return back()->with('error', 'Ce match a déjà commencé.');
+        // Lock predictions 1 hour before match starts
+        $lockTime = $match->match_date->copy()->subHour();
+        if (now()->gte($lockTime)) {
+            return back()->with('error', 'Les pronostics sont fermés 1 heure avant le match.');
         }
 
         $userId = session('user_id');

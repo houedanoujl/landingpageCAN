@@ -6,14 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class LeaderboardController extends Controller
 {
     public function index(Request $request)
     {
-        $topUsers = User::orderBy('points_total', 'desc')
-            ->take(5)
-            ->get(['id', 'name', 'points_total']);
+        // Cache top 5 users for 5 minutes to handle high traffic
+        $topUsers = Cache::remember('leaderboard_top_5', 300, function () {
+            return User::orderBy('points_total', 'desc')
+                ->take(5)
+                ->get(['id', 'name', 'points_total']);
+        });
 
         $currentUser = Auth::user();
         $userRank = User::orderBy('points_total', 'desc')
