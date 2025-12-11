@@ -12,6 +12,15 @@
     <meta name="description"
         content="Pronostiquez les matchs de la CAN 2025, gagnez des points et devenez le meilleur pronostiqueur!">
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RZTW4S7F3H"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RZTW4S7F3H');
+    </script>
+
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#003399">

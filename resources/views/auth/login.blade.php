@@ -106,6 +106,15 @@
                         </button>
                     </form>
 
+                    <!-- Resend SMS Section -->
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Vous n'avez pas reçu le code ?</p>
+                        <button type="button" id="resend-btn" disabled
+                            class="text-soboa-blue hover:text-soboa-orange font-semibold text-sm transition-colors disabled:text-gray-400 disabled:cursor-not-allowed">
+                            <span id="resend-btn-text">Renvoyer le code dans <span id="countdown">60</span>s</span>
+                        </button>
+                    </div>
+
                     <div class="mt-4 text-center">
                         <button type="button" id="back-btn"
                             class="text-soboa-blue hover:underline text-sm font-semibold">
@@ -117,7 +126,10 @@
                 <div class="mt-8 pt-6 border-t border-gray-200 text-center">
                     <p class="text-sm text-gray-600">
                         En vous connectant, vous acceptez nos
-                        <a href="#" class="text-soboa-orange hover:underline font-semibold">conditions d'utilisation</a>
+                        <a href="/conditions" class="text-soboa-orange hover:underline font-semibold">conditions d'utilisation</a>
+                    </p>
+                    <p class="text-xs text-gray-400 mt-2">
+                        🔞 Ce jeu est réservé aux personnes de 18 ans et plus
                     </p>
                 </div>
             </div>
@@ -127,6 +139,31 @@
                 <p class="font-bold">🎮 Gagnez des points à chaque match!</p>
                 <p class="text-sm text-white/80 mt-1">+1 pronostic • +3 bon vainqueur • +3 score exact</p>
             </div>
+            
+            <!-- Debug Panel (visible en mode développement) -->
+            @if(config('app.debug'))
+            <div class="mt-6" x-data="{ open: false }">
+                <button @click="open = !open" class="w-full text-left bg-gray-800 text-white px-4 py-2 rounded-t-xl flex justify-between items-center text-sm">
+                    <span>🔧 Debug Panel (Firebase Logs)</span>
+                    <span x-text="open ? '▼' : '▶'"></span>
+                </button>
+                <div x-show="open" class="bg-gray-900 rounded-b-xl p-4 max-h-60 overflow-y-auto">
+                    <div id="debug-panel-content" class="font-mono text-xs space-y-1">
+                        <div class="text-gray-500">En attente des logs...</div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-700 flex gap-2">
+                        <button onclick="document.getElementById('debug-panel-content').innerHTML = '<div class=\'text-gray-500\'>Logs effacés</div>'" 
+                                class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">
+                            Effacer logs
+                        </button>
+                        <button onclick="copyLogs()" 
+                                class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded">
+                            Copier logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 
@@ -135,6 +172,67 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
+        // ============================================
+        // DEBUG MODE - Afficher les logs dans la console
+        // ============================================
+        const DEBUG = true;
+        
+        function log(type, message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = `[${timestamp}] [Firebase Auth]`;
+            
+            if (DEBUG) {
+                if (type === 'error') {
+                    console.error(`${prefix} ❌ ${message}`, data || '');
+                } else if (type === 'success') {
+                    console.log(`${prefix} ✅ ${message}`, data || '');
+                } else if (type === 'info') {
+                    console.info(`${prefix} ℹ️ ${message}`, data || '');
+                } else {
+                    console.log(`${prefix} ${message}`, data || '');
+                }
+            }
+            
+            // Ajouter au panneau de debug visible
+            addToDebugPanel(type, message, data);
+        }
+        
+        function addToDebugPanel(type, message, data) {
+            const panel = document.getElementById('debug-panel-content');
+            if (!panel) return;
+            
+            const colors = {
+                'error': 'text-red-600',
+                'success': 'text-green-600',
+                'info': 'text-blue-600',
+                'default': 'text-gray-600'
+            };
+            
+            const color = colors[type] || colors.default;
+            const time = new Date().toLocaleTimeString();
+            const dataStr = data ? `<br><small class="text-gray-400">${JSON.stringify(data, null, 2)}</small>` : '';
+            
+            panel.innerHTML = `<div class="${color} text-xs mb-1"><span class="text-gray-400">[${time}]</span> ${message}${dataStr}</div>` + panel.innerHTML;
+        }
+
+        // ============================================
+        // NUMÉROS DE TEST FIREBASE
+        // Ajoutez ici les mêmes numéros que dans Firebase Console
+        // ============================================
+        const TEST_PHONE_NUMBERS = {
+            '+2250700000000': '123456',
+            '+2250748348221': '123456',  // Votre numéro de test
+            '+221770000000': '123456',   // Sénégal test
+        };
+        
+        function isTestPhoneNumber(phone) {
+            return TEST_PHONE_NUMBERS.hasOwnProperty(phone);
+        }
+        
+        function getTestCode(phone) {
+            return TEST_PHONE_NUMBERS[phone] || null;
+        }
+
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "{{ config('services.firebase.api_key') }}",
@@ -142,30 +240,81 @@
             projectId: "{{ config('services.firebase.project_id') }}",
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        log('info', 'Configuration Firebase', { 
+            projectId: firebaseConfig.projectId,
+            authDomain: firebaseConfig.authDomain 
+        });
 
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            log('success', 'Firebase initialisé avec succès');
+        } catch (e) {
+            log('error', 'Erreur initialisation Firebase', e.message);
+        }
+        
         let confirmationResult = null;
         let recaptchaVerifier = null;
         let userName = '';
         let userPhone = '';
+        let countdownInterval = null;
+
+        // Countdown timer for resend button - DEFINED FIRST
+        function startResendCountdown() {
+            const resendBtn = document.getElementById('resend-btn');
+            const resendBtnText = document.getElementById('resend-btn-text');
+            const countdownSpan = document.getElementById('countdown');
+            let seconds = 60;
+            
+            resendBtn.disabled = true;
+            resendBtnText.innerHTML = 'Renvoyer le code dans <span id="countdown">60</span>s';
+            
+            // Clear any existing interval
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            countdownInterval = setInterval(() => {
+                seconds--;
+                const newCountdownSpan = document.getElementById('countdown');
+                if (newCountdownSpan) {
+                    newCountdownSpan.textContent = seconds;
+                }
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    resendBtn.disabled = false;
+                    resendBtnText.innerHTML = '🔄 Renvoyer le code';
+                }
+            }, 1000);
+        }
 
         // Initialize reCAPTCHA
         function initRecaptcha() {
-            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response) => {
-                    // reCAPTCHA solved
-                }
-            });
+            log('info', 'Initialisation reCAPTCHA...');
+            try {
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        log('success', 'reCAPTCHA résolu', { tokenLength: response?.length });
+                    },
+                    'expired-callback': () => {
+                        log('error', 'reCAPTCHA expiré - rechargez la page');
+                    }
+                });
+                log('success', 'reCAPTCHA initialisé');
+            } catch (e) {
+                log('error', 'Erreur initialisation reCAPTCHA', e.message);
+            }
         }
 
         // Show alert
         function showAlert(message, type = 'error') {
             const container = document.getElementById('alert-container');
             const bgColor = type === 'error'
-                ? 'bg-red-100 border-red-400 text-red-700'
-                : 'bg-green-100 border-green-400 text-green-700';
+               ? 'bg-red-100 border-red-400 text-red-700'
+               : 'bg-green-100 border-green-400 text-green-700';
             container.innerHTML = `<div class="${bgColor} px-4 py-3 rounded-lg mb-6 border" role="alert"><span class="font-medium">${message}</span></div>`;
             setTimeout(() => container.innerHTML = '', 5000);
         }
@@ -175,10 +324,26 @@
             const countryCode = document.getElementById('country-code').value;
             // Remove all non-digits
             phone = phone.replace(/\D/g, '');
-            // Remove leading 0 if present
-            if (phone.startsWith('0')) {
-                phone = phone.substring(1);
+            
+            // Pour la Côte d'Ivoire (+225):
+            // Format depuis 2021: 10 chiffres commençant par 01, 05, 07, 27, etc.
+            // Exemple: 0758585858 -> +2250758585858
+            if (countryCode === '+225') {
+                // Si le numéro ne commence pas par 0, l'ajouter
+                if (!phone.startsWith('0')) {
+                    phone = '0' + phone;
+                }
             }
+            
+            // Pour le Sénégal (+221):
+            // Format: 9 chiffres sans le 0
+            // Exemple: 0771234567 -> +221771234567
+            if (countryCode === '+221') {
+                if (phone.startsWith('0')) {
+                    phone = phone.substring(1);
+                }
+            }
+            
             // Return with country code
             return countryCode + phone;
         }
@@ -197,23 +362,50 @@
 
             // Remove all non-digits for validation
             const digitsOnly = phoneInput.replace(/\D/g, '');
-
-            // Côte d'Ivoire: 10 digits, Senegal: 9 digits (without leading 0)
             const countryCode = document.getElementById('country-code').value;
-            const minLength = countryCode === '+225' ? 10 : 9;
 
-            if (digitsOnly.length < minLength) {
-                showAlert(`Numéro trop court. Entrez ${minLength} chiffres minimum (ex: ${countryCode === '+225' ? '07 XX XX XX XX' : '77 XXX XX XX'})`);
+            // Validation selon le pays
+            let minDigits, maxDigits, exampleNum;
+            if (countryCode === '+225') {
+                // Côte d'Ivoire: 10 chiffres avec le 0, ou 9 sans le 0
+                // Le formatPhone() ajoutera le 0 si nécessaire
+                minDigits = 9;
+                maxDigits = 10;
+                exampleNum = '07 58 58 58 58';
+            } else {
+                // Sénégal: 9 chiffres sans le 0, ou 10 avec le 0
+                minDigits = 9;
+                maxDigits = 10;
+                exampleNum = '77 123 45 67';
+            }
+
+            if (digitsOnly.length < minDigits) {
+                showAlert(`Numéro trop court. Entrez au moins ${minDigits} chiffres (ex: ${exampleNum})`);
+                return;
+            }
+            
+            if (digitsOnly.length > maxDigits) {
+                showAlert(`Numéro trop long. Maximum ${maxDigits} chiffres.`);
                 return;
             }
 
             userPhone = formatPhone(phoneInput);
+            
+            // Log for debugging
+            log('info', 'Numéro saisi', { input: phoneInput, digitsOnly, length: digitsOnly.length });
+            log('info', 'Numéro formaté', { formatted: userPhone, length: userPhone.length });
 
-            // Validate E.164 format
-            if (userPhone.length < 12) {
-                showAlert('Numéro de téléphone invalide. Vérifiez le format.');
+            // Validation finale du format E.164
+            // CI: +225 + 10 chiffres = 14 caractères
+            // SN: +221 + 9 chiffres = 13 caractères
+            const expectedLength = countryCode === '+225' ? 14 : 13;
+            if (userPhone.length !== expectedLength) {
+                log('error', 'Longueur invalide', { actual: userPhone.length, expected: expectedLength });
+                showAlert(`Format incorrect. Numéro attendu: ${countryCode} ${exampleNum}`);
                 return;
             }
+            
+            log('success', 'Validation du numéro OK', { phone: userPhone, format: 'E.164' });
 
             const btn = document.getElementById('send-otp-btn');
             const btnText = document.getElementById('send-btn-text');
@@ -221,31 +413,62 @@
             btnText.textContent = 'Envoi en cours...';
 
             try {
+                log('info', 'Vérification reCAPTCHA...');
                 if (!recaptchaVerifier) {
                     initRecaptcha();
                 }
 
+                log('info', 'Appel Firebase signInWithPhoneNumber...', { phone: userPhone });
                 confirmationResult = await firebase.auth().signInWithPhoneNumber(userPhone, recaptchaVerifier);
+                log('success', '✅ SMS envoyé avec succès !', { verificationId: confirmationResult?.verificationId?.substring(0, 20) + '...' });
 
                 // Switch to OTP step
                 document.getElementById('step-phone').style.display = 'none';
                 document.getElementById('step-otp').style.display = 'block';
                 document.getElementById('phone-display').textContent = userPhone;
                 document.getElementById('otp-code').focus();
+                
+                // Start countdown for resend button
+                startResendCountdown();
 
             } catch (error) {
-                console.error('Firebase Error:', error);
+                log('error', 'Erreur Firebase', { 
+                    code: error.code, 
+                    message: error.message,
+                    fullError: error.toString()
+                });
+                
                 let errorMessage = 'Erreur lors de l\'envoi du code.';
+                let debugInfo = '';
 
                 if (error.code === 'auth/invalid-phone-number' || error.message.includes('TOO_SHORT')) {
-                    errorMessage = 'Numéro de téléphone invalide. Vérifiez le format (ex: 77 123 45 67).';
+                    errorMessage = 'Numéro de téléphone invalide. Vérifiez le format.';
+                    debugInfo = 'Le numéro ne respecte pas le format E.164';
                 } else if (error.code === 'auth/too-many-requests') {
                     errorMessage = 'Trop de tentatives. Réessayez dans quelques minutes.';
+                    debugInfo = 'Rate limiting Firebase activé';
                 } else if (error.code === 'auth/quota-exceeded') {
                     errorMessage = 'Quota SMS dépassé. Contactez l\'administrateur.';
+                    debugInfo = 'Quota Firebase SMS épuisé';
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    errorMessage = 'SMS non disponible pour cette région.';
+                    debugInfo = 'La région (CI/SN) n\'est pas activée dans Firebase Console > Authentication > Settings > SMS region policy';
+                } else if (error.code === 'auth/captcha-check-failed') {
+                    errorMessage = 'Vérification de sécurité échouée. Rechargez la page.';
+                    debugInfo = 'reCAPTCHA failed - vérifiez que localhost est dans les domaines autorisés';
                 } else if (error.message.includes('reCAPTCHA')) {
-                    errorMessage = 'Erreur de vérification. Rechargez la page et réessayez.';
+                    errorMessage = 'Erreur de vérification. Rechargez la page.';
+                    debugInfo = 'Problème reCAPTCHA';
+                } else if (error.code === 'auth/missing-phone-number') {
+                    errorMessage = 'Numéro de téléphone manquant.';
+                    debugInfo = 'Le numéro n\'a pas été transmis correctement';
+                } else if (error.code === 'auth/invalid-app-credential') {
+                    errorMessage = 'Configuration Firebase invalide.';
+                    debugInfo = 'Vérifiez API Key et Project ID dans .env';
                 }
+                
+                log('error', `Diagnostic: ${debugInfo}`);
+                showAlert(errorMessage);
 
                 showAlert(errorMessage);
 
@@ -326,6 +549,12 @@
             document.getElementById('step-otp').style.display = 'none';
             document.getElementById('step-phone').style.display = 'block';
             document.getElementById('otp-code').value = '';
+            
+            // Stop countdown
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
 
             // Reset reCAPTCHA
             if (recaptchaVerifier) {
@@ -334,8 +563,83 @@
             }
         });
 
+        // Resend SMS button
+        document.getElementById('resend-btn').addEventListener('click', async () => {
+            const resendBtn = document.getElementById('resend-btn');
+            const resendBtnText = document.getElementById('resend-btn-text');
+            
+            resendBtn.disabled = true;
+            resendBtnText.innerHTML = '⏳ Envoi en cours...';
+            
+            try {
+                log('info', 'Renvoi du SMS...');
+                
+                // Supprimer et recréer le container reCAPTCHA
+                const oldContainer = document.getElementById('recaptcha-container');
+                if (oldContainer) {
+                    oldContainer.innerHTML = '';
+                }
+                
+                // Reset reCAPTCHA verifier
+                if (recaptchaVerifier) {
+                    try {
+                        recaptchaVerifier.clear();
+                    } catch (e) {
+                        log('info', 'reCAPTCHA déjà nettoyé');
+                    }
+                    recaptchaVerifier = null;
+                }
+                
+                // Créer un nouveau reCAPTCHA
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        log('success', 'reCAPTCHA résolu (resend)');
+                    }
+                });
+                
+                // Wait a bit for reCAPTCHA to initialize
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                log('info', 'Appel Firebase pour renvoi...', { phone: userPhone });
+                confirmationResult = await firebase.auth().signInWithPhoneNumber(userPhone, recaptchaVerifier);
+                log('success', '✅ SMS renvoyé avec succès !');
+                
+                showAlert('✅ Un nouveau code a été envoyé !', 'success');
+                
+                // Restart countdown
+                startResendCountdown();
+                
+            } catch (error) {
+                log('error', 'Erreur renvoi SMS', { code: error.code, message: error.message });
+                let errorMessage = 'Erreur lors du renvoi du code.';
+                
+                if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Trop de tentatives. Attendez quelques minutes.';
+                } else if (error.code === 'auth/quota-exceeded') {
+                    errorMessage = 'Limite de SMS atteinte. Réessayez plus tard.';
+                }
+                
+                showAlert(errorMessage);
+                resendBtn.disabled = false;
+                resendBtnText.innerHTML = '🔄 Renvoyer le code';
+            }
+        });
+        
+        // Fonction pour copier les logs
+        function copyLogs() {
+            const panel = document.getElementById('debug-panel-content');
+            if (panel) {
+                const text = panel.innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Logs copiés dans le presse-papier !');
+                });
+            }
+        }
+
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
+            log('info', 'Page chargée, initialisation...');
             initRecaptcha();
         });
     </script>

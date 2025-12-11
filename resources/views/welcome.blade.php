@@ -1,5 +1,87 @@
 <x-layouts.app title="Accueil">
 
+    <!-- Modal de vérification d'âge -->
+    <div x-data="{ 
+        showModal: false,
+        init() {
+            // Vérifier si l'âge a déjà été vérifié
+            if (!localStorage.getItem('age_verified')) {
+                this.showModal = true;
+                document.body.style.overflow = 'hidden';
+            }
+        },
+        confirmAge() {
+            localStorage.setItem('age_verified', 'true');
+            this.showModal = false;
+            document.body.style.overflow = 'auto';
+        },
+        denyAge() {
+            window.location.href = 'https://www.google.com';
+        }
+    }">
+        <!-- Overlay -->
+        <div x-show="showModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            
+            <!-- Modal Content -->
+            <div x-show="showModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-90"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+                
+                <!-- Logo SOBOA -->
+                <div class="w-32 h-32 mx-auto mb-6">
+                    <img src="/images/soboa.png" alt="SOBOA" class="w-full h-full object-contain">
+                </div>
+                
+                <!-- Title -->
+                <h2 class="text-2xl font-black text-soboa-blue mb-4">
+                    Vérification de l'âge
+                </h2>
+                
+                <!-- Warning -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                    <p class="text-yellow-800 font-medium">
+                        ⚠️ Ce site est réservé aux personnes majeures
+                    </p>
+                </div>
+                
+                <!-- Question -->
+                <p class="text-gray-700 text-lg mb-6">
+                    Avez-vous <span class="font-bold text-soboa-orange">18 ans ou plus</span> ?
+                </p>
+                
+                <!-- Legal text -->
+                <p class="text-gray-500 text-sm mb-6">
+                    En cliquant sur "Oui", vous confirmez avoir l'âge légal pour consommer de l'alcool 
+                    dans votre pays de résidence et acceptez nos 
+                    <a href="/conditions" class="text-soboa-orange hover:underline">conditions d'utilisation</a>.
+                </p>
+                
+                <!-- Buttons -->
+                <div class="flex gap-4">
+                    <button @click="denyAge()" 
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-4 px-6 rounded-xl transition">
+                        Non, je suis mineur
+                    </button>
+                    <button @click="confirmAge()" 
+                            class="flex-1 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-6 rounded-xl shadow-lg transition transform hover:scale-105">
+                        Oui, j'ai 18 ans+
+                    </button>
+                </div>
+                
+                <!-- Footer warning -->
+                <p class="text-xs text-gray-400 mt-6">
+                    🚫 L'abus d'alcool est dangereux pour la santé. À consommer avec modération.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Section - CAN 2025 Celebration -->
     <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden hero-gradient" x-data="{ 
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
