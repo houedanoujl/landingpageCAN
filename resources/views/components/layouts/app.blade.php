@@ -11,8 +11,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>SOBOA CAN 2025 | {{ $title ?? 'Accueil' }}</title>
-    <meta name="description"
-        content="Pronostiquez les matchs de la CAN 2025, gagnez des points et devenez le meilleur pronostiqueur!">
+    <meta name="description" content="Pronostiquez les matchs de la CAN 2025, gagnez des points et devenez le meilleur pronostiqueur!">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="SOBOA CAN 2025 | {{ $title ?? 'Accueil' }}">
+    <meta property="og:description" content="Vivez la CAN 2025 avec SOBOA ! Pronostiquez les matchs, visitez nos lieux partenaires et tentez de gagner des récompenses exclusives.">
+    <meta property="og:image" content="{{ asset('images/hero_celebration.png') }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="SOBOA CAN 2025 | {{ $title ?? 'Accueil' }}">
+    <meta property="twitter:description" content="Vivez la CAN 2025 avec SOBOA ! Pronostiquez les matchs et gagnez des récompenses.">
+    <meta property="twitter:image" content="{{ asset('images/hero_celebration.png') }}">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RZTW4S7F3H"></script>
