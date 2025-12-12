@@ -263,9 +263,7 @@
 
     <!-- Main Content -->
     <main class="flex-grow pt-16 md:pt-20">
-        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-            {{ $slot }}
-        </div>
+        {{ $slot }}
     </main>
 
     <!-- Footer -->
