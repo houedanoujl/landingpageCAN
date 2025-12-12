@@ -193,7 +193,7 @@
             <div
                 class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/20">
                 <span class="text-3xl">🏆</span>
-                <span class="text-white font-bold text-lg">COUPE D'AFRIQUE DES NATIONS</span>
+                <span class="text-white font-bold text-lg">Coupe d'Afrique des Nations</span>
             </div>
 
             <!-- Main Heading -->

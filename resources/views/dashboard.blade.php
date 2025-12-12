@@ -1,4 +1,4 @@
-<x-layouts.app title="Tableau de Bord">
+<x-layouts.app title="Tableau de bord">
     <div class="bg-gray-50 min-h-screen">
 
         <!-- Header with Points -->
@@ -14,7 +14,7 @@
                     <!-- Points Display -->
                     <div
                         class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center min-w-[200px]">
-                        <p class="text-white/60 text-sm uppercase tracking-widest mb-1">Total Points</p>
+                        <p class="text-white/60 text-sm uppercase tracking-widest mb-1">Total points</p>
                         <p class="text-5xl font-black text-soboa-orange">{{ $user->points_total ?? 0 }}</p>
                     </div>
                 </div>
@@ -37,12 +37,12 @@
                 <div class="bg-white rounded-xl p-4 shadow-lg text-center">
                     <span class="text-3xl">🎯</span>
                     <p class="text-2xl font-black text-soboa-blue mt-2">{{ $correctPredictions ?? 0 }}</p>
-                    <p class="text-gray-500 text-sm">Bons Résultats</p>
+                    <p class="text-gray-500 text-sm">Bons résultats</p>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-lg text-center">
                     <span class="text-3xl">📍</span>
                     <p class="text-2xl font-black text-soboa-blue mt-2">{{ $venueVisits ?? 0 }}</p>
-                    <p class="text-gray-500 text-sm">Visites Lieux</p>
+                    <p class="text-gray-500 text-sm">Visites lieux</p>
                 </div>
             </div>
         </div>
@@ -54,7 +54,7 @@
                 <!-- Next Match -->
                 <div class="lg:col-span-2">
                     <h2 class="text-xl font-bold text-soboa-blue mb-4 flex items-center gap-2">
-                        <span>📅</span> Prochain Match
+                        <span>📅</span> Prochain match
                     </h2>
 
                     @if($nextMatch)
@@ -80,7 +80,7 @@
                 <!-- Quick Actions -->
                 <div>
                     <h2 class="text-xl font-bold text-soboa-blue mb-4 flex items-center gap-2">
-                        <span>⚡</span> Actions Rapides
+                        <span>⚡</span> Actions rapides
                     </h2>
 
                     <div class="space-y-3">
@@ -108,7 +108,7 @@
         <!-- Recent Predictions -->
         <div class="max-w-7xl mx-auto px-4 pb-12">
             <h2 class="text-xl font-bold text-soboa-blue mb-4 flex items-center gap-2">
-                <span>📜</span> Derniers Pronostics
+                <span>📜</span> Derniers pronostics
             </h2>
 
             @if($recentPredictions && $recentPredictions->count() > 0)

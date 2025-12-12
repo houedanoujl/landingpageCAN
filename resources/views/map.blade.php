@@ -148,7 +148,7 @@
         <div class="bg-soboa-blue py-12 px-4">
             <div class="max-w-7xl mx-auto text-center">
                 <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Gagnez +4 points</span>
-                <h1 class="text-3xl md:text-5xl font-black text-white mt-2">Points de Vente Partenaires</h1>
+                <h1 class="text-3xl md:text-5xl font-black text-white mt-2">Points de vente partenaires</h1>
                 <p class="text-white/70 mt-4 max-w-2xl mx-auto">
                     Visitez nos lieux partenaires pendant la CAN et gagnez 4 points bonus par jour!
                 </p>
@@ -215,7 +215,7 @@
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 <div class="p-6 border-b border-gray-100">
                     <h3 class="text-xl font-bold text-soboa-blue flex items-center gap-2">
-                        <span>🗺️</span> Carte des Points de Vente
+                        <span>🗺️</span> Carte des points de vente
                     </h3>
                 </div>
 
@@ -226,7 +226,7 @@
 
         <!-- Venues List -->
         <div class="max-w-7xl mx-auto px-4 pb-16">
-            <h3 class="text-2xl font-bold text-soboa-blue mb-6">Nos Lieux Partenaires</h3>
+            <h3 class="text-2xl font-bold text-soboa-blue mb-6">Nos lieux partenaires</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($venues as $venue)
