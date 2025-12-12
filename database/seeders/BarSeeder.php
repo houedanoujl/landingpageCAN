@@ -172,6 +172,15 @@ class BarSeeder extends Seeder
                 'longitude' => -3.8912,
                 'is_active' => true,
             ],
+
+            // Big Five Abidjan
+            [
+                'name' => 'Big Five Abidjan',
+                'address' => 'Abidjan, Côte d\'Ivoire',
+                'latitude' => 5.294918911991902,
+                'longitude' => -3.99670027907965,
+                'is_active' => true,
+            ],
         ];
 
         foreach ($venues as $venue) {
