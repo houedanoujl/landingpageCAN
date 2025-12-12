@@ -63,29 +63,54 @@ class ProcessMatchPoints implements ShouldQueue
         foreach ($predictions as $prediction) {
             $totalPoints = 0;
 
-            // Determine predicted result
-            $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
-
-            // Rule 2: Correct Winner (+3 points)
-            if ($predictedWinner === $actualWinner) {
-                $totalPoints += 3;
-                
-                PointLog::create([
+            // 1. Participation (+1 point, une seule fois par match/prédiction)
+            $alreadyParticipation = \App\Models\PointLog::where('user_id', $prediction->user_id)
+                ->where('source', 'prediction_participation')
+                ->where('match_id', $this->matchId)
+                ->exists();
+            if (!$alreadyParticipation) {
+                $totalPoints += 1;
+                \App\Models\PointLog::create([
                     'user_id' => $prediction->user_id,
-                    'source' => 'prediction_winner',
-                    'points' => 3,
+                    'source' => 'prediction_participation',
+                    'points' => 1,
+                    'match_id' => $this->matchId,
                 ]);
             }
 
-            // Rule 3: Exact Score (+3 points extra)
+            // 2. Correct Winner (+3 points)
+            $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
+            if ($predictedWinner === $actualWinner) {
+                $alreadyWinner = \App\Models\PointLog::where('user_id', $prediction->user_id)
+                    ->where('source', 'prediction_winner')
+                    ->where('match_id', $this->matchId)
+                    ->exists();
+                if (!$alreadyWinner) {
+                    $totalPoints += 3;
+                    \App\Models\PointLog::create([
+                        'user_id' => $prediction->user_id,
+                        'source' => 'prediction_winner',
+                        'points' => 3,
+                        'match_id' => $this->matchId,
+                    ]);
+                }
+            }
+
+            // 3. Exact Score (+3 points extra)
             if ($prediction->score_a == $match->score_a && $prediction->score_b == $match->score_b) {
-                $totalPoints += 3;
-                
-                PointLog::create([
-                    'user_id' => $prediction->user_id,
-                    'source' => 'prediction_exact',
-                    'points' => 3,
-                ]);
+                $alreadyExact = \App\Models\PointLog::where('user_id', $prediction->user_id)
+                    ->where('source', 'prediction_exact')
+                    ->where('match_id', $this->matchId)
+                    ->exists();
+                if (!$alreadyExact) {
+                    $totalPoints += 3;
+                    \App\Models\PointLog::create([
+                        'user_id' => $prediction->user_id,
+                        'source' => 'prediction_exact',
+                        'points' => 3,
+                        'match_id' => $this->matchId,
+                    ]);
+                }
             }
 
             // Update prediction with points earned
