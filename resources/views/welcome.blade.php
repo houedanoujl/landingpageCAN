@@ -388,7 +388,7 @@
                 <div class="text-center group">
                     <div
                         class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
-                        <span class="text-4xl group-hover:scale-125 transition-transform">🍺</span>
+                        <span class="text-4xl group-hover:scale-125 transition-transform">📍</span>
                     </div>
                     <div
                         class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
