@@ -178,6 +178,13 @@
                 error: '',
                 resendCooldown: 0,
 
+                init() {
+                    const savedName = localStorage.getItem('user_name');
+                    if (savedName) {
+                        this.name = savedName;
+                    }
+                },
+
                 get fullPhone() {
                     return this.countryCode + this.formatPhoneNumber(this.phone);
                 },
@@ -285,6 +292,9 @@
                         const data = await response.json();
 
                         if (data.success) {
+                            // Sauvegarder le nom pour la prochaine fois
+                            localStorage.setItem('user_name', this.name);
+                            
                             // Redirection après succès
                             window.location.href = data.redirect || '/matches';
                         } else {
