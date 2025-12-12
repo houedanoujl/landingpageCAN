@@ -152,10 +152,18 @@
                                 class="px-3 py-1.5 bg-soboa-orange/20 text-soboa-orange hover:bg-soboa-orange hover:text-white rounded-lg font-bold text-sm transition-all">
                                 📋 Mes Pronostics
                             </a>
-                            <a href="/dashboard" class="text-right hover:opacity-80 transition-opacity">
-                                <span
-                                    class="text-soboa-orange font-bold text-sm block">{{ session('predictor_name') }}</span>
-                                <span class="text-white/60 text-xs">{{ session('user_points', 0) }} pts</span>
+                            <a href="/dashboard" class="group flex items-center gap-3 pl-2 lg:pl-4 lg:border-l border-white/10">
+                                <div class="text-right hidden lg:block">
+                                    <span class="text-white group-hover:text-soboa-orange font-bold text-sm block leading-tight transition-colors">{{ session('predictor_name') }}</span>
+                                    <span class="text-[10px] text-white/50 uppercase tracking-wider font-semibold">Mon Compte</span>
+                                </div>
+                                <div class="bg-gradient-to-r from-soboa-orange to-red-500 pl-3 pr-2 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-soboa-orange/20 hover:shadow-soboa-orange/40 transition-all transform hover:scale-105 ring-1 ring-white/10">
+                                    <span class="text-white font-black text-sm">{{ session('user_points', 0) }}</span>
+                                    <span class="text-white/90 text-[10px] font-bold uppercase">pts</span>
+                                    <div class="bg-black/10 rounded-full w-5 h-5 flex items-center justify-center ml-0.5">
+                                        <span class="text-[10px] leading-none">🏆</span>
+                                    </div>
+                                </div>
                             </a>
                             <a href="/logout" class="text-white/70 hover:text-white text-xs font-medium">Déconnexion</a>
                         </div>
@@ -211,9 +219,12 @@
                             📋 Mes Pronostics
                         </a>
                         <a href="/dashboard"
-                            class="px-4 py-2 flex items-center justify-between hover:bg-white/10 rounded-lg transition-colors">
-                            <span class="text-soboa-orange font-bold">{{ session('predictor_name') }}</span>
-                            <span class="text-white font-bold">{{ session('user_points', 0) }} pts</span>
+                            class="px-4 py-3 flex items-center justify-between hover:bg-white/10 rounded-lg transition-colors group">
+                            <span class="text-white group-hover:text-soboa-orange font-bold transition-colors">{{ session('predictor_name') }}</span>
+                            <div class="bg-gradient-to-r from-soboa-orange to-red-500 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                <span class="text-white font-black text-sm">{{ session('user_points', 0) }}</span>
+                                <span class="text-white/80 text-xs font-bold uppercase">pts</span>
+                            </div>
                         </a>
                         <a href="/logout"
                             class="block px-4 py-3 text-red-400 hover:bg-white/10 rounded-lg font-semibold transition-colors">Déconnexion</a>
