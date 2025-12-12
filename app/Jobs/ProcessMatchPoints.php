@@ -113,16 +113,19 @@ class ProcessMatchPoints implements ShouldQueue
                 }
             }
 
-            // Update prediction with points earned
-            $prediction->points_earned = $totalPoints;
-            $prediction->save();
-
             // Update user's total points
             if ($totalPoints > 0 && $prediction->user) {
                 $prediction->user->increment('points_total', $totalPoints);
             }
 
-            Log::info("ProcessMatchPoints: User {$prediction->user_id} earned {$totalPoints} points for match {$this->matchId}");
+            // Update prediction with total points earned (calculate from actual point_logs)
+            $totalPointsEarned = \App\Models\PointLog::where('user_id', $prediction->user_id)
+                ->where('match_id', $this->matchId)
+                ->sum('points');
+            $prediction->points_earned = $totalPointsEarned;
+            $prediction->save();
+
+            Log::info("ProcessMatchPoints: User {$prediction->user_id} earned {$totalPoints} new points (total: {$totalPointsEarned}) for match {$this->matchId}");
         }
 
         // Clear leaderboard cache since points changed

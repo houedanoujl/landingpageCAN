@@ -26,11 +26,12 @@
                     
                     // Check-in API call
                     try {
-                        const response = await fetch('/api/check-in', {
+                        const response = await fetch('/check-in', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                             },
                             body: JSON.stringify({
                                 latitude: this.userLocation.lat,
@@ -39,9 +40,14 @@
                         });
                         
                         const data = await response.json();
-                        
+
                         if (response.ok) {
-                            this.checkInResult = { success: true, message: data.message };
+                            this.checkInResult = {
+                                success: true,
+                                message: data.message,
+                                points_awarded: data.points_awarded,
+                                total_points: data.total_points
+                            };
                         } else {
                             this.checkInResult = { success: false, message: data.message || 'Aucun lieu partenaire à proximité.' };
                         }
@@ -121,10 +127,14 @@
                 
                 <!-- Check-in Result -->
                 <div x-show="checkInResult" x-cloak class="mt-4">
-                    <div x-show="checkInResult?.success" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
-                        <span class="text-2xl">🎉</span>
-                        <span x-text="checkInResult?.message"></span>
-                        <span class="font-bold">+4 points!</span>
+                    <div x-show="checkInResult?.success" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl">🎉</span>
+                            <span x-text="checkInResult?.message" class="font-medium"></span>
+                        </div>
+                        <div x-show="checkInResult?.total_points" class="text-sm text-green-600 font-bold">
+                            Total : <span x-text="checkInResult?.total_points"></span> points
+                        </div>
                     </div>
                     <div x-show="!checkInResult?.success" class="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg flex items-center gap-2">
                         <span class="text-2xl">📍</span>

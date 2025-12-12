@@ -11,6 +11,7 @@ class PointLog extends Model
 
     protected $fillable = [
         'user_id',
+        'match_id',
         'source',
         'points',
     ];

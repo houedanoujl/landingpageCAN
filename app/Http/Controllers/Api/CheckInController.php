@@ -35,10 +35,20 @@ class CheckInController extends Controller
         }
 
         if ($foundBar) {
-            $pointsService->awardBarVisitPoints($user);
+            $pointsAwarded = $pointsService->awardBarVisitPoints($user);
+
+            // Refresh user to get updated points_total
+            $user->refresh();
+
+            $message = $pointsAwarded > 0
+                ? "Bienvenue à {$foundBar->name} ! +{$pointsAwarded} points gagnés 🎉"
+                : "Bienvenue à {$foundBar->name} ! (Points déjà réclamés aujourd'hui)";
+
             return response()->json([
-                'message' => 'Checked in successfully at ' . $foundBar->name,
-                'points_awarded' => true // or check logs
+                'message' => $message,
+                'points_awarded' => $pointsAwarded,
+                'total_points' => $user->points_total,
+                'bar_name' => $foundBar->name
             ]);
         }
 

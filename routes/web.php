@@ -34,6 +34,9 @@ Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 Route::post('/predictions', [PredictionController::class, 'store'])->name('predictions.store');
 Route::get('/mes-pronostics', [PredictionController::class, 'myPredictions'])->name('predictions.index');
 
+// Check-in (requiert authentification)
+Route::post('/check-in', [HomeController::class, 'checkIn'])->name('check-in');
+
 // Administration (protégé par middleware check.admin)
 Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('dashboard');

@@ -66,9 +66,9 @@ class PredictionController extends Controller
         // Derive predicted_winner from scores
         $predictedWinner = 'draw';
         if ($request->score_a > $request->score_b) {
-            $predictedWinner = 'team_a';
+            $predictedWinner = 'home';
         } elseif ($request->score_b > $request->score_a) {
-            $predictedWinner = 'team_b';
+            $predictedWinner = 'away';
         }
 
         $prediction = Prediction::updateOrCreate(
@@ -83,10 +83,20 @@ class PredictionController extends Controller
             ]
         );
 
+        $isNewPrediction = $prediction->wasRecentlyCreated;
+
         return response()->json([
             'success' => true,
             'prediction' => $prediction,
-            'message' => 'Pronostic enregistré avec succès!',
+            'message' => $isNewPrediction
+                ? 'Pronostic enregistré ! 🎯 +1 pt participation garanti + jusqu\'à 6 pts bonus si exact !'
+                : 'Pronostic modifié ! ✏️ +1 pt participation garanti + jusqu\'à 6 pts bonus si exact !',
+            'points_info' => [
+                'participation' => 1,
+                'correct_winner' => 3,
+                'exact_score' => 3,
+                'max_possible' => 7
+            ],
             'venue' => [
                 'id' => $nearbyVenue->id,
                 'name' => $nearbyVenue->name,

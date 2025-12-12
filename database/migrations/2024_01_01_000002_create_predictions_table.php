@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('match_id')->constrained()->cascadeOnDelete();
-            $table->enum('predicted_winner', ['team_a', 'team_b', 'draw']);
+            $table->enum('predicted_winner', ['home', 'away', 'draw']);
             $table->integer('score_a');
             $table->integer('score_b');
             $table->integer('points_earned')->default(0);

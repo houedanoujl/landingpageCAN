@@ -8,6 +8,7 @@ use App\Models\MatchGame;
 use App\Models\PointLog;
 use App\Models\Prediction;
 use App\Models\User;
+use App\Services\PointsService;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -134,5 +135,87 @@ class HomeController extends Controller
             'nextMatch',
             'recentPredictions'
         ));
+    }
+
+    public function checkIn(Request $request, PointsService $pointsService)
+    {
+        // Vérifier si l'utilisateur est connecté
+        if (!session('user_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous devez être connecté pour effectuer un check-in.'
+            ], 401);
+        }
+
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $user = User::find(session('user_id'));
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non trouvé.'
+            ], 404);
+        }
+
+        $userLat = $request->latitude;
+        $userLng = $request->longitude;
+
+        // Geofencing check - trouver un bar actif à proximité (rayon de 200m)
+        $bars = Bar::where('is_active', true)->get();
+
+        $foundBar = null;
+        foreach ($bars as $bar) {
+            $distance = $this->calculateDistance($userLat, $userLng, $bar->latitude, $bar->longitude);
+            if ($distance <= 0.2) { // 200 mètres en km
+                $foundBar = $bar;
+                break;
+            }
+        }
+
+        if ($foundBar) {
+            $pointsAwarded = $pointsService->awardBarVisitPoints($user);
+
+            // Refresh user pour obtenir les points mis à jour
+            $user->refresh();
+
+            $message = $pointsAwarded > 0
+                ? "Bienvenue à {$foundBar->name} ! +{$pointsAwarded} points gagnés 🎉"
+                : "Bienvenue à {$foundBar->name} ! (Points déjà réclamés aujourd'hui)";
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'points_awarded' => $pointsAwarded,
+                'total_points' => $user->points_total,
+                'bar_name' => $foundBar->name
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Aucun lieu partenaire à proximité (moins de 200m).'
+        ], 404);
+    }
+
+    /**
+     * Calcul de la distance entre deux points GPS (formule de Haversine)
+     */
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371; // km
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
 }

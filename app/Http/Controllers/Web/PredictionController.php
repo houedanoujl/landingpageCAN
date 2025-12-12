@@ -58,9 +58,9 @@ class PredictionController extends Controller
         // Déterminer le gagnant prédit
         $predictedWinner = 'draw';
         if ($request->score_a > $request->score_b) {
-            $predictedWinner = 'team_a';
+            $predictedWinner = 'home';
         } elseif ($request->score_b > $request->score_a) {
-            $predictedWinner = 'team_b';
+            $predictedWinner = 'away';
         }
 
         // Vérifier si l'utilisateur a déjà pronostiqué sur ce match
@@ -75,11 +75,11 @@ class PredictionController extends Controller
                 'score_a' => $request->score_a,
                 'score_b' => $request->score_b,
             ]);
-            
+
             return back()->with('toast', json_encode([
                 'type' => 'success',
-                'message' => 'Pronostic modifié !',
-                'description' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b . ' (depuis ' . $venue->name . ')'
+                'message' => 'Pronostic modifié ! ✏️',
+                'description' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b . ' (depuis ' . $venue->name . ') • +1 pt participation garanti + jusqu\'à 6 pts bonus si exact !'
             ]));
         }
 
@@ -94,8 +94,8 @@ class PredictionController extends Controller
 
         return back()->with('toast', json_encode([
             'type' => 'success',
-            'message' => 'Pronostic enregistré !',
-            'description' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b . ' (depuis ' . $venue->name . ')'
+            'message' => 'Pronostic enregistré ! 🎯',
+            'description' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b . ' (depuis ' . $venue->name . ') • +1 pt participation garanti + jusqu\'à 6 pts bonus si exact !'
         ]));
     }
 
@@ -108,11 +108,37 @@ class PredictionController extends Controller
         $userId = session('user_id');
         $user = User::find($userId);
 
-        $predictions = Prediction::with('match')
+        // Récupérer toutes les prédictions avec leurs matchs
+        $allPredictions = Prediction::with('match')
             ->where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('predictions', compact('predictions', 'user'));
+        // Grouper par statut du match
+        $livePredictions = $allPredictions->filter(function ($prediction) {
+            return $prediction->match && $prediction->match->status === 'live';
+        })->sortByDesc('match.match_date');
+
+        $scheduledPredictions = $allPredictions->filter(function ($prediction) {
+            return $prediction->match && $prediction->match->status === 'scheduled';
+        })->sortByDesc('match.match_date');
+
+        $finishedPredictions = $allPredictions->filter(function ($prediction) {
+            return $prediction->match && $prediction->match->status === 'finished';
+        })->sortByDesc('match.match_date');
+
+        // Statistiques
+        $totalPredictions = $allPredictions->count();
+        $successfulPredictions = $finishedPredictions->where('points_earned', '>', 0)->count();
+        $totalPointsEarned = $allPredictions->sum('points_earned');
+
+        return view('predictions', compact(
+            'livePredictions',
+            'scheduledPredictions',
+            'finishedPredictions',
+            'totalPredictions',
+            'successfulPredictions',
+            'totalPointsEarned',
+            'user'
+        ));
     }
 }
