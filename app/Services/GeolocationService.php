@@ -9,7 +9,7 @@ class GeolocationService
     /**
      * Radius in kilometers for venue proximity check.
      */
-    protected float $proximityRadius = 0.05; // 50 meters
+    protected float $proximityRadius = 0.2; // 200 meters
 
     /**
      * Check if user coordinates are within proximity of any active venue.

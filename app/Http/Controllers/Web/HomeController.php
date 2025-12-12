@@ -30,8 +30,30 @@ class HomeController extends Controller
         return view('welcome', compact('upcomingMatches', 'topUsers', 'venueCount'));
     }
 
-    public function matches()
+    public function venues()
     {
+        $venues = Bar::where('is_active', true)->orderBy('name')->get();
+        return view('venues', compact('venues'));
+    }
+
+    public function matches(Request $request)
+    {
+        // Vérifier si un point de vente est sélectionné
+        $venueId = $request->query('venue') ?? session('selected_venue_id');
+        $selectedVenue = null;
+        
+        if ($venueId) {
+            $selectedVenue = Bar::find($venueId);
+            if ($selectedVenue) {
+                session(['selected_venue_id' => $venueId]);
+            }
+        }
+
+        // Si pas de point de vente sélectionné, rediriger vers la sélection
+        if (!$selectedVenue) {
+            return redirect()->route('venues')->with('error', 'Veuillez d\'abord sélectionner un point de vente.');
+        }
+
         $matches = MatchGame::with(['homeTeam', 'awayTeam'])
             ->orderBy('group_name', 'asc')
             ->orderBy('match_date', 'asc')
@@ -47,7 +69,7 @@ class HomeController extends Controller
             }
         }
         
-        return view('matches', compact('matches', 'userPredictions'));
+        return view('matches', compact('matches', 'userPredictions', 'selectedVenue'));
     }
 
     public function leaderboard()

@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\AdminController;
 
 // Pages publiques
 Route::get('/', [HomeController::class, 'index']);
+Route::get('/venues', [HomeController::class, 'venues'])->name('venues');
 Route::get('/matches', [HomeController::class, 'matches'])->name('matches');
 Route::get('/leaderboard', [HomeController::class, 'leaderboard'])->name('leaderboard');
 Route::get('/map', [HomeController::class, 'map'])->name('map');

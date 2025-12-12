@@ -5,6 +5,29 @@
             <span class="text-sm text-gray-500">CAN 2025 - Maroc</span>
         </div>
 
+        <!-- Bannière du point de vente sélectionné -->
+        @if(isset($selectedVenue))
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-white/80">Point de vente actuel</p>
+                        <p class="font-bold text-lg">{{ $selectedVenue->name }}</p>
+                    </div>
+                </div>
+                <a href="{{ route('venues') }}" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    Changer
+                </a>
+            </div>
+        </div>
+        @endif
+
         @if(session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg" role="alert">
             <span class="font-medium">{{ session('success') }}</span>
@@ -20,9 +43,9 @@
         <!-- Filtres par groupe -->
         <div class="bg-white rounded-xl shadow-sm p-4 sticky top-20 z-40 border border-gray-200">
             <div class="flex gap-2 overflow-x-auto pb-2">
-                <a href="/matches" class="px-4 py-2 bg-soboa-blue text-white rounded-full text-sm font-bold whitespace-nowrap">Tous</a>
+                <a href="/matches?venue={{ $selectedVenue->id ?? '' }}" class="px-4 py-2 bg-soboa-blue text-white rounded-full text-sm font-bold whitespace-nowrap">Tous</a>
                 @foreach(['A', 'B', 'C', 'D', 'E', 'F'] as $group)
-                <a href="/matches?group={{ $group }}" 
+                <a href="/matches?venue={{ $selectedVenue->id ?? '' }}&group={{ $group }}" 
                    class="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white rounded-full text-sm font-medium whitespace-nowrap transition">
                     Groupe {{ $group }}
                 </a>
@@ -138,6 +161,7 @@
                         <form action="{{ route('predictions.store') }}" method="POST" class="space-y-4">
                             @csrf
                             <input type="hidden" name="match_id" value="{{ $match->id }}">
+                            <input type="hidden" name="venue_id" value="{{ $selectedVenue->id ?? '' }}">
                             
                             @if($userPrediction)
                             <div class="flex items-center justify-center gap-2 text-green-600 text-sm mb-2">
