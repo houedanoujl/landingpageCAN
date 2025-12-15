@@ -792,13 +792,16 @@ class AdminController extends Controller
         }
 
         // Récupérer ou créer les paramètres du site
-        $settings = SiteSetting::firstOrCreate([], [
+        $settings = SiteSetting::with('favoriteTeam')->firstOrCreate([], [
             'site_name' => 'SOBOA CAN 2025',
             'primary_color' => '#003399',
             'secondary_color' => '#FF6600',
         ]);
 
-        return view('admin.settings', compact('settings'));
+        // Récupérer toutes les équipes pour le select
+        $teams = Team::orderBy('name')->get();
+
+        return view('admin.settings', compact('settings', 'teams'));
     }
 
     /**
@@ -814,6 +817,7 @@ class AdminController extends Controller
             'site_name' => 'required|string|max:255',
             'primary_color' => 'required|string|max:7',
             'secondary_color' => 'required|string|max:7',
+            'favorite_team_id' => 'nullable|exists:teams,id',
             'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
         ]);
 
@@ -823,6 +827,7 @@ class AdminController extends Controller
             'site_name' => $request->input('site_name'),
             'primary_color' => $request->input('primary_color'),
             'secondary_color' => $request->input('secondary_color'),
+            'favorite_team_id' => $request->input('favorite_team_id'),
         ];
 
         // Gérer l'upload du logo

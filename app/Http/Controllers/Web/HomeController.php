@@ -58,6 +58,7 @@ class HomeController extends Controller
         $groupFilter = $request->query('group');
 
         $query = MatchGame::with(['homeTeam', 'awayTeam'])
+            ->orderBy('phase', 'asc')
             ->orderBy('group_name', 'asc')
             ->orderBy('match_date', 'asc');
 
@@ -65,7 +66,24 @@ class HomeController extends Controller
             $query->where('group_name', $groupFilter);
         }
 
-        $matches = $query->get()->groupBy('group_name');
+        // Grouper les matchs par phase, puis par groupe pour la phase de poules
+        $allMatches = $query->get();
+        $matchesByPhase = $allMatches->groupBy('phase')->map(function($phaseMatches, $phase) {
+            if ($phase === 'group_stage') {
+                // Pour la phase de poules, sous-grouper par groupe
+                return $phaseMatches->groupBy('group_name');
+            }
+            // Pour les phases finales, retourner les matchs directement
+            return $phaseMatches;
+        });
+
+        // Identifier les prochains matchs à venir (les 3 prochains non terminés)
+        $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
+            ->where('status', '!=', 'finished')
+            ->where('match_date', '>=', now())
+            ->orderBy('match_date', 'asc')
+            ->take(3)
+            ->get();
 
         // Récupérer les pronostics de l'utilisateur connecté
         $userPredictions = [];
@@ -76,7 +94,27 @@ class HomeController extends Controller
             }
         }
 
-        return view('matches', compact('matches', 'userPredictions', 'selectedVenue'));
+        // Calculer les compteurs pour chaque phase et groupe
+        $phaseCounts = [];
+        $groupCounts = [];
+
+        foreach ($matchesByPhase as $phase => $phaseData) {
+            if ($phase === 'group_stage') {
+                // Compter par groupe
+                foreach ($phaseData as $group => $matches) {
+                    $groupCounts[$group] = $matches->count();
+                }
+                $phaseCounts['group_stage'] = collect($groupCounts)->sum();
+            } else {
+                $phaseCounts[$phase] = $phaseData->count();
+            }
+        }
+
+        // Charger l'équipe favorite pour le highlighting
+        $settings = \App\Models\SiteSetting::with('favoriteTeam')->first();
+        $favoriteTeamId = $settings?->favorite_team_id;
+
+        return view('matches', compact('matchesByPhase', 'userPredictions', 'selectedVenue', 'upcomingMatches', 'phaseCounts', 'groupCounts', 'favoriteTeamId'));
     }
 
     public function leaderboard()

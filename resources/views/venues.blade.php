@@ -154,7 +154,7 @@
 
                         <!-- Bouton pour accéder aux matchs (caché par défaut) -->
                         <div class="venue-access mt-3 hidden">
-                            <a href="/matches?venue={{ $venue->id }}" 
+                            <a href="/matches?venue={{ $venue->id }}"
                                class="block w-full bg-gradient-to-r from-soboa-orange to-orange-500 hover:from-orange-500 hover:to-soboa-orange text-white font-bold py-2.5 px-3 rounded-lg shadow-md transition text-center text-sm">
                                 <span class="flex items-center justify-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

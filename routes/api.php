@@ -19,8 +19,10 @@ Route::post('/geolocation/venues', [GeolocationController::class, 'getNearbyVenu
 // Sélection de point de vente
 Route::post('/venue/select', [VenueController::class, 'select']);
 
+// Récupérer les matchs pour une venue
+Route::get('/matches', [MatchController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/matches', [MatchController::class, 'index']);
     Route::post('/predictions', [PredictionController::class, 'store']);
     Route::post('/check-in', [CheckInController::class, 'store']);
     Route::get('/leaderboard', [LeaderboardController::class, 'index']);

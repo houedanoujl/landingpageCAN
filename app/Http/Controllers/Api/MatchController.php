@@ -10,7 +10,20 @@ class MatchController extends Controller
 {
     public function index(Request $request)
     {
-        $matches = MatchGame::orderBy('match_date', 'asc')->get();
-        return response()->json($matches);
+        $query = MatchGame::query();
+
+        // Filtrer par venue_id si spécifié (pour la modale des venues)
+        if ($request->has('venue_id')) {
+            $query->where('status', '!=', 'finished')
+                  ->orderBy('match_date', 'asc');
+        } else {
+            $query->orderBy('match_date', 'asc');
+        }
+
+        $matches = $query->get();
+
+        return response()->json([
+            'matches' => $matches
+        ]);
     }
 }

@@ -136,6 +136,40 @@
                     </div>
                 </div>
 
+                <!-- Équipe Favorite -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span>⭐</span> Équipe à Mettre en Avant
+                    </h2>
+
+                    <div>
+                        <label for="favorite_team_id" class="block text-gray-700 font-bold mb-2">
+                            Équipe favorite
+                        </label>
+                        <select id="favorite_team_id" name="favorite_team_id"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-soboa-blue focus:border-transparent">
+                            <option value="">Aucune équipe</option>
+                            @foreach($teams as $team)
+                                <option value="{{ $team->id }}"
+                                        {{ $settings->favorite_team_id == $team->id ? 'selected' : '' }}>
+                                    {{ $team->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-gray-500 text-sm mt-2">
+                            Les matchs de cette équipe seront mis en évidence visuellement avec un badge "⭐ À suivre" et un fond dégradé spécial
+                        </p>
+
+                        @if($settings->favoriteTeam)
+                        <div class="mt-4 p-4 bg-gradient-to-r from-green-50 via-white to-yellow-50 rounded-lg border-l-4 border-green-500">
+                            <p class="text-sm font-medium text-gray-700">
+                                Équipe actuellement mise en avant : <span class="font-bold text-green-700">{{ $settings->favoriteTeam->name }}</span>
+                            </p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
                 <!-- Info Box -->
                 <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mb-6">
                     <div class="flex items-start gap-3">

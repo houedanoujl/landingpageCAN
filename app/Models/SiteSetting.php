@@ -16,6 +16,7 @@ class SiteSetting extends Model
         'secondary_color',
         'logo_path',
         'hero_image_path',
+        'favorite_team_id',
     ];
 
     /**
@@ -62,5 +63,13 @@ class SiteSetting extends Model
     public function getHeroImageUrlAttribute(): ?string
     {
         return $this->hero_image_path ? asset('storage/' . $this->hero_image_path) : null;
+    }
+
+    /**
+     * Get the favorite team.
+     */
+    public function favoriteTeam()
+    {
+        return $this->belongsTo(Team::class, 'favorite_team_id');
     }
 }

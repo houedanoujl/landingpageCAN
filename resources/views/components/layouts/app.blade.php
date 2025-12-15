@@ -55,6 +55,11 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
     <style>
         * {
             font-family: 'Montserrat', sans-serif;
@@ -94,7 +99,93 @@
         [x-cloak] {
             display: none !important;
         }
+
+        /* Swiper custom styling */
+        .upcomingMatchesSwiper {
+            padding: 20px 0 40px 0;
+        }
+
+        .upcomingMatchesSwiper .swiper-button-next,
+        .upcomingMatchesSwiper .swiper-button-prev {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .upcomingMatchesSwiper .swiper-button-next:after,
+        .upcomingMatchesSwiper .swiper-button-prev:after {
+            font-size: 20px;
+        }
+
+        .upcomingMatchesSwiper .swiper-pagination-bullet {
+            background: white;
+            opacity: 0.5;
+        }
+
+        .upcomingMatchesSwiper .swiper-pagination-bullet-active {
+            opacity: 1;
+        }
     </style>
+
+    <!-- Fonction d'initialisation Swiper pour Alpine.js -->
+    <script>
+    function initUpcomingMatchesSwiper() {
+        // Utiliser setTimeout avec 0ms pour s'assurer que le DOM est complètement rendu
+        setTimeout(() => {
+            // Vérifier si le container existe
+            const swiperContainer = document.querySelector('.upcomingMatchesSwiper');
+            if (!swiperContainer) {
+                console.warn('Swiper container not found');
+                return;
+            }
+
+            // Initialiser Swiper
+            const swiper = new Swiper('.upcomingMatchesSwiper', {
+                slidesPerView: 1,
+                spaceBetween: 20,
+                loop: true,
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                breakpoints: {
+                    640: {
+                        slidesPerView: 2,
+                        spaceBetween: 20,
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                        spaceBetween: 30,
+                    },
+                },
+            });
+        }, 0);
+    }
+
+    // Fonction pour scroller vers un match spécifique
+    function scrollToMatch(matchId) {
+        const matchElement = document.querySelector(`[data-match-id="${matchId}"]`);
+        if (matchElement) {
+            matchElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Effet highlight
+            matchElement.classList.add('ring-4', 'ring-soboa-orange', 'ring-opacity-50');
+            setTimeout(() => {
+                matchElement.classList.remove('ring-4', 'ring-soboa-orange', 'ring-opacity-50');
+            }, 2000);
+        }
+    }
+    </script>
 </head>
 
 <body class="bg-gray-50 bg-pattern min-h-screen flex flex-col" x-data="{ mobileMenuOpen: false, toast: null }" x-init="
@@ -102,6 +193,12 @@
         toast = {{ session('toast') }};
         setTimeout(() => toast = null, 4000);
     @endif
+
+    // Écouter les événements custom pour afficher le toast
+    window.addEventListener('show-toast', (e) => {
+        toast = e.detail;
+        setTimeout(() => toast = null, 4000);
+    });
 ">
 
     <!-- Toast Notification -->

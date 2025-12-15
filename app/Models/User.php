@@ -30,4 +30,13 @@ class User extends Authenticatable
         'otp_expires_at' => 'datetime',
         'phone_verified' => 'boolean',
     ];
+
+    /**
+     * Route notifications for the WhatsApp channel.
+     */
+    public function routeNotificationForWhatsapp(): string
+    {
+        // Utiliser le WhatsAppService pour formater le numéro
+        return app(\App\Services\WhatsAppService::class)->formatWhatsAppNumber($this->phone);
+    }
 }

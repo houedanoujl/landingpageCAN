@@ -48,6 +48,11 @@
                                 points_awarded: data.points_awarded,
                                 total_points: data.total_points
                             };
+
+                            // Rediriger vers le dashboard après 2 secondes
+                            setTimeout(() => {
+                                window.location.href = '/dashboard';
+                            }, 2000);
                         } else {
                             this.checkInResult = { success: false, message: data.message || 'Aucun lieu partenaire à proximité.' };
                         }

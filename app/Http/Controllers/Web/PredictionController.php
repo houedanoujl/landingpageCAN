@@ -7,14 +7,22 @@ use App\Models\Bar;
 use App\Models\MatchGame;
 use App\Models\Prediction;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 
 class PredictionController extends Controller
 {
+    public function __construct(protected WhatsAppService $whatsAppService)
+    {
+    }
+
     public function store(Request $request)
     {
         // Vérifier que l'utilisateur est connecté
         if (!session('user_id')) {
+            if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json(['message' => 'Vous devez être connecté pour faire un pronostic.'], 401);
+            }
             return redirect()->route('login')->with('error', 'Vous devez être connecté pour faire un pronostic.');
         }
 
@@ -27,13 +35,19 @@ class PredictionController extends Controller
 
         // Vérifier que le point de vente est valide et actif
         $venue = Bar::where('id', $request->venue_id)->where('is_active', true)->first();
-        
+
         if (!$venue) {
+            if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json(['message' => 'Veuillez sélectionner un point de vente valide.'], 422);
+            }
             return redirect()->route('venues')->with('error', 'Veuillez sélectionner un point de vente valide.');
         }
 
         // Vérifier que le point de vente en session correspond
         if (session('selected_venue_id') != $request->venue_id) {
+            if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json(['message' => 'Veuillez vérifier votre position au point de vente.'], 422);
+            }
             return redirect()->route('venues')->with('error', 'Veuillez vérifier votre position au point de vente.');
         }
 
@@ -42,16 +56,25 @@ class PredictionController extends Controller
 
         // Vérifier que le match n'a pas encore commencé
         if ($match->status === 'finished') {
+            if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json(['message' => 'Ce match est déjà terminé.'], 422);
+            }
             return back()->with('error', 'Ce match est déjà terminé.');
         }
 
         if ($match->status === 'live') {
+            if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json(['message' => 'Ce match est en cours. Les pronostics sont fermés.'], 422);
+            }
             return back()->with('error', 'Ce match est en cours. Les pronostics sont fermés.');
         }
 
         // Lock predictions 2 minutes before match starts
         $lockTime = $match->match_date->copy()->subMinutes(2);
         if (now()->gte($lockTime)) {
+            if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json(['message' => 'Les pronostics sont fermés 2 minutes avant le début du match.'], 422);
+            }
             return back()->with('error', 'Les pronostics sont fermés 2 minutes avant le début du match.');
         }
 
@@ -76,6 +99,21 @@ class PredictionController extends Controller
                 'score_b' => $request->score_b,
             ]);
 
+            $user = User::find($userId);
+            $successMessage = 'Pronostic modifié ! ✏️ ' . $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
+
+            // Envoyer confirmation WhatsApp
+            $whatsappResult = $this->whatsAppService->sendPredictionConfirmation($user, $match, $existingPrediction, $venue);
+
+            if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'message' => $successMessage,
+                    'whatsapp_sent' => $whatsappResult['success'] ?? false,
+                    'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
+                    'venue' => $venue->name
+                ], 200);
+            }
+
             return back()->with('toast', json_encode([
                 'type' => 'success',
                 'message' => 'Pronostic modifié ! ✏️',
@@ -84,13 +122,28 @@ class PredictionController extends Controller
         }
 
         // Créer un nouveau pronostic
-        Prediction::create([
+        $prediction = Prediction::create([
             'user_id' => $userId,
             'match_id' => $request->match_id,
             'predicted_winner' => $predictedWinner,
             'score_a' => $request->score_a,
             'score_b' => $request->score_b,
         ]);
+
+        $user = User::find($userId);
+        $successMessage = 'Pronostic enregistré ! 🎯 ' . $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
+
+        // Envoyer confirmation WhatsApp
+        $whatsappResult = $this->whatsAppService->sendPredictionConfirmation($user, $match, $prediction, $venue);
+
+        if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'message' => $successMessage,
+                'whatsapp_sent' => $whatsappResult['success'] ?? false,
+                'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
+                'venue' => $venue->name
+            ], 200);
+        }
 
         return back()->with('toast', json_encode([
             'type' => 'success',
