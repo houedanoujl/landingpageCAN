@@ -363,7 +363,7 @@
     <!-- Footer -->
     <footer class="bg-soboa-blue text-white py-8 mt-auto">
         <div class="max-w-7xl mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div class="grid grid-cols-3 gap-6 mb-8">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-white">
