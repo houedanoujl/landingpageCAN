@@ -690,4 +690,162 @@ class AdminController extends Controller
 
         return back()->with('success', 'Paramètres mis à jour avec succès.');
     }
+
+    // ==================== GESTION DU TOURNOI ====================
+
+    /**
+     * Afficher la page de gestion du tournoi
+     */
+    public function tournamentManagement()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        // Récupérer tous les groupes de la phase de poules
+        $groups = MatchGame::where('phase', 'group_stage')
+            ->whereNotNull('group_name')
+            ->distinct()
+            ->pluck('group_name')
+            ->sort();
+
+        $groupStandings = [];
+        foreach ($groups as $group) {
+            $service = app(\App\Services\TournamentService::class);
+            $groupStandings[$group] = $service->calculateGroupStandings($group);
+        }
+
+        // Statistiques des phases
+        $phaseStats = [
+            'group_stage' => MatchGame::where('phase', 'group_stage')->count(),
+            'round_of_16' => MatchGame::where('phase', 'round_of_16')->count(),
+            'quarter_final' => MatchGame::where('phase', 'quarter_final')->count(),
+            'semi_final' => MatchGame::where('phase', 'semi_final')->count(),
+            'third_place' => MatchGame::where('phase', 'third_place')->count(),
+            'final' => MatchGame::where('phase', 'final')->count(),
+        ];
+
+        return view('admin.tournament', compact('groups', 'groupStandings', 'phaseStats'));
+    }
+
+    /**
+     * Générer le tableau à élimination directe
+     */
+    public function generateKnockoutBracket()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        try {
+            $service = app(\App\Services\TournamentService::class);
+            $bracket = $service->createKnockoutBracket();
+
+            return back()->with('success', 'Tableau à élimination directe créé avec succès ! ' .
+                '8 matchs de 1/8e, 4 quarts, 2 demis, 1 finale et 1 match pour la 3e place.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Qualifier manuellement une équipe pour un match
+     */
+    public function qualifyTeam(Request $request, $matchId)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $request->validate([
+            'team_id' => 'required|exists:teams,id',
+            'position' => 'required|in:home,away',
+        ]);
+
+        $match = MatchGame::findOrFail($matchId);
+        $team = Team::findOrFail($request->team_id);
+
+        if ($request->position === 'home') {
+            $match->update([
+                'home_team_id' => $team->id,
+                'team_a' => $team->name,
+            ]);
+        } else {
+            $match->update([
+                'away_team_id' => $team->id,
+                'team_b' => $team->name,
+            ]);
+        }
+
+        return back()->with('success', "{$team->name} qualifié(e) pour ce match !");
+    }
+
+    /**
+     * Afficher les matchs d'une phase spécifique
+     */
+    public function phaseMatches($phase)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $validPhases = ['group_stage', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
+
+        if (!in_array($phase, $validPhases)) {
+            return redirect()->route('admin.tournament')->with('error', 'Phase invalide.');
+        }
+
+        $matches = MatchGame::where('phase', $phase)
+            ->with(['homeTeam', 'awayTeam', 'parentMatch1', 'parentMatch2'])
+            ->orderBy('display_order')
+            ->orderBy('match_date')
+            ->get();
+
+        $phaseNames = [
+            'group_stage' => 'Phase de poules',
+            'round_of_16' => '1/8e de finale',
+            'quarter_final' => 'Quarts de finale',
+            'semi_final' => 'Demi-finales',
+            'third_place' => 'Match pour la 3e place',
+            'final' => 'Finale',
+        ];
+
+        $phaseName = $phaseNames[$phase] ?? $phase;
+
+        // Récupérer toutes les équipes pour la sélection manuelle
+        $teams = Team::orderBy('name')->get();
+
+        return view('admin.phase-matches', compact('matches', 'phase', 'phaseName', 'teams'));
+    }
+
+    /**
+     * Calculer les qualifiés depuis les poules
+     */
+    public function calculateQualified()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        try {
+            $service = app(\App\Services\TournamentService::class);
+            $result = $service->qualifyTeamsFromGroupStage();
+
+            $qualifiedCount = collect($result['qualified_teams'])
+                ->map(fn($g) => [$g['first'], $g['second']])
+                ->flatten()
+                ->count();
+
+            $bestThirdsCount = $result['best_thirds']->count();
+
+            return back()->with('success',
+                "Calcul terminé ! {$qualifiedCount} équipes (1ers et 2es) + {$bestThirdsCount} meilleurs 3èmes = " .
+                ($qualifiedCount + $bestThirdsCount) . " équipes qualifiées pour les 1/8e."
+            );
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
+    }
 }

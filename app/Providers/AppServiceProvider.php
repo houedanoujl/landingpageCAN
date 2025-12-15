@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\MatchGame;
+use App\Observers\MatchObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Enregistrer l'observateur pour la qualification automatique
+        MatchGame::observe(MatchObserver::class);
     }
 }

@@ -19,15 +19,25 @@ Route::get('/conditions', function () {
 })->name('terms');
 
 // Authentification publique (Sénégal + exceptions test CI)
+// Rate limiting: 5 tentatives par minute pour l'envoi d'OTP
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/auth/send-otp', [AuthController::class, 'sendOtp'])->name('auth.send-otp');
-Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp'])->name('auth.verify-otp');
+Route::post('/auth/send-otp', [AuthController::class, 'sendOtp'])
+    ->middleware('throttle:5,1')
+    ->name('auth.send-otp');
+Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp'])
+    ->middleware('throttle:10,1')
+    ->name('auth.verify-otp');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Authentification administrateur (séparée)
+// Rate limiting plus strict pour l'admin: 3 tentatives par minute
 Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/auth/send-otp', [AdminAuthController::class, 'sendOtp'])->name('admin.auth.send-otp');
-Route::post('/admin/auth/verify-otp', [AdminAuthController::class, 'verifyOtp'])->name('admin.auth.verify-otp');
+Route::post('/admin/auth/send-otp', [AdminAuthController::class, 'sendOtp'])
+    ->middleware('throttle:3,1')
+    ->name('admin.auth.send-otp');
+Route::post('/admin/auth/verify-otp', [AdminAuthController::class, 'verifyOtp'])
+    ->middleware('throttle:5,1')
+    ->name('admin.auth.verify-otp');
 Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 // Pronostics (requiert authentification)
@@ -80,4 +90,11 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     // Paramètres
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('/settings', [AdminController::class, 'updateSettings'])->name('update-settings');
+
+    // Gestion du tournoi
+    Route::get('/tournament', [AdminController::class, 'tournamentManagement'])->name('tournament');
+    Route::post('/tournament/generate-bracket', [AdminController::class, 'generateKnockoutBracket'])->name('generate-bracket');
+    Route::post('/tournament/calculate-qualified', [AdminController::class, 'calculateQualified'])->name('calculate-qualified');
+    Route::get('/tournament/phase/{phase}', [AdminController::class, 'phaseMatches'])->name('phase-matches');
+    Route::post('/tournament/qualify-team/{matchId}', [AdminController::class, 'qualifyTeam'])->name('qualify-team');
 });

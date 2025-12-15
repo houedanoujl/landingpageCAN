@@ -63,7 +63,8 @@ class AuthController extends Controller
                 'attempts' => 0,
             ], now()->addMinutes(10));
 
-            Log::info('Code OTP genere', ['whatsapp_number' => $whatsappNumber, 'code' => $otpCode]);
+            // SÉCURITÉ: Ne jamais logger le code OTP en production
+            Log::info('Code OTP genere', ['whatsapp_number' => $whatsappNumber]);
 
             $result = $this->sendWhatsAppMessage($whatsappNumber, $otpCode);
 

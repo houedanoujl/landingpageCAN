@@ -21,6 +21,12 @@ class MatchGame extends Model
         'stadium',
         'group_name',
         'phase',
+        'match_number',
+        'bracket_position',
+        'display_order',
+        'parent_match_1_id',
+        'parent_match_2_id',
+        'winner_goes_to',
         'status',
         'score_a',
         'score_b',
@@ -62,7 +68,68 @@ class MatchGame extends Model
         if (!Auth::check()) {
             return null;
         }
-        
+
         return $this->predictions()->where('user_id', Auth::id())->first();
+    }
+
+    /**
+     * Get parent match 1 (for knockout stages).
+     */
+    public function parentMatch1()
+    {
+        return $this->belongsTo(MatchGame::class, 'parent_match_1_id');
+    }
+
+    /**
+     * Get parent match 2 (for knockout stages).
+     */
+    public function parentMatch2()
+    {
+        return $this->belongsTo(MatchGame::class, 'parent_match_2_id');
+    }
+
+    /**
+     * Get child matches (matches that depend on this one).
+     */
+    public function childMatches()
+    {
+        return MatchGame::where('parent_match_1_id', $this->id)
+            ->orWhere('parent_match_2_id', $this->id)
+            ->get();
+    }
+
+    /**
+     * Get the winner team of this match.
+     */
+    public function getWinnerTeamIdAttribute()
+    {
+        if ($this->status !== 'finished' || $this->score_a === null || $this->score_b === null) {
+            return null;
+        }
+
+        if ($this->score_a > $this->score_b) {
+            return $this->home_team_id;
+        } elseif ($this->score_b > $this->score_a) {
+            return $this->away_team_id;
+        }
+
+        return null; // Draw (should handle penalties for knockout stages)
+    }
+
+    /**
+     * Get the phase name in French.
+     */
+    public function getPhaseNameAttribute()
+    {
+        $phases = [
+            'group_stage' => 'Phase de poules',
+            'round_of_16' => '1/8e de finale',
+            'quarter_final' => 'Quart de finale',
+            'semi_final' => 'Demi-finale',
+            'third_place' => '3e place',
+            'final' => 'Finale',
+        ];
+
+        return $phases[$this->phase] ?? $this->phase;
     }
 }
