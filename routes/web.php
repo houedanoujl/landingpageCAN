@@ -74,7 +74,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::put('/bars/{id}', [AdminController::class, 'updateBar'])->name('update-bar');
     Route::post('/bars/{id}/toggle', [AdminController::class, 'toggleBar'])->name('toggle-bar');
     Route::delete('/bars/{id}', [AdminController::class, 'deleteBar'])->name('delete-bar');
-    
+    Route::get('/bars/template/download', [AdminController::class, 'downloadBarsTemplate'])->name('download-bars-template');
+    Route::post('/bars/import', [AdminController::class, 'importBars'])->name('import-bars');
+
     // Équipes
     Route::get('/teams', [AdminController::class, 'teams'])->name('teams');
     Route::get('/teams/create', [AdminController::class, 'createTeam'])->name('create-team');

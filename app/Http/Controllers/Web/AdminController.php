@@ -457,6 +457,131 @@ class AdminController extends Controller
         return redirect()->route('admin.bars')->with('success', 'Point de vente supprimé avec succès.');
     }
 
+    /**
+     * Download CSV template for bars import
+     */
+    public function downloadBarsTemplate()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="modele_points_de_vente.csv"',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+
+            // BOM UTF-8 pour Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // En-têtes
+            fputcsv($file, ['nom', 'adresse', 'latitude', 'longitude']);
+
+            // Exemples
+            fputcsv($file, ['Bar Le Sphinx', 'Rue 10 x Avenue Hassan II Dakar', '14.692778', '-17.447938']);
+            fputcsv($file, ['Chez Fatou', 'Place de l\'Indépendance Dakar', '14.693350', '-17.448830']);
+            fputcsv($file, ['Le Djoloff', 'Corniche Ouest Dakar', '14.716677', '-17.481383']);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Import bars from CSV file
+     */
+    public function importBars(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        try {
+            $file = $request->file('csv_file');
+            $handle = fopen($file->getRealPath(), 'r');
+
+            // Skip BOM if present
+            $bom = fread($handle, 3);
+            if ($bom !== "\xEF\xBB\xBF") {
+                rewind($handle);
+            }
+
+            // Lire l'en-tête
+            $header = fgetcsv($handle, 1000, ',');
+
+            if (!$header || count($header) < 4) {
+                fclose($handle);
+                return back()->with('error', 'Format de fichier invalide. Assurez-vous que le fichier contient les colonnes : nom, adresse, latitude, longitude');
+            }
+
+            $imported = 0;
+            $errors = [];
+            $lineNumber = 1;
+
+            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                $lineNumber++;
+
+                // Vérifier qu'on a au moins 4 colonnes
+                if (count($data) < 4) {
+                    $errors[] = "Ligne {$lineNumber} : Données incomplètes";
+                    continue;
+                }
+
+                $name = trim($data[0]);
+                $address = trim($data[1]);
+                $latitude = trim($data[2]);
+                $longitude = trim($data[3]);
+
+                // Validation basique
+                if (empty($name) || empty($address)) {
+                    $errors[] = "Ligne {$lineNumber} : Nom ou adresse manquant";
+                    continue;
+                }
+
+                if (!is_numeric($latitude) || !is_numeric($longitude)) {
+                    $errors[] = "Ligne {$lineNumber} : Coordonnées invalides";
+                    continue;
+                }
+
+                // Créer le point de vente
+                Bar::create([
+                    'name' => $name,
+                    'address' => $address,
+                    'latitude' => (float) $latitude,
+                    'longitude' => (float) $longitude,
+                    'is_active' => true, // Actif par défaut
+                ]);
+
+                $imported++;
+            }
+
+            fclose($handle);
+
+            // Message de résultat
+            $message = "{$imported} point(s) de vente importé(s) avec succès.";
+
+            if (count($errors) > 0) {
+                $message .= " " . count($errors) . " erreur(s) détectée(s) : " . implode(', ', array_slice($errors, 0, 5));
+                if (count($errors) > 5) {
+                    $message .= " (et " . (count($errors) - 5) . " autre(s)...)";
+                }
+            }
+
+            return redirect()->route('admin.bars')->with('success', $message);
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de l\'importation : ' . $e->getMessage());
+        }
+    }
+
     // ==================== TEAMS ====================
 
     /**

@@ -127,4 +127,87 @@
 
         </div>
     </div>
+
+    <!-- Modal Import CSV -->
+    <div id="import-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50" onclick="if(event.target === this) this.classList.add('hidden')">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="bg-blue-600 text-white p-6 rounded-t-xl">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <span>📥</span> Importer des points de vente (CSV)
+                    </h2>
+                    <button onclick="document.getElementById('import-modal').classList.add('hidden')"
+                            class="text-white hover:text-gray-200 text-2xl">
+                        ×
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6">
+                <!-- Instructions -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                    <h3 class="font-bold text-blue-900 mb-2">📋 Format du fichier CSV</h3>
+                    <p class="text-sm text-blue-800 mb-3">Votre fichier CSV doit contenir les colonnes suivantes dans cet ordre :</p>
+                    <ul class="text-sm text-blue-800 space-y-1 ml-4">
+                        <li>• <strong>nom</strong> - Nom du point de vente</li>
+                        <li>• <strong>adresse</strong> - Adresse complète</li>
+                        <li>• <strong>latitude</strong> - Coordonnée latitude (ex: 14.692778)</li>
+                        <li>• <strong>longitude</strong> - Coordonnée longitude (ex: -17.447938)</li>
+                    </ul>
+                </div>
+
+                <!-- Exemple -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+                    <h4 class="font-bold text-gray-700 mb-2 text-sm">Exemple de fichier CSV :</h4>
+                    <pre class="text-xs bg-white p-3 rounded border border-gray-300 overflow-x-auto font-mono">nom,adresse,latitude,longitude
+Bar Le Sphinx,Rue 10 x Avenue Hassan II Dakar,14.692778,-17.447938
+Chez Fatou,Place de l'Indépendance Dakar,14.693350,-17.448830
+Le Djoloff,Corniche Ouest Dakar,14.716677,-17.481383</pre>
+                </div>
+
+                <!-- Télécharger modèle -->
+                <div class="mb-6">
+                    <a href="{{ route('admin.download-bars-template') }}"
+                       class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg transition border border-gray-300">
+                        <span>📄</span> Télécharger le modèle CSV
+                    </a>
+                </div>
+
+                <!-- Formulaire d'upload -->
+                <form action="{{ route('admin.import-bars') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Fichier CSV *</label>
+                        <input type="file"
+                               name="csv_file"
+                               accept=".csv"
+                               required
+                               class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <p class="text-gray-500 text-sm mt-1">Format accepté : CSV (UTF-8)</p>
+                    </div>
+
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                        <p class="text-sm text-yellow-800">
+                            <strong>⚠️ Important :</strong> Tous les points de vente importés seront activés par défaut.
+                        </p>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t">
+                        <button type="button"
+                                onclick="document.getElementById('import-modal').classList.add('hidden')"
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                            📥 Importer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </x-layouts.app>

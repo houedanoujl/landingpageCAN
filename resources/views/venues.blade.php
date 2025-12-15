@@ -22,8 +22,25 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold mb-2">Comment ça marche ?</h2>
-                    <ol class="list-decimal list-inside space-y-1 text-white/90">
-                        <li>Activez votre GPS pour voir les points de vente les plus proches</li>
+                    <ol class="list-decimal list-inside space-y-2 text-white/90">
+                        <li class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <span>Activez votre GPS pour voir les points de vente les plus proches</span>
+                            <button id="activate-gps-btn"
+                                    onclick="document.getElementById('locate-me-btn').click()"
+                                    class="bg-white/20 hover:bg-white/30 text-white font-bold py-1.5 px-3 rounded-lg text-sm transition flex items-center gap-1 w-fit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Activer GPS
+                            </button>
+                            <span id="gps-active-badge" class="hidden bg-green-500/20 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 w-fit">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                GPS activé
+                            </span>
+                        </li>
                         <li>Rendez-vous dans un point de vente partenaire</li>
                         <li>Vérifiez votre position (rayon de 200m)</li>
                         <li>Faites vos pronostics sur les matchs !</li>
@@ -422,12 +439,24 @@
                     locateMeBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
                     locateMeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
 
+                    // Masquer le bouton "Activer GPS" et afficher le badge
+                    const activateGpsBtn = document.getElementById('activate-gps-btn');
+                    const gpsActiveBadge = document.getElementById('gps-active-badge');
+                    if (activateGpsBtn) activateGpsBtn.classList.add('hidden');
+                    if (gpsActiveBadge) gpsActiveBadge.classList.remove('hidden');
+
                     updateAllVenuesDistances();
                 },
                 function(error) {
                     handleGeolocationError(error);
                     locateMeBtn.disabled = false;
                     locateBtnText.textContent = 'Me localiser';
+
+                    // Afficher le bouton "Activer GPS" et masquer le badge en cas d'erreur
+                    const activateGpsBtn = document.getElementById('activate-gps-btn');
+                    const gpsActiveBadge = document.getElementById('gps-active-badge');
+                    if (activateGpsBtn) activateGpsBtn.classList.remove('hidden');
+                    if (gpsActiveBadge) gpsActiveBadge.classList.add('hidden');
                 },
                 {
                     enableHighAccuracy: true,
