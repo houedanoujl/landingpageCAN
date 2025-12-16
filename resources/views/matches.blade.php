@@ -154,7 +154,10 @@
                 <div class="flex items-center gap-3 mb-4">
                     <span class="text-3xl">🔥</span>
                     <div>
-                        <h2 class="text-2xl font-black">Prochains matchs</h2>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-2xl font-black">Prochains matchs</h2>
+                            <span class="text-2xl">🇸🇳</span>
+                        </div>
                         <p class="text-white/80 text-sm">À ne pas manquer!</p>
                     </div>
                 </div>

@@ -16,12 +16,21 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Fetch upcoming matches with team relationships
-        $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
-            ->where('status', 'scheduled')
-            ->orderBy('match_date', 'asc')
-            ->take(3)
-            ->get();
+        // Fetch upcoming Senegal matches with team relationships
+        $senegalTeam = \App\Models\Team::where('iso_code', 'sn')->first();
+        $upcomingMatches = collect();
+
+        if ($senegalTeam) {
+            $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
+                ->where('status', 'scheduled')
+                ->where(function($query) use ($senegalTeam) {
+                    $query->where('home_team_id', $senegalTeam->id)
+                        ->orWhere('away_team_id', $senegalTeam->id);
+                })
+                ->orderBy('match_date', 'asc')
+                ->take(3)
+                ->get();
+        }
 
         // Fetch top 3 users for leaderboard
         $topUsers = User::orderBy('points_total', 'desc')->take(3)->get();
@@ -78,13 +87,22 @@ class HomeController extends Controller
             return $phaseMatches;
         });
 
-        // Identifier les prochains matchs à venir (les 3 prochains non terminés)
-        $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
-            ->where('status', '!=', 'finished')
-            ->where('match_date', '>=', now())
-            ->orderBy('match_date', 'asc')
-            ->take(3)
-            ->get();
+        // Identifier les prochains matchs à venir du Sénégal (les 3 prochains non terminés)
+        $senegalTeam = \App\Models\Team::where('iso_code', 'sn')->first();
+        $upcomingMatches = collect();
+
+        if ($senegalTeam) {
+            $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
+                ->where('status', '!=', 'finished')
+                ->where('match_date', '>=', now())
+                ->where(function($query) use ($senegalTeam) {
+                    $query->where('home_team_id', $senegalTeam->id)
+                        ->orWhere('away_team_id', $senegalTeam->id);
+                })
+                ->orderBy('match_date', 'asc')
+                ->take(3)
+                ->get();
+        }
 
         // Récupérer les pronostics de l'utilisateur connecté
         $userPredictions = [];

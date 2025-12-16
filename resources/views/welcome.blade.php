@@ -274,8 +274,11 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
-                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">CAN 2025</span>
-                    <h2 class="text-3xl md:text-4xl font-black text-soboa-blue mt-2">Prochains matchs</h2>
+                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">CAN 2025 - Sénégal</span>
+                    <div class="flex items-center gap-2 mt-2">
+                        <h2 class="text-3xl md:text-4xl font-black text-soboa-blue">Prochains matchs</h2>
+                        <span class="text-3xl md:text-4xl">🇸🇳</span>
+                    </div>
                 </div>
                 <a href="/matches"
                     class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
