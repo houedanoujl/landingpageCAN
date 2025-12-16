@@ -670,6 +670,14 @@
                     const submitIcon = form.querySelector('.submit-icon');
                     const submitText = form.querySelector('.submit-text');
                     const messageDiv = form.querySelector('.prediction-message');
+
+                    // Safety check - skip if required elements don't exist
+                    if (!submitButton || !submitIcon || !submitText || !messageDiv) {
+                        console.warn('Missing required form elements, submitting normally');
+                        form.submit();
+                        return;
+                    }
+
                     const originalText = submitText.textContent;
 
                     // Disable button and show loading state
