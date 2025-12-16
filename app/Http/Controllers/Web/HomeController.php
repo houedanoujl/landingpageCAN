@@ -33,6 +33,16 @@ class HomeController extends Controller
                 ->get();
         }
 
+        // Fallback: if no Senegal matches, show upcoming tournament matches
+        if ($upcomingMatches->isEmpty()) {
+            $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
+                ->where('status', '!=', 'finished')
+                ->where('match_date', '>=', now())
+                ->orderBy('match_date', 'asc')
+                ->take(3)
+                ->get();
+        }
+
         // Fetch top 3 users for leaderboard
         $topUsers = User::orderBy('points_total', 'desc')->take(3)->get();
 
