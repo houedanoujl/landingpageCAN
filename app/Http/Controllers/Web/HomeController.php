@@ -208,26 +208,34 @@ class HomeController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        // Points by venue
-        $pointsByVenue = PointLog::where('user_id', $userId)
-            ->whereIn('source', ['venue_visit', 'bar_visit'])
-            ->whereNotNull('bar_id')
-            ->with('bar')
-            ->selectRaw('bar_id, SUM(points) as total_points, COUNT(*) as visit_count')
-            ->groupBy('bar_id')
-            ->orderBy('total_points', 'desc')
-            ->get();
+        // Points by venue (only if bar_id column exists)
+        $pointsByVenue = collect([]);
+        $visitedVenues = collect([]);
 
-        // Visited venues for map
-        $visitedVenues = PointLog::where('user_id', $userId)
-            ->whereIn('source', ['venue_visit', 'bar_visit'])
-            ->whereNotNull('bar_id')
-            ->with('bar')
-            ->select('bar_id')
-            ->distinct()
-            ->get()
-            ->pluck('bar')
-            ->filter();
+        try {
+            $pointsByVenue = PointLog::where('user_id', $userId)
+                ->whereIn('source', ['venue_visit', 'bar_visit'])
+                ->whereNotNull('bar_id')
+                ->with('bar')
+                ->selectRaw('bar_id, SUM(points) as total_points, COUNT(*) as visit_count')
+                ->groupBy('bar_id')
+                ->orderBy('total_points', 'desc')
+                ->get();
+
+            // Visited venues for map
+            $visitedVenues = PointLog::where('user_id', $userId)
+                ->whereIn('source', ['venue_visit', 'bar_visit'])
+                ->whereNotNull('bar_id')
+                ->with('bar')
+                ->select('bar_id')
+                ->distinct()
+                ->get()
+                ->pluck('bar')
+                ->filter();
+        } catch (\Exception $e) {
+            // Column bar_id doesn't exist yet - migration not run
+            // This is expected before running the migration
+        }
 
         return view('dashboard', compact(
             'user',
