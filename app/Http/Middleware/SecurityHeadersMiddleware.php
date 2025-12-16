@@ -24,14 +24,14 @@ class SecurityHeadersMiddleware
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
 
-        // Content Security Policy - ajusté pour Alpine.js, Google Fonts, Leaflet et flagcdn
+        // Content Security Policy - ajusté pour Alpine.js, Google Fonts, Leaflet, OpenStreetMap et flagcdn
         $response->headers->set('Content-Security-Policy',
             "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.googletagmanager.com https://unpkg.com; " .
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; " .
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com https://unpkg.com; " .
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; " .
             "font-src 'self' https://fonts.gstatic.com; " .
             "img-src 'self' data: https: https://flagcdn.com https://tile.openstreetmap.org; " .
-            "connect-src 'self' https://www.google-analytics.com https://tile.openstreetmap.org; " .
+            "connect-src 'self' https://www.google-analytics.com https://tile.openstreetmap.org https://nominatim.openstreetmap.org; " .
             "frame-ancestors 'self';"
         );
 
