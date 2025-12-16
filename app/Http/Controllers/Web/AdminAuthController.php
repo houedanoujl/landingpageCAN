@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\AdminOtpLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -77,12 +78,33 @@ class AdminAuthController extends Controller
             $result = $this->sendWhatsAppMessage($whatsappNumber, $otpCode, true);
 
             if ($result['success']) {
+                // Créer un log pour le code OTP envoyé
+                AdminOtpLog::create([
+                    'phone' => $phone,
+                    'code' => $otpCode,
+                    'status' => 'sent',
+                    'whatsapp_number' => $whatsappNumber,
+                    'verification_attempts' => 0,
+                    'otp_sent_at' => now(),
+                ]);
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Code administrateur envoyé sur WhatsApp !',
                     'whatsapp_number' => $whatsappNumber,
                 ]);
             } else {
+                // Créer un log pour l'échec d'envoi
+                AdminOtpLog::create([
+                    'phone' => $phone,
+                    'code' => $otpCode,
+                    'status' => 'failed',
+                    'whatsapp_number' => $whatsappNumber,
+                    'verification_attempts' => 0,
+                    'otp_sent_at' => now(),
+                    'error_message' => $result['error'] ?? 'Erreur inconnue',
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Erreur lors de l\'envoi du message WhatsApp.',
@@ -201,6 +223,12 @@ class AdminAuthController extends Controller
             Cache::put($cacheKey, $otpData, now()->addMinutes(10));
 
             if ($otpData['code'] !== $request->code) {
+                // Incrémenter les tentatives échouées dans le log
+                AdminOtpLog::where('code', $otpData['code'])
+                    ->where('phone', $phone)
+                    ->where('status', 'sent')
+                    ->increment('verification_attempts');
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Code incorrect. ' . (5 - $otpData['attempts']) . ' tentative(s) restante(s).',
@@ -225,6 +253,15 @@ class AdminAuthController extends Controller
                     $user->update(['role' => 'admin']);
                 }
             }
+
+            // Mettre à jour le log OTP comme vérifié
+            AdminOtpLog::where('code', $otpData['code'])
+                ->where('phone', $phone)
+                ->where('status', 'sent')
+                ->update([
+                    'status' => 'verified',
+                    'otp_verified_at' => now(),
+                ]);
 
             session(['user_id' => $user->id]);
 

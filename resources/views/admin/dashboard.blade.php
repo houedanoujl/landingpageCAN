@@ -64,6 +64,10 @@
                     <span class="text-3xl">⚙️</span>
                     <span class="font-bold text-sm text-center">Paramètres</span>
                 </a>
+                <a href="{{ route('admin.otp-logs') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
+                    <span class="text-3xl">📋</span>
+                    <span class="font-bold text-sm text-center">Logs OTP</span>
+                </a>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">

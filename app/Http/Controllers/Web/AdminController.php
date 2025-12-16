@@ -10,6 +10,7 @@ use App\Models\Prediction;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\SiteSetting;
+use App\Models\AdminOtpLog;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -1011,5 +1012,39 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Erreur : ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Affiche les logs OTP des administrateurs
+     */
+    public function otpLogs(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $query = AdminOtpLog::orderBy('created_at', 'desc');
+
+        // Filtrer par statut
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Filtrer par numéro de téléphone
+        if ($request->has('phone') && $request->phone) {
+            $query->where('phone', 'like', '%' . $request->phone . '%');
+        }
+
+        $otpLogs = $query->paginate(50);
+
+        // Statistiques
+        $stats = [
+            'total_sent' => AdminOtpLog::where('status', 'sent')->count(),
+            'total_verified' => AdminOtpLog::where('status', 'verified')->count(),
+            'total_failed' => AdminOtpLog::where('status', 'failed')->count(),
+            'total_expired' => AdminOtpLog::where('status', 'expired')->count(),
+        ];
+
+        return view('admin.otp-logs', compact('otpLogs', 'stats'));
     }
 }

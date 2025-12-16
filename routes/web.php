@@ -93,6 +93,9 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('/settings', [AdminController::class, 'updateSettings'])->name('update-settings');
 
+    // Logs OTP
+    Route::get('/otp-logs', [AdminController::class, 'otpLogs'])->name('otp-logs');
+
     // Gestion du tournoi
     Route::get('/tournament', [AdminController::class, 'tournamentManagement'])->name('tournament');
     Route::post('/tournament/generate-bracket', [AdminController::class, 'generateKnockoutBracket'])->name('generate-bracket');
