@@ -12,6 +12,7 @@ class PointLog extends Model
     protected $fillable = [
         'user_id',
         'match_id',
+        'bar_id',
         'source',
         'points',
     ];
@@ -19,5 +20,10 @@ class PointLog extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function bar()
+    {
+        return $this->belongsTo(Bar::class);
     }
 }

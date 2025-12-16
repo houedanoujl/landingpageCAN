@@ -200,6 +200,35 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
+        // Points by date (last 30 days)
+        $pointsByDate = PointLog::where('user_id', $userId)
+            ->whereDate('created_at', '>=', now()->subDays(30))
+            ->selectRaw('DATE(created_at) as date, SUM(points) as total_points, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date', 'desc')
+            ->get();
+
+        // Points by venue
+        $pointsByVenue = PointLog::where('user_id', $userId)
+            ->whereIn('source', ['venue_visit', 'bar_visit'])
+            ->whereNotNull('bar_id')
+            ->with('bar')
+            ->selectRaw('bar_id, SUM(points) as total_points, COUNT(*) as visit_count')
+            ->groupBy('bar_id')
+            ->orderBy('total_points', 'desc')
+            ->get();
+
+        // Visited venues for map
+        $visitedVenues = PointLog::where('user_id', $userId)
+            ->whereIn('source', ['venue_visit', 'bar_visit'])
+            ->whereNotNull('bar_id')
+            ->with('bar')
+            ->select('bar_id')
+            ->distinct()
+            ->get()
+            ->pluck('bar')
+            ->filter();
+
         return view('dashboard', compact(
             'user',
             'rank',
@@ -207,7 +236,10 @@ class HomeController extends Controller
             'correctPredictions',
             'venueVisits',
             'nextMatch',
-            'recentPredictions'
+            'recentPredictions',
+            'pointsByDate',
+            'pointsByVenue',
+            'visitedVenues'
         ));
     }
 

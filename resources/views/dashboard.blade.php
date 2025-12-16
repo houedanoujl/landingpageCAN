@@ -106,7 +106,7 @@
         </div>
 
         <!-- Recent Predictions -->
-        <div class="max-w-7xl mx-auto px-4 pb-12">
+        <div class="max-w-7xl mx-auto px-4 pb-8">
             <h2 class="text-xl font-bold text-soboa-blue mb-4 flex items-center gap-2">
                 <span>📜</span> Derniers pronostics
             </h2>
@@ -163,6 +163,145 @@
                 </div>
             @endif
         </div>
+
+        <!-- Points Details -->
+        <div class="max-w-7xl mx-auto px-4 pb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <!-- Points by Date -->
+                <div>
+                    <h2 class="text-xl font-bold text-soboa-blue mb-4 flex items-center gap-2">
+                        <span>📅</span> Points par date
+                    </h2>
+
+                    @if($pointsByDate && $pointsByDate->count() > 0)
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="max-h-96 overflow-y-auto">
+                                @foreach($pointsByDate as $dayPoints)
+                                    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-bold text-gray-800 capitalize">
+                                                    {{ \Carbon\Carbon::parse($dayPoints->date)->translatedFormat('l d F Y') }}
+                                                </p>
+                                                <p class="text-sm text-gray-500">{{ $dayPoints->count }} action(s)</p>
+                                            </div>
+                                            <span class="text-2xl font-black text-soboa-orange">+{{ $dayPoints->total_points }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                            <span class="text-5xl block mb-4">📊</span>
+                            <p class="text-gray-600 font-medium">Aucun point gagné récemment</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Points by Venue -->
+                <div>
+                    <h2 class="text-xl font-bold text-soboa-blue mb-4 flex items-center gap-2">
+                        <span>📍</span> Points par lieu
+                    </h2>
+
+                    @if($pointsByVenue && $pointsByVenue->count() > 0)
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="max-h-96 overflow-y-auto">
+                                @foreach($pointsByVenue as $venuePoints)
+                                    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-1">
+                                                <p class="font-bold text-gray-800">{{ $venuePoints->bar->name ?? 'Lieu inconnu' }}</p>
+                                                <p class="text-sm text-gray-500">{{ $venuePoints->visit_count }} visite(s)</p>
+                                                <p class="text-xs text-gray-400 mt-1">{{ $venuePoints->bar->address ?? '' }}</p>
+                                            </div>
+                                            <span class="text-2xl font-black text-soboa-orange ml-4">+{{ $venuePoints->total_points }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                            <span class="text-5xl block mb-4">🏪</span>
+                            <p class="text-gray-600 font-medium">Aucun lieu visité</p>
+                            <a href="/map" class="text-soboa-orange font-bold hover:underline">Visitez un lieu partenaire!</a>
+                        </div>
+                    @endif
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Visited Venues Map -->
+        @if($visitedVenues && $visitedVenues->count() > 0)
+        <div class="max-w-7xl mx-auto px-4 pb-12">
+            <h2 class="text-xl font-bold text-soboa-blue mb-4 flex items-center gap-2">
+                <span>🗺️</span> Carte de mes lieux visités
+            </h2>
+
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div id="visited-map" class="h-[400px] w-full"></div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                @foreach($visitedVenues as $venue)
+                    <div class="bg-white rounded-lg p-3 shadow border border-gray-100">
+                        <p class="font-bold text-soboa-blue text-sm">📍 {{ $venue->name }}</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ $venue->address }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Leaflet CSS & JS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const venues = @json($visitedVenues);
+
+                if (venues.length > 0) {
+                    // Initialize map
+                    const map = L.map('visited-map').setView([venues[0].latitude, venues[0].longitude], 12);
+
+                    // Add tile layer
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    // Custom marker icon
+                    const visitedIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="background: #10B981; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); border: 3px solid white;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                               </div>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16]
+                    });
+
+                    // Add markers and fit bounds
+                    const bounds = [];
+                    venues.forEach(venue => {
+                        const marker = L.marker([venue.latitude, venue.longitude], { icon: visitedIcon })
+                            .addTo(map)
+                            .bindPopup(`<strong>✅ ${venue.name}</strong><br>${venue.address}`);
+                        bounds.push([venue.latitude, venue.longitude]);
+                    });
+
+                    // Fit map to show all markers
+                    if (bounds.length > 1) {
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                }
+            });
+        </script>
+        @endif
 
     </div>
 </x-layouts.app>
