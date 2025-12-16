@@ -718,6 +718,15 @@
                                 }
                             }));
 
+                            // Mettre à jour les points du header
+                            if (data.user_points_total !== undefined) {
+                                window.dispatchEvent(new CustomEvent('update-points', {
+                                    detail: {
+                                        points: data.user_points_total
+                                    }
+                                }));
+                            }
+
                             // Hide success message after 3 seconds
                             setTimeout(() => {
                                 messageDiv.classList.add('hidden');

@@ -108,6 +108,12 @@ class PredictionController extends Controller
             // Award 4 points for making a prediction in a venue (1x/day)
             $venuePointsAwarded = $this->pointsService->awardPredictionVenuePoints($user);
 
+            // Refresh user to get updated points_total
+            $user->refresh();
+
+            // Update session with new points
+            session(['user_points' => $user->points_total]);
+
             $successMessage = 'Pronostic modifié ! ✏️ ' . $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
 
             // Envoyer confirmation WhatsApp
@@ -119,7 +125,8 @@ class PredictionController extends Controller
                     'whatsapp_sent' => $whatsappResult['success'] ?? false,
                     'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
                     'venue' => $venue->name,
-                    'venue_bonus_points' => $venuePointsAwarded
+                    'venue_bonus_points' => $venuePointsAwarded,
+                    'user_points_total' => $user->points_total
                 ], 200);
             }
 
@@ -144,6 +151,12 @@ class PredictionController extends Controller
         // Award 4 points for making a prediction in a venue (1x/day)
         $venuePointsAwarded = $this->pointsService->awardPredictionVenuePoints($user);
 
+        // Refresh user to get updated points_total
+        $user->refresh();
+
+        // Update session with new points
+        session(['user_points' => $user->points_total]);
+
         $successMessage = 'Pronostic enregistré ! 🎯 ' . $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
 
         // Envoyer confirmation WhatsApp
@@ -155,7 +168,8 @@ class PredictionController extends Controller
                 'whatsapp_sent' => $whatsappResult['success'] ?? false,
                 'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
                 'venue' => $venue->name,
-                'venue_bonus_points' => $venuePointsAwarded
+                'venue_bonus_points' => $venuePointsAwarded,
+                'user_points_total' => $user->points_total
             ], 200);
         }
 

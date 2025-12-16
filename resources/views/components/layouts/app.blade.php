@@ -189,6 +189,27 @@
             }, 2000);
         }
     }
+
+    // Fonction pour mettre à jour les points du header
+    function updateHeaderPoints(newPoints) {
+        // Sélectionner tous les éléments affichant les points
+        const pointsElements = document.querySelectorAll('[data-user-points]');
+        pointsElements.forEach(el => {
+            el.textContent = newPoints;
+            // Ajouter une animation
+            el.classList.add('animate-pulse');
+            setTimeout(() => {
+                el.classList.remove('animate-pulse');
+            }, 1000);
+        });
+    }
+
+    // Écouter les événements de mise à jour des points
+    window.addEventListener('update-points', (e) => {
+        if (e.detail && e.detail.points) {
+            updateHeaderPoints(e.detail.points);
+        }
+    });
     </script>
 </head>
 
@@ -272,7 +293,7 @@
                                     <span class="text-[10px] text-white/50 uppercase tracking-wider font-semibold">Mon Compte</span>
                                 </div>
                                 <div class="bg-gradient-to-r from-soboa-orange to-red-500 pl-3 pr-2 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-soboa-orange/20 hover:shadow-soboa-orange/40 transition-all transform hover:scale-105 ring-1 ring-white/10">
-                                    <span class="text-white font-black text-sm">{{ session('user_points', 0) }}</span>
+                                    <span class="text-white font-black text-sm" data-user-points>{{ session('user_points', 0) }}</span>
                                     <span class="text-white/90 text-[10px] font-bold uppercase">pts</span>
                                     <div class="bg-black/10 rounded-full w-5 h-5 flex items-center justify-center ml-0.5">
                                         <span class="text-[10px] leading-none">🏆</span>
@@ -336,7 +357,7 @@
                             class="px-4 py-3 flex items-center justify-between hover:bg-white/10 rounded-lg transition-colors group">
                             <span class="text-white group-hover:text-soboa-orange font-bold transition-colors">{{ session('predictor_name') }}</span>
                             <div class="bg-gradient-to-r from-soboa-orange to-red-500 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                                <span class="text-white font-black text-sm">{{ session('user_points', 0) }}</span>
+                                <span class="text-white font-black text-sm" data-user-points>{{ session('user_points', 0) }}</span>
                                 <span class="text-white/80 text-xs font-bold uppercase">pts</span>
                             </div>
                         </a>

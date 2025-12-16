@@ -94,6 +94,9 @@ class PredictionController extends Controller
         // Refresh user to get updated points_total
         $user->refresh();
 
+        // Update session with new points
+        session(['user_points' => $user->points_total]);
+
         return response()->json([
             'success' => true,
             'prediction' => $prediction,
