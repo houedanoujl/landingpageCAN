@@ -79,14 +79,18 @@ class AdminAuthController extends Controller
 
             if ($result['success']) {
                 // Créer un log pour le code OTP envoyé
-                AdminOtpLog::create([
-                    'phone' => $phone,
-                    'code' => $otpCode,
-                    'status' => 'sent',
-                    'whatsapp_number' => $whatsappNumber,
-                    'verification_attempts' => 0,
-                    'otp_sent_at' => now(),
-                ]);
+                try {
+                    AdminOtpLog::create([
+                        'phone' => $phone,
+                        'code' => $otpCode,
+                        'status' => 'sent',
+                        'whatsapp_number' => $whatsappNumber,
+                        'verification_attempts' => 0,
+                        'otp_sent_at' => now(),
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Erreur lors de la création du log OTP: ' . $e->getMessage());
+                }
 
                 return response()->json([
                     'success' => true,
@@ -95,15 +99,19 @@ class AdminAuthController extends Controller
                 ]);
             } else {
                 // Créer un log pour l'échec d'envoi
-                AdminOtpLog::create([
-                    'phone' => $phone,
-                    'code' => $otpCode,
-                    'status' => 'failed',
-                    'whatsapp_number' => $whatsappNumber,
-                    'verification_attempts' => 0,
-                    'otp_sent_at' => now(),
-                    'error_message' => $result['error'] ?? 'Erreur inconnue',
-                ]);
+                try {
+                    AdminOtpLog::create([
+                        'phone' => $phone,
+                        'code' => $otpCode,
+                        'status' => 'failed',
+                        'whatsapp_number' => $whatsappNumber,
+                        'verification_attempts' => 0,
+                        'otp_sent_at' => now(),
+                        'error_message' => $result['error'] ?? 'Erreur inconnue',
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Erreur lors de la création du log OTP (failed): ' . $e->getMessage());
+                }
 
                 return response()->json([
                     'success' => false,
@@ -224,10 +232,14 @@ class AdminAuthController extends Controller
 
             if ($otpData['code'] !== $request->code) {
                 // Incrémenter les tentatives échouées dans le log
-                AdminOtpLog::where('code', $otpData['code'])
-                    ->where('phone', $phone)
-                    ->where('status', 'sent')
-                    ->increment('verification_attempts');
+                try {
+                    AdminOtpLog::where('code', $otpData['code'])
+                        ->where('phone', $phone)
+                        ->where('status', 'sent')
+                        ->increment('verification_attempts');
+                } catch (\Exception $e) {
+                    Log::warning('Erreur lors de la mise à jour du log OTP: ' . $e->getMessage());
+                }
 
                 return response()->json([
                     'success' => false,
@@ -255,13 +267,17 @@ class AdminAuthController extends Controller
             }
 
             // Mettre à jour le log OTP comme vérifié
-            AdminOtpLog::where('code', $otpData['code'])
-                ->where('phone', $phone)
-                ->where('status', 'sent')
-                ->update([
-                    'status' => 'verified',
-                    'otp_verified_at' => now(),
-                ]);
+            try {
+                AdminOtpLog::where('code', $otpData['code'])
+                    ->where('phone', $phone)
+                    ->where('status', 'sent')
+                    ->update([
+                        'status' => 'verified',
+                        'otp_verified_at' => now(),
+                    ]);
+            } catch (\Exception $e) {
+                Log::warning('Erreur lors de la mise à jour du log OTP (verified): ' . $e->getMessage());
+            }
 
             session(['user_id' => $user->id]);
 
