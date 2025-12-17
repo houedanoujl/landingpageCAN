@@ -18,14 +18,14 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="SOBOA FOOT TIME | {{ $title ?? 'Accueil' }}">
     <meta property="og:description" content="Le jeu commence ici ! Pronostiquez les matchs, visitez nos lieux partenaires et gagnez des récompenses exclusives.">
-    <meta property="og:image" content="{{ asset('images/hero_celebration.png') }}">
+    <meta property="og:image" content="{{ asset('images/sen.webp') }}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ url()->current() }}">
     <meta property="twitter:title" content="SOBOA FOOT TIME | {{ $title ?? 'Accueil' }}">
     <meta property="twitter:description" content="Le jeu commence ici ! Pronostiquez les matchs et gagnez des récompenses.">
-    <meta property="twitter:image" content="{{ asset('images/hero_celebration.png') }}">
+    <meta property="twitter:image" content="{{ asset('images/sen.webp') }}">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RZTW4S7F3H"></script>
