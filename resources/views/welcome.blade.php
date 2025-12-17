@@ -177,7 +177,7 @@
         <!-- Background -->
         <div class="absolute inset-0">
             <img src="/images/sen.webp" alt="" class="absolute inset-0 w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-b from-soboa-blue/90 via-soboa-blue/80 to-soboa-blue/95"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-soboa-blue/60 via-soboa-blue/50 to-soboa-blue/65"></div>
         </div>
 
         <!-- Animated Shapes -->
