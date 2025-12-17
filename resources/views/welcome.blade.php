@@ -149,7 +149,7 @@
     </div>
 
     <!-- Hero Section - Grande Fête du Foot Africain Celebration -->
-    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden hero-gradient" x-data="{
+    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden" x-data="{
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
                  targetDate: new Date('2025-12-21T20:00:00').getTime(),
                  scrollY: 0,
