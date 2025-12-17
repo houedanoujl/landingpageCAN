@@ -149,22 +149,28 @@
     </div>
 
     <!-- Hero Section - Grande Fête du Foot Africain Celebration -->
-    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden hero-gradient" x-data="{ 
+    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden hero-gradient" x-data="{
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
                  targetDate: new Date('2025-12-21T20:00:00').getTime(),
+                 scrollY: 0,
+                 parallaxOffset: 0,
                  init() {
                      this.updateCountdown();
                      setInterval(() => this.updateCountdown(), 1000);
+                     window.addEventListener('scroll', () => {
+                         this.scrollY = window.scrollY;
+                         this.parallaxOffset = this.scrollY * 0.5;
+                     });
                  },
                  updateCountdown() {
                      const now = new Date().getTime();
                      const distance = this.targetDate - now;
-                     
+
                      if (distance < 0) {
                          this.countdown = { days: 0, hours: 0, minutes: 0, seconds: 0 };
                          return;
                      }
-                     
+
                      this.countdown = {
                          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
                          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
@@ -175,8 +181,8 @@
              }">
 
         <!-- Background -->
-        <div class="absolute inset-0">
-            <img src="/images/sen.webp" alt="" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="/images/sen.webp" alt="" class="absolute inset-0 w-full h-full object-cover" :style="`transform: translateY(${parallaxOffset}px)`">
             <div class="absolute inset-0 bg-black/20"></div>
         </div>
 
