@@ -183,7 +183,7 @@
         <!-- Background -->
         <div class="absolute inset-0 overflow-hidden">
             <img src="/images/sen.webp" alt="" class="absolute inset-0 w-full h-full object-cover" :style="`transform: translateY(${parallaxOffset}px)`">
-            <div class="absolute inset-0 bg-black/20"></div>
+            <div class="absolute inset-0 bg-black/50 z-10"></div>
         </div>
 
         <!-- Animated Shapes -->
