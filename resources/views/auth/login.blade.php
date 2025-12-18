@@ -44,9 +44,7 @@
                                 <!-- Sélecteur de pays -->
                                 <select x-model="countryCode"
                                     class="px-3 py-3 border-2 border-gray-200 bg-white rounded-xl text-sm font-bold text-gray-700 focus:border-soboa-orange focus:ring-0 cursor-pointer">
-                                    <option value="+225">🇨🇮 +225</option>
                                     <option value="+221">🇸🇳 +221</option>
-                                    <option value="+33">🇫🇷 +33</option>
                                 </select>
                                 <input type="tel" x-model="phone" :placeholder="getPlaceholder()"
                                     class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-soboa-orange focus:ring-0 text-lg"
@@ -202,7 +200,7 @@
                 step: 1,
                 name: '',
                 phone: '',
-                countryCode: '+225', // Côte d'Ivoire par défaut
+                countryCode: '+221', // Sénégal par défaut
                 code: '',
                 loading: false,
                 error: '',
@@ -235,28 +233,17 @@
                 },
 
                 getPlaceholder() {
-                    switch (this.countryCode) {
-                        case '+225': return '07 XX XX XX XX';
-                        case '+221': return '77 XXX XX XX';
-                        case '+33': return '06 XX XX XX XX';
-                        default: return '07 XX XX XX XX';
-                    }
+                    return '77 XXX XX XX';
                 },
 
                 formatPhoneNumber(phone) {
                     // Supprimer tout sauf les chiffres
                     let digits = phone.replace(/\D/g, '');
 
-                    // France (+33) et Sénégal (+221): Retirer le 0 initial
-                    if (this.countryCode === '+33' || this.countryCode === '+221') {
-                        if (digits.startsWith('0')) {
-                            digits = digits.substring(1);
-                        }
+                    // Sénégal (+221): Retirer le 0 initial si présent
+                    if (digits.startsWith('0')) {
+                        digits = digits.substring(1);
                     }
-
-                    // Côte d'Ivoire (+225): GARDER le 0 initial car format 10 chiffres (07...)
-                    // Si l'utilisateur a oublié le 0, on pourrait potentiellement l'ajouter, 
-                    // mais ici on laisse tel quel pour validation backend.
 
                     return digits;
                 },

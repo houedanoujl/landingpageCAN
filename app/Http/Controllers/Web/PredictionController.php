@@ -16,8 +16,7 @@ class PredictionController extends Controller
     public function __construct(
         protected WhatsAppService $whatsAppService,
         protected PointsService $pointsService
-    )
-    {
+    ) {
     }
 
     public function store(Request $request)
@@ -73,13 +72,13 @@ class PredictionController extends Controller
             return back()->with('error', 'Ce match est en cours. Les pronostics sont fermés.');
         }
 
-        // Lock predictions 2 minutes before match starts
-        $lockTime = $match->match_date->copy()->subMinutes(2);
+        // Lock predictions 5 minutes before match starts
+        $lockTime = $match->match_date->copy()->subMinutes(5);
         if (now()->gte($lockTime)) {
             if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-                return response()->json(['message' => 'Les pronostics sont fermés 2 minutes avant le début du match.'], 422);
+                return response()->json(['message' => 'Les pronostics sont fermés 5 minutes avant le début du match.'], 422);
             }
-            return back()->with('error', 'Les pronostics sont fermés 2 minutes avant le début du match.');
+            return back()->with('error', 'Les pronostics sont fermés 5 minutes avant le début du match.');
         }
 
         // Déterminer le gagnant prédit

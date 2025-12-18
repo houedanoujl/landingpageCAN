@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Animation;
 use App\Models\Bar;
 use App\Models\MatchGame;
 use App\Models\PointLog;
 use App\Models\Prediction;
+use App\Models\SiteSetting;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\PointsService;
 use App\Services\WhatsAppService;
@@ -17,14 +20,14 @@ class HomeController extends Controller
     public function index()
     {
         // Fetch upcoming Senegal matches with team relationships
-        $senegalTeam = \App\Models\Team::where('iso_code', 'sn')->first();
+        $senegalTeam = Team::where('iso_code', 'sn')->first();
         $upcomingMatches = collect();
 
         if ($senegalTeam) {
             $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
                 ->where('status', '!=', 'finished')
                 ->where('match_date', '>=', now())
-                ->where(function($query) use ($senegalTeam) {
+                ->where(function ($query) use ($senegalTeam) {
                     $query->where('home_team_id', $senegalTeam->id)
                         ->orWhere('away_team_id', $senegalTeam->id);
                 })
@@ -55,7 +58,7 @@ class HomeController extends Controller
     public function venues()
     {
         $venues = Bar::where('is_active', true)->orderBy('name')->get();
-        $settings = \App\Models\SiteSetting::first();
+        $settings = SiteSetting::first();
         $geofencingRadius = $settings->geofencing_radius ?? 200;
 
         return view('venues', compact('venues', 'geofencingRadius'));
@@ -79,44 +82,17 @@ class HomeController extends Controller
             return redirect()->route('venues')->with('error', 'Veuillez d\'abord sélectionner un point de vente.');
         }
 
-        $groupFilter = $request->query('group');
+        // Récupérer uniquement les matchs assignés à ce lieu via les animations
+        $animations = Animation::where('bar_id', $selectedVenue->id)
+            ->where('is_active', true)
+            ->with(['match.homeTeam', 'match.awayTeam'])
+            ->orderBy('animation_date', 'asc')
+            ->get();
 
-        $query = MatchGame::with(['homeTeam', 'awayTeam'])
-            ->orderBy('phase', 'asc')
-            ->orderBy('group_name', 'asc')
-            ->orderBy('match_date', 'asc');
-
-        if ($groupFilter) {
-            $query->where('group_name', $groupFilter);
-        }
-
-        // Grouper les matchs par phase, puis par groupe pour la phase de poules
-        $allMatches = $query->get();
-        $matchesByPhase = $allMatches->groupBy('phase')->map(function($phaseMatches, $phase) {
-            if ($phase === 'group_stage') {
-                // Pour la phase de poules, sous-grouper par groupe
-                return $phaseMatches->groupBy('group_name');
-            }
-            // Pour les phases finales, retourner les matchs directement
-            return $phaseMatches;
-        });
-
-        // Identifier les prochains matchs à venir du Sénégal (les 3 prochains non terminés)
-        $senegalTeam = \App\Models\Team::where('iso_code', 'sn')->first();
-        $upcomingMatches = collect();
-
-        if ($senegalTeam) {
-            $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
-                ->where('status', '!=', 'finished')
-                ->where('match_date', '>=', now())
-                ->where(function($query) use ($senegalTeam) {
-                    $query->where('home_team_id', $senegalTeam->id)
-                        ->orWhere('away_team_id', $senegalTeam->id);
-                })
-                ->orderBy('match_date', 'asc')
-                ->take(3)
-                ->get();
-        }
+        // Extraire les matchs des animations
+        $venueMatches = $animations->map(function ($animation) {
+            return $animation->match;
+        })->unique('id');
 
         // Récupérer les pronostics de l'utilisateur connecté
         $userPredictions = [];
@@ -127,27 +103,11 @@ class HomeController extends Controller
             }
         }
 
-        // Calculer les compteurs pour chaque phase et groupe
-        $phaseCounts = [];
-        $groupCounts = [];
-
-        foreach ($matchesByPhase as $phase => $phaseData) {
-            if ($phase === 'group_stage') {
-                // Compter par groupe
-                foreach ($phaseData as $group => $matches) {
-                    $groupCounts[$group] = $matches->count();
-                }
-                $phaseCounts['group_stage'] = collect($groupCounts)->sum();
-            } else {
-                $phaseCounts[$phase] = $phaseData->count();
-            }
-        }
-
         // Charger l'équipe favorite pour le highlighting
-        $settings = \App\Models\SiteSetting::with('favoriteTeam')->first();
+        $settings = SiteSetting::with('favoriteTeam')->first();
         $favoriteTeamId = $settings?->favorite_team_id;
 
-        return view('matches', compact('matchesByPhase', 'userPredictions', 'selectedVenue', 'upcomingMatches', 'phaseCounts', 'groupCounts', 'favoriteTeamId'));
+        return view('matches', compact('venueMatches', 'userPredictions', 'selectedVenue', 'favoriteTeamId'));
     }
 
     public function leaderboard()
@@ -158,7 +118,10 @@ class HomeController extends Controller
 
     public function map()
     {
-        $venues = Bar::where('is_active', true)->orderBy('name')->get();
+        $venues = Bar::with(['animations.match.homeTeam', 'animations.match.awayTeam'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
         return view('map', compact('venues'));
     }
 
@@ -294,7 +257,7 @@ class HomeController extends Controller
         $foundBar = null;
         foreach ($bars as $bar) {
             $distance = $this->calculateDistance($userLat, $userLng, $bar->latitude, $bar->longitude);
-            if ($distance <= 0.2) { // 200 mètres en km
+            if ($distance <= 0.05) { // 50 mètres en km
                 $foundBar = $bar;
                 break;
             }

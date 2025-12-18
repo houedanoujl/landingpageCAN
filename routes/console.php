@@ -21,6 +21,13 @@ Schedule::command('notifications:send-match-results')
     ->onOneServer()
     ->runInBackground();
 
+// Process finished matches and calculate points automatically
+Schedule::command('matches:process-finished')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
 // Clean old log files daily at 2 AM
 Schedule::command('logs:clean --days=7')
     ->dailyAt('02:00')

@@ -26,7 +26,7 @@ class AdminController extends Controller
         if (!$userId) {
             return false;
         }
-        
+
         $user = User::find($userId);
         return $user && $user->role === 'admin';
     }
@@ -79,10 +79,10 @@ class AdminController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('team_a', 'like', "%{$search}%")
-                  ->orWhere('team_b', 'like', "%{$search}%")
-                  ->orWhere('group_name', 'like', "%{$search}%")
-                  ->orWhere('stadium', 'like', "%{$search}%")
-                  ->orWhereDate('match_date', 'like', "%{$search}%");
+                    ->orWhere('team_b', 'like', "%{$search}%")
+                    ->orWhere('group_name', 'like', "%{$search}%")
+                    ->orWhere('stadium', 'like', "%{$search}%")
+                    ->orWhereDate('match_date', 'like', "%{$search}%");
             });
         }
 
@@ -193,7 +193,7 @@ class AdminController extends Controller
 
         $match = MatchGame::findOrFail($id);
 
-        $wasScheduled = $match->status === 'scheduled';
+        $wasFinished = $match->status === 'finished';
         $nowFinished = $request->status === 'finished';
 
         $homeTeam = Team::find($request->home_team_id);
@@ -213,8 +213,9 @@ class AdminController extends Controller
             'status' => $request->status,
         ]);
 
-        // If match just finished, trigger points calculation
-        if ($wasScheduled && $nowFinished && $request->score_a !== null && $request->score_b !== null) {
+        // If match is finished with scores, trigger points calculation
+        // This handles both: status change to finished, or updating scores on already finished match
+        if ($nowFinished && $request->score_a !== null && $request->score_b !== null && !$wasFinished) {
             ProcessMatchPoints::dispatch($match->id);
             return redirect()->route('admin.matches')->with('success', "Match mis à jour. Calcul des points en cours...");
         }
@@ -232,10 +233,10 @@ class AdminController extends Controller
         }
 
         $match = MatchGame::findOrFail($id);
-        
+
         // Supprimer les pronostics associés
         Prediction::where('match_id', $id)->delete();
-        
+
         $match->delete();
 
         return redirect()->route('admin.matches')->with('success', 'Match supprimé avec succès.');
@@ -324,7 +325,7 @@ class AdminController extends Controller
         }
 
         $user = User::findOrFail($id);
-        
+
         // Ne pas supprimer si c'est le dernier admin
         if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
             return back()->with('error', 'Impossible de supprimer le dernier administrateur.');
@@ -332,7 +333,7 @@ class AdminController extends Controller
 
         // Supprimer les pronostics associés
         Prediction::where('user_id', $id)->delete();
-        
+
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', 'Utilisateur supprimé avec succès.');
@@ -349,7 +350,9 @@ class AdminController extends Controller
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
-        $bars = Bar::orderBy('name')->paginate(20);
+        $bars = Bar::with(['animations.match.homeTeam', 'animations.match.awayTeam'])
+            ->orderBy('name')
+            ->paginate(20);
 
         return view('admin.bars', compact('bars'));
     }
@@ -486,11 +489,11 @@ class AdminController extends Controller
             'Content-Disposition' => 'attachment; filename="modele_points_de_vente.csv"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // BOM UTF-8 pour Excel
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // En-têtes
             fputcsv($file, ['nom', 'adresse', 'latitude', 'longitude']);
@@ -699,13 +702,13 @@ class AdminController extends Controller
         }
 
         $team = Team::findOrFail($id);
-        
+
         // Vérifier si l'équipe est utilisée dans des matchs
         $matchCount = MatchGame::where('home_team_id', $id)->orWhere('away_team_id', $id)->count();
         if ($matchCount > 0) {
             return back()->with('error', "Impossible de supprimer cette équipe car elle est utilisée dans {$matchCount} match(s).");
         }
-        
+
         $team->delete();
 
         return redirect()->route('admin.teams')->with('success', 'Équipe supprimée avec succès.');
@@ -1207,7 +1210,8 @@ class AdminController extends Controller
 
             $bestThirdsCount = $result['best_thirds']->count();
 
-            return back()->with('success',
+            return back()->with(
+                'success',
                 "Calcul terminé ! {$qualifiedCount} équipes (1ers et 2es) + {$bestThirdsCount} meilleurs 3èmes = " .
                 ($qualifiedCount + $bestThirdsCount) . " équipes qualifiées pour les 1/8e."
             );
@@ -1310,9 +1314,9 @@ class AdminController extends Controller
         }
 
         $bars = Bar::where('is_active', true)->orderBy('name')->get();
-        $matches = MatchGame::with(['homeTeam', 'awayTeam'])->orderBy('match_date', 'asc')->get();
+        $teams = \App\Models\Team::orderBy('name')->get();
 
-        return view('admin.create-animation', compact('bars', 'matches'));
+        return view('admin.create-animation', compact('bars', 'teams'));
     }
 
     /**
@@ -1326,15 +1330,51 @@ class AdminController extends Controller
 
         $request->validate([
             'bar_id' => 'required|exists:bars,id',
-            'match_id' => 'required|exists:matches,id',
+            'home_team_id' => 'required|exists:teams,id',
+            'away_team_id' => 'required|exists:teams,id',
             'animation_date' => 'required|date',
             'animation_time' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'phase' => 'nullable|string|max:50',
         ]);
+
+        // Validate that home and away teams are different
+        if ($request->home_team_id == $request->away_team_id) {
+            return back()->with('error', 'Les équipes à domicile et extérieure doivent être différentes.')
+                ->withInput();
+        }
+
+        // Find or create the match with these two teams
+        $match = MatchGame::where(function ($query) use ($request) {
+            $query->where('home_team_id', $request->home_team_id)
+                ->where('away_team_id', $request->away_team_id);
+        })->orWhere(function ($query) use ($request) {
+            $query->where('home_team_id', $request->away_team_id)
+                ->where('away_team_id', $request->home_team_id);
+        })->first();
+
+        if (!$match) {
+            // Create a new match if it doesn't exist
+            // Fetch team names for team_a and team_b fields
+            $homeTeam = \App\Models\Team::find($request->home_team_id);
+            $awayTeam = \App\Models\Team::find($request->away_team_id);
+
+            $match = MatchGame::create([
+                'home_team_id' => $request->home_team_id,
+                'away_team_id' => $request->away_team_id,
+                'team_a' => $homeTeam ? $homeTeam->name : 'Team A',
+                'team_b' => $awayTeam ? $awayTeam->name : 'Team B',
+                'match_date' => $request->animation_date,
+                'status' => 'scheduled',
+                'phase' => $request->phase ?? 'group_stage',
+            ]);
+        } elseif ($request->phase) {
+            $match->update(['phase' => $request->phase]);
+        }
 
         // Check if animation already exists for this bar-match combination
         $existing = Animation::where('bar_id', $request->bar_id)
-            ->where('match_id', $request->match_id)
+            ->where('match_id', $match->id)
             ->first();
 
         if ($existing) {
@@ -1344,7 +1384,7 @@ class AdminController extends Controller
 
         Animation::create([
             'bar_id' => $request->bar_id,
-            'match_id' => $request->match_id,
+            'match_id' => $match->id,
             'animation_date' => $request->animation_date,
             'animation_time' => $request->animation_time,
             'is_active' => $request->has('is_active'),
@@ -1362,11 +1402,11 @@ class AdminController extends Controller
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
-        $animation = Animation::with(['bar', 'match'])->findOrFail($id);
+        $animation = Animation::with(['bar', 'match.homeTeam', 'match.awayTeam'])->findOrFail($id);
         $bars = Bar::where('is_active', true)->orderBy('name')->get();
-        $matches = MatchGame::with(['homeTeam', 'awayTeam'])->orderBy('match_date', 'asc')->get();
+        $teams = \App\Models\Team::orderBy('name')->get();
 
-        return view('admin.edit-animation', compact('animation', 'bars', 'matches'));
+        return view('admin.edit-animation', compact('animation', 'bars', 'teams'));
     }
 
     /**
@@ -1382,15 +1422,51 @@ class AdminController extends Controller
 
         $request->validate([
             'bar_id' => 'required|exists:bars,id',
-            'match_id' => 'required|exists:matches,id',
+            'home_team_id' => 'required|exists:teams,id',
+            'away_team_id' => 'required|exists:teams,id',
             'animation_date' => 'required|date',
             'animation_time' => 'nullable|string|max:20',
             'is_active' => 'boolean',
+            'phase' => 'nullable|string|max:50',
         ]);
+
+        // Validate that home and away teams are different
+        if ($request->home_team_id == $request->away_team_id) {
+            return back()->with('error', 'Les équipes à domicile et extérieure doivent être différentes.')
+                ->withInput();
+        }
+
+        // Find or create the match with these two teams
+        $match = MatchGame::where(function ($query) use ($request) {
+            $query->where('home_team_id', $request->home_team_id)
+                ->where('away_team_id', $request->away_team_id);
+        })->orWhere(function ($query) use ($request) {
+            $query->where('home_team_id', $request->away_team_id)
+                ->where('away_team_id', $request->home_team_id);
+        })->first();
+
+        if (!$match) {
+            // Create a new match if it doesn't exist
+            // Fetch team names for team_a and team_b fields
+            $homeTeam = \App\Models\Team::find($request->home_team_id);
+            $awayTeam = \App\Models\Team::find($request->away_team_id);
+
+            $match = MatchGame::create([
+                'home_team_id' => $request->home_team_id,
+                'away_team_id' => $request->away_team_id,
+                'team_a' => $homeTeam ? $homeTeam->name : 'Team A',
+                'team_b' => $awayTeam ? $awayTeam->name : 'Team B',
+                'match_date' => $request->animation_date,
+                'status' => 'scheduled',
+                'phase' => $request->phase ?? 'group_stage',
+            ]);
+        } elseif ($request->phase) {
+            $match->update(['phase' => $request->phase]);
+        }
 
         // Check if another animation exists for this bar-match combination (excluding current)
         $existing = Animation::where('bar_id', $request->bar_id)
-            ->where('match_id', $request->match_id)
+            ->where('match_id', $match->id)
             ->where('id', '!=', $id)
             ->first();
 
@@ -1401,7 +1477,7 @@ class AdminController extends Controller
 
         $animation->update([
             'bar_id' => $request->bar_id,
-            'match_id' => $request->match_id,
+            'match_id' => $match->id,
             'animation_date' => $request->animation_date,
             'animation_time' => $request->animation_time,
             'is_active' => $request->has('is_active'),

@@ -58,8 +58,8 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="text-left p-4 font-bold text-gray-700">Nom</th>
-                            <th class="text-left p-4 font-bold text-gray-700">Adresse</th>
-                            <th class="text-left p-4 font-bold text-gray-700">Coordonnées</th>
+                            <th class="text-left p-4 font-bold text-gray-700">Zone</th>
+                            <th class="text-left p-4 font-bold text-gray-700">Matchs Assignés</th>
                             <th class="text-center p-4 font-bold text-gray-700">Statut</th>
                             <th class="text-center p-4 font-bold text-gray-700">Actions</th>
                         </tr>
@@ -72,12 +72,48 @@
                                     <div class="w-10 h-10 bg-soboa-blue/10 rounded-full flex items-center justify-center">
                                         <span class="text-xl">📍</span>
                                     </div>
-                                    <span class="font-bold text-gray-800">{{ $bar->name }}</span>
+                                    <div>
+                                        <div class="font-bold text-gray-800">{{ $bar->name }}</div>
+                                        <div class="text-xs text-gray-500 font-mono">
+                                            {{ number_format($bar->latitude, 4) }}, {{ number_format($bar->longitude, 4) }}
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="p-4 text-gray-600 max-w-xs truncate">{{ $bar->address }}</td>
-                            <td class="p-4 text-gray-500 text-sm font-mono">
-                                {{ number_format($bar->latitude, 6) }}, {{ number_format($bar->longitude, 6) }}
+                            <td class="p-4">
+                                @if($bar->zone)
+                                    <span class="text-gray-700 font-medium">{{ $bar->zone }}</span>
+                                @else
+                                    <span class="text-gray-400 italic text-sm">Non définie</span>
+                                @endif
+                            </td>
+                            <td class="p-4">
+                                @if($bar->animations->count() > 0)
+                                    <div class="space-y-1">
+                                        @foreach($bar->animations->take(2) as $animation)
+                                            <div class="flex items-center gap-2 text-sm">
+                                                <span class="text-xs">⚽</span>
+                                                <span class="font-medium text-gray-700">
+                                                    @if($animation->match->homeTeam && $animation->match->awayTeam)
+                                                        {{ $animation->match->homeTeam->name }} vs {{ $animation->match->awayTeam->name }}
+                                                    @else
+                                                        {{ $animation->match->team_a }} vs {{ $animation->match->team_b }}
+                                                    @endif
+                                                </span>
+                                                <span class="text-xs text-gray-500">
+                                                    ({{ \Carbon\Carbon::parse($animation->animation_date)->format('d/m') }})
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                        @if($bar->animations->count() > 2)
+                                            <div class="text-xs text-soboa-blue font-bold">
+                                                +{{ $bar->animations->count() - 2 }} autre(s)
+                                            </div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 italic text-sm">Aucun match assigné</span>
+                                @endif
                             </td>
                             <td class="p-4 text-center">
                                 @if($bar->is_active)
@@ -87,10 +123,15 @@
                                 @endif
                             </td>
                             <td class="p-4">
-                                <div class="flex items-center justify-center gap-2">
+                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                    <a href="{{ route('admin.bar-animations', $bar->id) }}"
+                                       class="text-soboa-blue hover:underline text-sm font-bold whitespace-nowrap">
+                                        📅 Animations
+                                    </a>
+                                    <span class="text-gray-300">|</span>
                                     <form action="{{ route('admin.toggle-bar', $bar->id) }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="text-{{ $bar->is_active ? 'red' : 'green' }}-600 hover:underline text-sm font-bold">
+                                        <button type="submit" class="text-{{ $bar->is_active ? 'red' : 'green' }}-600 hover:underline text-sm font-bold whitespace-nowrap">
                                             {{ $bar->is_active ? 'Désactiver' : 'Activer' }}
                                         </button>
                                     </form>

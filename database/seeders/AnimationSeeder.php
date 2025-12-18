@@ -251,6 +251,7 @@ class AnimationSeeder extends Seeder
             'EGYPTE' => 'Égypte',
             'ÉGYPTE' => 'Égypte',
             'EGYPT' => 'Égypte',
+            'AFRIQUE DU SUD VS EGYPE' => 'AFRIQUE DU SUD VS EGYPTE',
             'RDC' => 'RD Congo',
             'RD CONGO' => 'RD Congo',
             'CONGO RDC' => 'RD Congo',

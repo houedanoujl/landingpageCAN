@@ -108,7 +108,13 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/matches/{id}/predictions', [AdminController::class, 'matchPredictions'])->name('match-predictions');
     Route::delete('/predictions/{id}', [AdminController::class, 'deletePrediction'])->name('delete-prediction');
     Route::post('/predictions/bulk-delete', [AdminController::class, 'bulkDeletePredictions'])->name('bulk-delete-predictions');
+    Route::get('/predictions/bulk-delete', function() {
+        return redirect()->route('admin.predictions')->with('error', 'Action invalide. Utilisez le formulaire pour supprimer des pronostics.');
+    });
     Route::post('/matches/bulk-delete', [AdminController::class, 'bulkDeleteMatches'])->name('bulk-delete-matches');
+    Route::get('/matches/bulk-delete', function() {
+        return redirect()->route('admin.matches')->with('error', 'Action invalide. Utilisez le formulaire pour supprimer des matchs.');
+    });
     
     // Paramètres
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');

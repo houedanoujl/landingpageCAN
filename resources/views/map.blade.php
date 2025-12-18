@@ -1,8 +1,47 @@
 <x-layouts.app title="Points de Vente">
 
+    @php
+        $venuesData = $venues->map(function ($venue) {
+            return [
+                'id' => $venue->id,
+                'name' => $venue->name,
+                'address' => $venue->address,
+                'zone' => $venue->zone,
+                'latitude' => $venue->latitude,
+                'longitude' => $venue->longitude,
+                'is_active' => $venue->is_active,
+                'animations' => $venue->animations->filter(fn($a) => $a->match)->map(function ($animation) {
+                    $match = $animation->match;
+                    $homeTeam = $match->homeTeam;
+                    $awayTeam = $match->awayTeam;
+
+                    $teamA = $homeTeam ? $homeTeam->name : $match->team_a;
+                    $teamB = $awayTeam ? $awayTeam->name : $match->team_b;
+
+                    $isTBD = str_contains(strtolower($teamA), 'déterminer') || str_contains(strtolower($teamB), 'déterminer');
+
+                    $matchLabel = $isTBD ? $match->phase_name : ($teamA . ' vs ' . $teamB);
+
+                    return [
+                        'id' => $animation->id,
+                        'match_label' => $matchLabel,
+                        'home_flag' => $homeTeam ? $homeTeam->flag_url : null,
+                        'away_flag' => $awayTeam ? $awayTeam->flag_url : null,
+                        'score_a' => $match->score_a,
+                        'score_b' => $match->score_b,
+                        'status' => $match->status,
+                        'is_tbd' => $isTBD,
+                        'date' => \Carbon\Carbon::parse($animation->animation_date)->format('d/m'),
+                        'time' => $animation->animation_time,
+                    ];
+                })->values()->toArray()
+            ];
+        });
+    @endphp
+
     <script>
-        // Données des venues passées depuis le serveur
-        window.venuesData = @json($venues ?? []);
+        // Données des venues passées depuis le serveur avec leurs animations
+        window.venuesData = {!! json_encode($venuesData) !!};
     </script>
 
     <div class="min-h-screen bg-gray-50" x-data="{
@@ -318,7 +357,60 @@
                                             <span class="text-2xl">📍</span>
                                             <div class="flex-1">
                                                 <h3 class="font-bold text-soboa-blue" x-text="venue.name"></h3>
-                                                <p class="text-gray-600 text-sm" x-text="venue.address"></p>
+                                                <p class="text-gray-600 text-sm" x-text="venue.zone || venue.address">
+                                                </p>
+
+                                                <!-- Afficher les matchs -->
+                                                <template x-if="venue.animations && venue.animations.length > 0">
+                                                    <div class="mt-4 space-y-3">
+                                                        <template x-for="animation in venue.animations.slice(0, 2)"
+                                                            :key="animation.id">
+                                                            <div
+                                                                class="flex items-center gap-2 text-sm bg-white/50 p-2 rounded-lg border border-gray-100">
+                                                                <div class="flex items-center gap-1">
+                                                                    <template x-if="animation.home_flag">
+                                                                        <img :src="animation.home_flag"
+                                                                            class="w-5 h-4 object-contain rounded-sm" />
+                                                                    </template>
+                                                                    <template x-if="!animation.home_flag">
+                                                                        <span>⚽</span>
+                                                                    </template>
+                                                                </div>
+                                                                <div class="flex-1 min-w-0">
+                                                                    <span
+                                                                        class="font-medium text-gray-700 truncate block"
+                                                                        x-text="animation.match_label"></span>
+                                                                    <template x-if="animation.status === 'finished'">
+                                                                        <span
+                                                                            class="text-[10px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded font-bold">TERMINE</span>
+                                                                    </template>
+                                                                    <template x-if="animation.status === 'live'">
+                                                                        <span
+                                                                            class="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold animate-pulse">LIVE</span>
+                                                                    </template>
+                                                                </div>
+
+                                                                <template x-if="animation.status === 'finished'">
+                                                                    <span
+                                                                        class="text-soboa-orange font-black text-sm bg-soboa-orange/10 px-2 py-1 rounded"
+                                                                        x-text="animation.score_a + ' - ' + animation.score_b"></span>
+                                                                </template>
+                                                                <div class="flex items-center gap-1">
+                                                                    <template x-if="animation.away_flag">
+                                                                        <img :src="animation.away_flag"
+                                                                            class="w-5 h-4 object-contain rounded-sm" />
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                        <template x-if="venue.animations.length > 2">
+                                                            <div class="text-xs text-soboa-blue font-bold mt-1 ml-2">
+                                                                +<span x-text="venue.animations.length - 2"></span>
+                                                                autre(s) match(s)
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </div>
                                         <div class="flex items-center justify-between">
@@ -364,32 +456,6 @@
             </div>
         </div>
 
-        <!-- Venues List -->
-        <div class="max-w-7xl mx-auto px-4 pb-16">
-            <h3 class="text-2xl font-bold text-soboa-blue mb-6">Nos lieux partenaires</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @forelse($venues as $venue)
-                    <div
-                        class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:border-soboa-orange/30 transition-colors">
-                        <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-soboa-orange/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span class="text-2xl text-soboa-orange">📍</span>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-soboa-blue text-lg">{{ $venue->name }}</h4>
-                                <p class="text-gray-500 text-sm">{{ $venue->address }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-3 text-center py-10 bg-white rounded-xl">
-                        <p class="text-gray-500">Aucun lieu partenaire pour le moment.</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
     </div>
 
     <!-- Leaflet CSS & JS -->
@@ -398,26 +464,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Initialize map centered on Côte d'Ivoire
-            const map = L.map('map').setView([5.3484, -4.0167], 12);
+            // Initialize map centered on Dakar, Senegal
+            const map = L.map('map').setView([14.7167, -17.4677], 12);
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Custom marker icon
-            // Custom marker icon
-            const venueIcon = L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="background: #E96611; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                       </div>`,
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
+            // Custom marker icon using Gazelle logo
+            const venueIcon = L.icon({
+                iconUrl: '/images/logoGazelle.jpeg',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40],
+                className: 'gazelle-marker'
             });
 
             // Add venue markers
@@ -432,6 +493,21 @@
     <style>
         [x-cloak] {
             display: none !important;
+        }
+
+        /* Style for Gazelle logo markers */
+        .gazelle-marker {
+            border-radius: 50%;
+            border: 3px solid #E96611;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            background: white;
+        }
+
+        .gazelle-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 </x-layouts.app>
