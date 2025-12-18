@@ -61,6 +61,14 @@ class MatchGame extends Model
     }
 
     /**
+     * Get the animations (venue assignments) for this match.
+     */
+    public function animations()
+    {
+        return $this->hasMany(Animation::class, 'match_id');
+    }
+
+    /**
      * Get the current user's prediction for this match.
      */
     public function getUserPredictionAttribute()

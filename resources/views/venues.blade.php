@@ -241,7 +241,7 @@
             let userLongitude = null;
 
             // Rayon de geofencing en mètres (défini dans les paramètres admin)
-            const GEOFENCING_RADIUS = {{ $geofencingRadius ?? 200 }};
+            const GEOFENCING_RADIUS = {{ $geofencingRadius }};
 
             // Calculer la distance entre deux points (formule de Haversine)
             function calculateDistance(lat1, lon1, lat2, lon2) {

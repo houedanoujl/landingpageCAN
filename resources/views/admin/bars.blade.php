@@ -36,6 +36,106 @@
             </div>
             @endif
 
+            <!-- Recherche et Filtres -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <form method="GET" action="{{ route('admin.bars') }}" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Recherche générale -->
+                        <div class="md:col-span-2">
+                            <label for="search" class="block text-sm font-bold text-gray-700 mb-2">
+                                🔍 Rechercher
+                            </label>
+                            <input
+                                type="text"
+                                id="search"
+                                name="search"
+                                value="{{ request('search') }}"
+                                placeholder="Nom, zone, adresse..."
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-soboa-orange focus:border-transparent"
+                            >
+                        </div>
+
+                        <!-- Filtre par zone -->
+                        <div>
+                            <label for="zone" class="block text-sm font-bold text-gray-700 mb-2">
+                                📍 Zone
+                            </label>
+                            <select
+                                id="zone"
+                                name="zone"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-soboa-orange focus:border-transparent"
+                            >
+                                <option value="">Toutes les zones</option>
+                                @foreach($zones as $zone)
+                                <option value="{{ $zone }}" {{ request('zone') === $zone ? 'selected' : '' }}>{{ $zone }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Filtre par statut -->
+                        <div>
+                            <label for="status" class="block text-sm font-bold text-gray-700 mb-2">
+                                Statut
+                            </label>
+                            <select
+                                id="status"
+                                name="status"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-soboa-orange focus:border-transparent"
+                            >
+                                <option value="">Tous</option>
+                                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Actifs</option>
+                                <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactifs</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Filtre par matches assignés -->
+                        <div>
+                            <label for="has_matches" class="block text-sm font-bold text-gray-700 mb-2">
+                                ⚽ Matches
+                            </label>
+                            <select
+                                id="has_matches"
+                                name="has_matches"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-soboa-orange focus:border-transparent"
+                            >
+                                <option value="">Tous</option>
+                                <option value="yes" {{ request('has_matches') === 'yes' ? 'selected' : '' }}>Avec matches</option>
+                                <option value="no" {{ request('has_matches') === 'no' ? 'selected' : '' }}>Sans matches</option>
+                            </select>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="md:col-span-3 flex items-end gap-3">
+                            <button
+                                type="submit"
+                                class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-6 py-2 rounded-lg transition-colors"
+                            >
+                                Rechercher
+                            </button>
+                            @if(request()->hasAny(['search', 'zone', 'status', 'has_matches']))
+                            <a
+                                href="{{ route('admin.bars') }}"
+                                class="bg-gray-500 hover:bg-gray-600 text-white font-bold px-6 py-2 rounded-lg transition-colors"
+                            >
+                                Réinitialiser
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if(request()->hasAny(['search', 'zone', 'status', 'has_matches']))
+                    <div class="pt-2 text-sm text-gray-600">
+                        <strong>{{ $bars->total() }}</strong> résultat(s) trouvé(s)
+                        @if(request('search'))
+                        pour "<strong>{{ request('search') }}</strong>"
+                        @endif
+                    </div>
+                    @endif
+                </form>
+            </div>
+
             <!-- Stats -->
             <div class="grid grid-cols-3 gap-4 mb-6">
                 <div class="bg-white rounded-xl p-4 shadow">

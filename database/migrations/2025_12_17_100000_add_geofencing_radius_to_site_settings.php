@@ -13,12 +13,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('site_settings', function (Blueprint $table) {
-            $table->integer('geofencing_radius')->default(200)->after('hero_image_path');
+            $table->integer('geofencing_radius')->default(50)->after('hero_image_path');
         });
 
         // Update existing record with default value
         DB::table('site_settings')->update([
-            'geofencing_radius' => 200,
+            'geofencing_radius' => 50,
             'updated_at' => now(),
         ]);
     }

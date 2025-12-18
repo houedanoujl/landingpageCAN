@@ -68,6 +68,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     // Cache Management
     Route::post('/cache/clear', [AdminController::class, 'clearCache'])->name('clear-cache');
 
+    // Calendar & Matrix Views
+    Route::get('/calendar', [AdminController::class, 'calendar'])->name('calendar');
+    Route::get('/match-venue-matrix', [AdminController::class, 'matchVenueMatrix'])->name('match-venue-matrix');
+
     // Utilisateurs
     Route::get('/users', [AdminController::class, 'users'])->name('users');
     Route::get('/users/{id}/edit', [AdminController::class, 'editUser'])->name('edit-user');

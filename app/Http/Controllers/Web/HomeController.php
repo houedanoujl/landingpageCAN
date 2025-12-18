@@ -104,8 +104,10 @@ class HomeController extends Controller
     public function venues()
     {
         $venues = Bar::where('is_active', true)->orderBy('name')->get();
-        $settings = SiteSetting::first();
-        $geofencingRadius = $settings->geofencing_radius ?? 200;
+        $settings = SiteSetting::firstOrCreate([], [
+            'geofencing_radius' => 50,
+        ]);
+        $geofencingRadius = $settings->geofencing_radius;
 
         return view('venues', compact('venues', 'geofencingRadius'));
     }
@@ -297,58 +299,49 @@ class HomeController extends Controller
         $userLat = $request->latitude;
         $userLng = $request->longitude;
 
-        // Geofencing check - trouver un bar actif à proximité (rayon de 200m)
+        // Récupérer le rayon de géolocalisation depuis les paramètres (en mètres)
+        $settings = SiteSetting::firstOrCreate([], [
+            'geofencing_radius' => 50,
+        ]);
+
+        $geofencingRadiusMeters = $settings->geofencing_radius;
+        $geofencingRadiusKm = $geofencingRadiusMeters / 1000; // Convertir en km pour le calcul
+
+        // Geofencing check - trouver un bar actif à proximité
         $bars = Bar::where('is_active', true)->get();
 
         $foundBar = null;
         foreach ($bars as $bar) {
             $distance = $this->calculateDistance($userLat, $userLng, $bar->latitude, $bar->longitude);
-            if ($distance <= 0.05) { // 50 mètres en km
+            if ($distance <= $geofencingRadiusKm) {
                 $foundBar = $bar;
                 break;
             }
         }
 
         if ($foundBar) {
-            $pointsAwarded = $pointsService->awardBarVisitPoints($user, $foundBar->id);
+            // IMPORTANT: Les points ne sont PAS attribués ici lors du check-in depuis la map
+            // Les 4 points de visite seront attribués UNIQUEMENT lors de la soumission d'un pronostic
+            // via PredictionController::store() -> awardPredictionVenuePoints()
 
-            // Refresh user pour obtenir les points mis à jour
-            $user->refresh();
+            // Stocker le bar sélectionné en session pour valider les pronostics
+            session(['selected_venue_id' => $foundBar->id]);
 
-            // Mettre à jour la session avec les nouveaux points
-            session(['user_points' => $user->points_total]);
-
-            $message = $pointsAwarded > 0
-                ? "Bienvenue à {$foundBar->name} ! +{$pointsAwarded} points gagnés 🎉"
-                : "Bienvenue à {$foundBar->name} ! (Points déjà réclamés aujourd'hui)";
-
-            // Envoyer notification WhatsApp si des points ont été gagnés
-            if ($pointsAwarded > 0 && $user->phone) {
-                try {
-                    $whatsAppMessage = "🎉 Check-in réussi à {$foundBar->name}!\n\n";
-                    $whatsAppMessage .= "Points gagnés: +{$pointsAwarded} pts\n";
-                    $whatsAppMessage .= "Total points: {$user->points_total} pts\n\n";
-                    $whatsAppMessage .= "Continuez à parier et à visiter nos lieux partenaires pour gagner plus de points!";
-
-                    $whatsAppService->sendMessage($user->phone, $whatsAppMessage);
-                } catch (\Exception $e) {
-                    // Log l'erreur mais ne bloque pas le check-in
-                    \Log::error('Erreur envoi WhatsApp check-in: ' . $e->getMessage());
-                }
-            }
+            $message = "Lieu confirmé : {$foundBar->name} ! Vous pouvez maintenant faire vos pronostics.";
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'points_awarded' => $pointsAwarded,
+                'points_awarded' => 0, // Pas de points lors du simple check-in
                 'total_points' => $user->points_total,
-                'bar_name' => $foundBar->name
+                'bar_name' => $foundBar->name,
+                'bar_id' => $foundBar->id
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Aucun lieu partenaire à proximité (moins de 200m).'
+            'message' => "Aucun lieu partenaire à proximité (moins de {$geofencingRadiusMeters}m)."
         ], 404);
     }
 

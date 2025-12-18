@@ -92,6 +92,64 @@
                         </select>
                     </div>
 
+                    <!-- Points de vente (PDV) -->
+                    <div class="border-2 border-indigo-200 rounded-xl p-6 bg-indigo-50">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="block text-gray-800 font-bold text-lg">
+                                📍 Points de Vente Assignés
+                            </label>
+                            <span class="text-sm text-indigo-600 font-medium">
+                                {{ count($assignedBarIds) }} PDV sélectionné(s)
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Sélectionnez les points de vente où ce match sera disponible pour les pronostics.
+                        </p>
+
+                        <!-- Recherche de PDV -->
+                        <div class="mb-4">
+                            <input type="text" id="venueSearch" placeholder="🔍 Rechercher un PDV..."
+                                   onkeyup="filterVenues()"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <!-- Liste des PDV par zone -->
+                        <div class="max-h-96 overflow-y-auto space-y-4" id="venuesList">
+                            @php
+                                $barsByZone = $bars->groupBy('zone');
+                            @endphp
+
+                            @foreach($barsByZone as $zone => $zoneBars)
+                                <div class="venue-zone-group">
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h3 class="font-bold text-gray-700">{{ $zone ?: 'Sans zone' }}</h3>
+                                            <label class="flex items-center gap-2 text-sm text-indigo-600 cursor-pointer">
+                                                <input type="checkbox" onchange="toggleZone(this, '{{ $zone }}')"
+                                                       class="w-4 h-4 text-indigo-600 rounded">
+                                                <span class="font-medium">Tout sélectionner</span>
+                                            </label>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            @foreach($zoneBars as $bar)
+                                                <label class="venue-item flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer transition"
+                                                       data-venue-name="{{ strtolower($bar->name) }}"
+                                                       data-venue-zone="{{ strtolower($zone) }}">
+                                                    <input type="checkbox"
+                                                           name="venue_ids[]"
+                                                           value="{{ $bar->id }}"
+                                                           {{ in_array($bar->id, $assignedBarIds) ? 'checked' : '' }}
+                                                           class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 venue-checkbox zone-{{ Str::slug($zone) }}">
+                                                    <span class="text-sm font-medium text-gray-700">{{ $bar->name }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
                     <!-- Scores -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-4">Score Final</label>
@@ -163,4 +221,63 @@
 
         </div>
     </div>
+
+    <script>
+        // Fonction de recherche de PDV
+        function filterVenues() {
+            const search = document.getElementById('venueSearch').value.toLowerCase();
+            const venues = document.querySelectorAll('.venue-item');
+            const zoneGroups = document.querySelectorAll('.venue-zone-group');
+
+            venues.forEach(venue => {
+                const name = venue.dataset.venueName;
+                const zone = venue.dataset.venueZone;
+
+                if (name.includes(search) || zone.includes(search)) {
+                    venue.style.display = 'flex';
+                } else {
+                    venue.style.display = 'none';
+                }
+            });
+
+            // Cacher les groupes de zones vides
+            zoneGroups.forEach(group => {
+                const visibleVenues = group.querySelectorAll('.venue-item[style="display: flex;"], .venue-item:not([style])');
+                if (search && visibleVenues.length === 0) {
+                    group.style.display = 'none';
+                } else {
+                    group.style.display = 'block';
+                }
+            });
+        }
+
+        // Fonction pour sélectionner/désélectionner tous les PDV d'une zone
+        function toggleZone(checkbox, zone) {
+            const zoneSlug = zone.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const checkboxes = document.querySelectorAll('.zone-' + zoneSlug);
+
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+
+            updateCount();
+        }
+
+        // Mettre à jour le compteur de PDV sélectionnés
+        function updateCount() {
+            const checked = document.querySelectorAll('.venue-checkbox:checked').length;
+            const countElement = document.querySelector('.text-indigo-600.font-medium');
+            if (countElement) {
+                countElement.textContent = checked + ' PDV sélectionné(s)';
+            }
+        }
+
+        // Écouter les changements sur les checkboxes
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.venue-checkbox');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateCount);
+            });
+        });
+    </script>
 </x-layouts.app>

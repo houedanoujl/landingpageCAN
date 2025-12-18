@@ -160,14 +160,18 @@ class AdminController extends Controller
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
-        $match = MatchGame::with(['homeTeam', 'awayTeam'])->findOrFail($id);
+        $match = MatchGame::with(['homeTeam', 'awayTeam', 'animations'])->findOrFail($id);
         $teams = Team::orderBy('name')->get();
         $stadiums = Stadium::where('is_active', true)->orderBy('city')->get();
+        $bars = Bar::where('is_active', true)->orderBy('zone')->orderBy('name')->get();
+
+        // IDs des bars déjà assignés à ce match
+        $assignedBarIds = $match->animations->pluck('bar_id')->toArray();
 
         // Liste des groupes disponibles pour la CAN
         $groups = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-        return view('admin.edit-match', compact('match', 'teams', 'stadiums', 'groups'));
+        return view('admin.edit-match', compact('match', 'teams', 'stadiums', 'groups', 'bars', 'assignedBarIds'));
     }
 
     /**
@@ -189,6 +193,8 @@ class AdminController extends Controller
             'score_a' => 'nullable|integer|min:0|max:20',
             'score_b' => 'nullable|integer|min:0|max:20',
             'status' => 'required|in:scheduled,live,finished',
+            'venue_ids' => 'nullable|array',
+            'venue_ids.*' => 'exists:bars,id',
         ]);
 
         $match = MatchGame::findOrFail($id);
@@ -212,6 +218,25 @@ class AdminController extends Controller
             'score_b' => $request->score_b,
             'status' => $request->status,
         ]);
+
+        // Synchroniser les animations (PDV assignés)
+        if ($request->has('venue_ids')) {
+            $venueIds = $request->input('venue_ids', []);
+
+            // Supprimer les animations existantes
+            Animation::where('match_id', $match->id)->delete();
+
+            // Créer les nouvelles animations
+            foreach ($venueIds as $venueId) {
+                Animation::create([
+                    'bar_id' => $venueId,
+                    'match_id' => $match->id,
+                    'animation_date' => date('Y-m-d', strtotime($request->match_date)),
+                    'animation_time' => date('H:i:s', strtotime($request->match_date)),
+                    'is_active' => true,
+                ]);
+            }
+        }
 
         // DÉSACTIVÉ: Le calcul automatique des points est désactivé
         // L'admin doit utiliser le bouton "Recalculer" manuellement pour chaque match
@@ -344,17 +369,52 @@ class AdminController extends Controller
     /**
      * List all bars
      */
-    public function bars()
+    public function bars(Request $request)
     {
         if (!$this->checkAdmin()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
-        $bars = Bar::with(['animations.match.homeTeam', 'animations.match.awayTeam'])
-            ->orderBy('name')
-            ->paginate(20);
+        $query = Bar::with(['animations.match.homeTeam', 'animations.match.awayTeam']);
 
-        return view('admin.bars', compact('bars'));
+        // Filtre par recherche (nom, zone)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('zone', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtre par zone spécifique
+        if ($request->filled('zone')) {
+            $query->where('zone', $request->zone);
+        }
+
+        // Filtre par statut
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        // Filtre par présence de matches assignés
+        if ($request->filled('has_matches')) {
+            if ($request->has_matches === 'yes') {
+                $query->has('animations');
+            } elseif ($request->has_matches === 'no') {
+                $query->doesntHave('animations');
+            }
+        }
+
+        $bars = $query->orderBy('name')->paginate(20);
+
+        // Get unique zones for filter dropdown
+        $zones = Bar::whereNotNull('zone')
+            ->distinct()
+            ->orderBy('zone')
+            ->pluck('zone');
+
+        return view('admin.bars', compact('bars', 'zones'));
     }
 
     /**
@@ -1659,5 +1719,97 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors du vidage du cache : ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Match calendar view
+     */
+    public function calendar(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        // Get current month/year or from request
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
+
+        // Create date object
+        $date = \Carbon\Carbon::create($year, $month, 1);
+
+        // Get matches for the selected month grouped by date
+        $matches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
+            ->whereYear('match_date', $year)
+            ->whereMonth('match_date', $month)
+            ->orderBy('match_date')
+            ->get()
+            ->groupBy(function ($match) {
+                return $match->match_date->format('Y-m-d');
+            });
+
+        // Get navigation dates
+        $prevMonth = $date->copy()->subMonth();
+        $nextMonth = $date->copy()->addMonth();
+
+        return view('admin.calendar', compact('matches', 'date', 'prevMonth', 'nextMonth'));
+    }
+
+    /**
+     * Match-Venue Matrix view
+     */
+    public function matchVenueMatrix(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        // Get filters
+        $phase = $request->input('phase');
+        $zone = $request->input('zone');
+
+        // Build matches query
+        $matchesQuery = MatchGame::with(['homeTeam', 'awayTeam', 'animations'])
+            ->orderBy('match_date');
+
+        if ($phase) {
+            $matchesQuery->where('phase', $phase);
+        }
+
+        $matches = $matchesQuery->get();
+
+        // Build bars query
+        $barsQuery = Bar::where('is_active', true)->orderBy('zone')->orderBy('name');
+
+        if ($zone) {
+            $barsQuery->where('zone', $zone);
+        }
+
+        $bars = $barsQuery->get();
+
+        // Create matrix: [match_id][bar_id] = animation or null
+        $matrix = [];
+        foreach ($matches as $match) {
+            $matrix[$match->id] = [];
+            foreach ($match->animations as $animation) {
+                $matrix[$match->id][$animation->bar_id] = $animation;
+            }
+        }
+
+        // Get unique zones and phases for filters
+        $zones = Bar::whereNotNull('zone')
+            ->distinct()
+            ->orderBy('zone')
+            ->pluck('zone');
+
+        $phases = [
+            'group_stage' => 'Phase de Poules',
+            'round_of_16' => 'Huitièmes de finale',
+            'quarter_final' => 'Quarts de finale',
+            'semi_final' => 'Demi-finales',
+            'third_place' => '3ème place',
+            'final' => 'Finale',
+        ];
+
+        return view('admin.match-venue-matrix', compact('matches', 'bars', 'matrix', 'zones', 'phases', 'phase', 'zone'));
     }
 }

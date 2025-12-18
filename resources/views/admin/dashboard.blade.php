@@ -34,8 +34,20 @@
                 </div>
             </div>
 
+            @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6" role="alert">
+                <span class="font-medium">{{ session('success') }}</span>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6" role="alert">
+                <span class="font-medium">{{ session('error') }}</span>
+            </div>
+            @endif
+
             <!-- Quick Actions -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                 <a href="{{ route('admin.matches') }}" class="bg-soboa-blue hover:bg-soboa-blue/90 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
                     <span class="text-3xl">⚽</span>
                     <span class="font-bold text-sm text-center">Matchs</span>
@@ -68,6 +80,25 @@
                     <span class="text-3xl">📋</span>
                     <span class="font-bold text-sm text-center">Logs OTP</span>
                 </a>
+                <a href="{{ route('admin.animations') }}" class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
+                    <span class="text-3xl">🎬</span>
+                    <span class="font-bold text-sm text-center">Animations</span>
+                </a>
+                <a href="{{ route('admin.calendar') }}" class="bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
+                    <span class="text-3xl">📅</span>
+                    <span class="font-bold text-sm text-center">Calendrier</span>
+                </a>
+                <a href="{{ route('admin.match-venue-matrix') }}" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
+                    <span class="text-3xl">📊</span>
+                    <span class="font-bold text-sm text-center">Matrice</span>
+                </a>
+                <form action="{{ route('admin.clear-cache') }}" method="POST" onsubmit="return confirm('Vider le cache de l\'application ?')">
+                    @csrf
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
+                        <span class="text-3xl">🗑️</span>
+                        <span class="font-bold text-sm text-center">Vider Cache</span>
+                    </button>
+                </form>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
