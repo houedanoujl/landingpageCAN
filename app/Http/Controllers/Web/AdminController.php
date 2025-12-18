@@ -12,6 +12,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\SiteSetting;
 use App\Models\AdminOtpLog;
+use App\Models\Animation;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -377,6 +378,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
+            'zone' => 'nullable|string|max:255',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'is_active' => 'boolean',
@@ -385,6 +387,7 @@ class AdminController extends Controller
         Bar::create([
             'name' => $request->name,
             'address' => $request->address,
+            'zone' => $request->zone,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'is_active' => $request->has('is_active'),
@@ -419,6 +422,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
+            'zone' => 'nullable|string|max:255',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'is_active' => 'boolean',
@@ -428,6 +432,7 @@ class AdminController extends Controller
         $bar->update([
             'name' => $request->name,
             'address' => $request->address,
+            'zone' => $request->zone,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'is_active' => $request->has('is_active'),
@@ -1244,5 +1249,213 @@ class AdminController extends Controller
         ];
 
         return view('admin.otp-logs', compact('otpLogs', 'stats'));
+    }
+
+    // ==================== ANIMATIONS (Venue-Match Links) ====================
+
+    /**
+     * List all animations
+     */
+    public function animations(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $query = Animation::with(['bar', 'match.homeTeam', 'match.awayTeam']);
+
+        // Filter by bar
+        if ($request->filled('bar_id')) {
+            $query->where('bar_id', $request->bar_id);
+        }
+
+        // Filter by match
+        if ($request->filled('match_id')) {
+            $query->where('match_id', $request->match_id);
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('animation_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('animation_date', '<=', $request->date_to);
+        }
+
+        $animations = $query->orderBy('animation_date', 'desc')->paginate(50);
+
+        // Get all bars and matches for filters
+        $bars = Bar::orderBy('name')->get();
+        $matches = MatchGame::with(['homeTeam', 'awayTeam'])->orderBy('match_date', 'desc')->get();
+
+        // Statistics
+        $stats = [
+            'total' => Animation::count(),
+            'active' => Animation::where('is_active', true)->count(),
+            'upcoming' => Animation::where('animation_date', '>', now())->count(),
+            'past' => Animation::where('animation_date', '<=', now())->count(),
+        ];
+
+        return view('admin.animations', compact('animations', 'bars', 'matches', 'stats'));
+    }
+
+    /**
+     * Show create form for an animation
+     */
+    public function createAnimation()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $bars = Bar::where('is_active', true)->orderBy('name')->get();
+        $matches = MatchGame::with(['homeTeam', 'awayTeam'])->orderBy('match_date', 'asc')->get();
+
+        return view('admin.create-animation', compact('bars', 'matches'));
+    }
+
+    /**
+     * Store a new animation
+     */
+    public function storeAnimation(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $request->validate([
+            'bar_id' => 'required|exists:bars,id',
+            'match_id' => 'required|exists:matches,id',
+            'animation_date' => 'required|date',
+            'animation_time' => 'nullable|string|max:20',
+            'is_active' => 'boolean',
+        ]);
+
+        // Check if animation already exists for this bar-match combination
+        $existing = Animation::where('bar_id', $request->bar_id)
+            ->where('match_id', $request->match_id)
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'Une animation existe déjà pour ce bar et ce match.')
+                ->withInput();
+        }
+
+        Animation::create([
+            'bar_id' => $request->bar_id,
+            'match_id' => $request->match_id,
+            'animation_date' => $request->animation_date,
+            'animation_time' => $request->animation_time,
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        return redirect()->route('admin.animations')->with('success', 'Animation créée avec succès.');
+    }
+
+    /**
+     * Show edit form for an animation
+     */
+    public function editAnimation($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $animation = Animation::with(['bar', 'match'])->findOrFail($id);
+        $bars = Bar::where('is_active', true)->orderBy('name')->get();
+        $matches = MatchGame::with(['homeTeam', 'awayTeam'])->orderBy('match_date', 'asc')->get();
+
+        return view('admin.edit-animation', compact('animation', 'bars', 'matches'));
+    }
+
+    /**
+     * Update animation details
+     */
+    public function updateAnimation(Request $request, $id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $animation = Animation::findOrFail($id);
+
+        $request->validate([
+            'bar_id' => 'required|exists:bars,id',
+            'match_id' => 'required|exists:matches,id',
+            'animation_date' => 'required|date',
+            'animation_time' => 'nullable|string|max:20',
+            'is_active' => 'boolean',
+        ]);
+
+        // Check if another animation exists for this bar-match combination (excluding current)
+        $existing = Animation::where('bar_id', $request->bar_id)
+            ->where('match_id', $request->match_id)
+            ->where('id', '!=', $id)
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'Une animation existe déjà pour ce bar et ce match.')
+                ->withInput();
+        }
+
+        $animation->update([
+            'bar_id' => $request->bar_id,
+            'match_id' => $request->match_id,
+            'animation_date' => $request->animation_date,
+            'animation_time' => $request->animation_time,
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        return redirect()->route('admin.animations')->with('success', 'Animation mise à jour avec succès.');
+    }
+
+    /**
+     * Toggle animation active status
+     */
+    public function toggleAnimation($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $animation = Animation::findOrFail($id);
+        $animation->update(['is_active' => !$animation->is_active]);
+
+        $status = $animation->is_active ? 'activée' : 'désactivée';
+        return back()->with('success', "Animation {$status} avec succès.");
+    }
+
+    /**
+     * Delete an animation
+     */
+    public function deleteAnimation($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $animation = Animation::findOrFail($id);
+        $animation->delete();
+
+        return redirect()->route('admin.animations')->with('success', 'Animation supprimée avec succès.');
+    }
+
+    /**
+     * View animations for a specific bar
+     */
+    public function barAnimations($barId)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $bar = Bar::findOrFail($barId);
+        $animations = Animation::with(['match.homeTeam', 'match.awayTeam'])
+            ->where('bar_id', $barId)
+            ->orderBy('animation_date', 'desc')
+            ->get();
+
+        return view('admin.bar-animations', compact('bar', 'animations'));
     }
 }

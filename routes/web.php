@@ -76,6 +76,16 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::delete('/bars/{id}', [AdminController::class, 'deleteBar'])->name('delete-bar');
     Route::get('/bars/template/download', [AdminController::class, 'downloadBarsTemplate'])->name('download-bars-template');
     Route::post('/bars/import', [AdminController::class, 'importBars'])->name('import-bars');
+    Route::get('/bars/{barId}/animations', [AdminController::class, 'barAnimations'])->name('bar-animations');
+
+    // Animations (Venue-Match Links)
+    Route::get('/animations', [AdminController::class, 'animations'])->name('animations');
+    Route::get('/animations/create', [AdminController::class, 'createAnimation'])->name('create-animation');
+    Route::post('/animations', [AdminController::class, 'storeAnimation'])->name('store-animation');
+    Route::get('/animations/{id}/edit', [AdminController::class, 'editAnimation'])->name('edit-animation');
+    Route::put('/animations/{id}', [AdminController::class, 'updateAnimation'])->name('update-animation');
+    Route::post('/animations/{id}/toggle', [AdminController::class, 'toggleAnimation'])->name('toggle-animation');
+    Route::delete('/animations/{id}', [AdminController::class, 'deleteAnimation'])->name('delete-animation');
 
     // Équipes
     Route::get('/teams', [AdminController::class, 'teams'])->name('teams');

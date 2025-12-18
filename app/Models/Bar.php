@@ -12,6 +12,7 @@ class Bar extends Model
     protected $fillable = [
         'name',
         'address',
+        'zone',
         'latitude',
         'longitude',
         'is_active',
@@ -22,4 +23,12 @@ class Bar extends Model
         'longitude' => 'decimal:8',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the animations for this bar.
+     */
+    public function animations()
+    {
+        return $this->hasMany(Animation::class);
+    }
 }
