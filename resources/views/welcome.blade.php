@@ -319,16 +319,16 @@
     </section>
 
     <!-- Leaderboard Section -->
-    <section class="py-16 bg-soboa-blue">
+    <section class="py-16 bg-soboa-orange">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
-                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Qui sera le
+                    <span class="text-black font-bold text-sm uppercase tracking-widest">Qui sera le
                         meilleur?</span>
-                    <h2 class="text-3xl md:text-4xl font-black text-white mt-2">Classement</h2>
+                    <h2 class="text-3xl md:text-4xl font-black text-black mt-2">Classement</h2>
                 </div>
                 <a href="/leaderboard"
-                    class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
+                    class="text-black font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
                     Classement complet
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -340,7 +340,7 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 @forelse($topUsers as $index => $user)
                     <div
-                        class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10 {{ $index === 0 ? 'ring-2 ring-soboa-orange' : '' }}">
+                        class="bg-black/5 backdrop-blur-sm rounded-2xl p-6 text-center border border-black/10 {{ $index === 0 ? 'ring-2 ring-black' : '' }}">
                         <div class="text-3xl mb-2">
                             @if($index == 0) 🥇 @elseif($index == 1) 🥈 @elseif($index == 2) 🥉 @else {{ $index + 1 }}
                             @endif
@@ -349,8 +349,8 @@
                             class="w-16 h-16 bg-soboa-orange/20 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-black">
                             {{ mb_substr($user->name, 0, 1) }}
                         </div>
-                        <h3 class="font-bold text-white text-lg truncate">{{ $user->name }}</h3>
-                        <p class="text-soboa-orange font-black text-xl">{{ $user->points_total }} pts</p>
+                        <h3 class="font-bold text-black text-lg truncate">{{ $user->name }}</h3>
+                        <p class="text-black/70 font-black text-xl">{{ $user->points_total }} pts</p>
                     </div>
                 @empty
                     <div class="col-span-5 text-center py-10">
