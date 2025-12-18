@@ -85,7 +85,7 @@
 
                     <div class="space-y-3">
                         <a href="/matches"
-                            class="block bg-soboa-orange text-white rounded-xl p-4 font-bold hover:bg-soboa-orange-dark transition-colors shadow-lg">
+                            class="block bg-soboa-orange text-black rounded-xl p-4 font-bold hover:bg-soboa-orange-dark transition-colors shadow-lg">
                             ⚽ Faire un pronostic
                         </a>
                         <a href="/map"
@@ -392,7 +392,7 @@
                                         @elseif($log->points >= 3)
                                             bg-gradient-to-r from-green-400 to-blue-500 text-white
                                         @else
-                                            bg-soboa-orange text-white
+                                            bg-soboa-orange text-black
                                         @endif
                                     ">
                                         +{{ $log->points }}

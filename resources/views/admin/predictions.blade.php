@@ -72,7 +72,7 @@
                         Tous ({{ $totalPredictions }})
                     </a>
                     <a href="{{ route('admin.predictions', array_merge(request()->except('status'), ['status' => 'upcoming'])) }}"
-                       class="flex-1 text-center py-3 px-4 rounded-lg font-bold transition-all {{ $status === 'upcoming' ? 'bg-soboa-orange text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                       class="flex-1 text-center py-3 px-4 rounded-lg font-bold transition-all {{ $status === 'upcoming' ? 'bg-soboa-orange text-black shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                         À venir ({{ $upcomingPredictions }})
                     </a>
                     <a href="{{ route('admin.predictions', array_merge(request()->except('status'), ['status' => 'finished'])) }}"

@@ -222,7 +222,7 @@
                         Fermer
                     </button>
                     <button @click="locationError = null; getLocation()"
-                        class="flex-1 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-6 rounded-xl shadow-lg transition transform hover:scale-105">
+                        class="flex-1 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-6 rounded-xl shadow-lg transition transform hover:scale-105">
                         Réessayer
                     </button>
                 </div>
@@ -256,7 +256,7 @@
 
                     @if(session('user_id'))
                         <button @click="getLocation()" :disabled="isChecking"
-                            class="w-full md:w-auto bg-soboa-orange hover:bg-soboa-orange-dark disabled:bg-gray-400 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                            class="w-full md:w-auto bg-soboa-orange hover:bg-soboa-orange-dark disabled:bg-gray-400 text-black font-bold py-4 px-8 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
                             <svg x-show="isChecking" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                                 </circle>

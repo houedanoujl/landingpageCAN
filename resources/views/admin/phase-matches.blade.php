@@ -9,7 +9,7 @@
                     <p class="text-gray-600 mt-2">Gérez les matchs de cette phase</p>
                 </div>
                 <div class="flex gap-3">
-                    <a href="{{ route('admin.create-match') }}" class="bg-soboa-orange hover:bg-soboa-orange/90 text-white px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg">
+                    <a href="{{ route('admin.create-match') }}" class="bg-soboa-orange hover:bg-soboa-orange/90 text-black px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg">
                         + Créer un match
                     </a>
                     <a href="{{ route('admin.tournament') }}" class="bg-soboa-blue hover:bg-soboa-blue/90 text-white px-6 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg">
@@ -133,7 +133,7 @@
                         Les matchs de {{ $phaseName }} n'ont pas encore été créés.
                     </p>
                     <a href="{{ route('admin.create-match') }}"
-                        class="bg-soboa-orange hover:bg-soboa-orange/90 text-white px-6 py-3 rounded-lg font-bold inline-block transition-all">
+                        class="bg-soboa-orange hover:bg-soboa-orange/90 text-black px-6 py-3 rounded-lg font-bold inline-block transition-all">
                         + Créer un match pour cette phase
                     </a>
                 </div>

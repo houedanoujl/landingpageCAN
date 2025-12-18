@@ -86,7 +86,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div
-                                            class="h-8 w-8 rounded-full {{ $isCurrentUser ? 'bg-soboa-orange' : 'bg-gray-200 text-gray-600' }} text-white flex items-center justify-center font-bold text-xs mr-3">
+                                            class="h-8 w-8 rounded-full {{ $isCurrentUser ? 'bg-soboa-orange' : 'bg-gray-200 text-gray-600' }} text-black flex items-center justify-center font-bold text-xs mr-3">
                                             {{ substr($user->name, 0, 1) }}
                                         </div>
                                         <div
@@ -94,7 +94,7 @@
                                             {{ $user->name }}
                                             @if($isCurrentUser)
                                                 <span
-                                                    class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-soboa-orange text-white">Vous</span>
+                                                    class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-soboa-orange text-black">Vous</span>
                                             @endif
                                         </div>
                                     </div>

@@ -83,7 +83,7 @@
     <!-- CTA -->
     @if($match->status !== 'finished')
         @if(session('user_id'))
-        <a href="/matches" class="block w-full bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-3 rounded-xl text-center transition-colors">
+        <a href="/matches" class="block w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 rounded-xl text-center transition-colors">
             Pronostiquer
         </a>
         @else

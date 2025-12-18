@@ -93,7 +93,7 @@
 
                 <div class="flex flex-col gap-3">
                     <button @click="confirmAge()"
-                        class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-6 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                        class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-6 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
                         <span>Oui, j'ai plus de 18 ans</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
@@ -251,7 +251,7 @@
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 @if(session('user_id'))
                     <a href="/matches"
-                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
+                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
                         Faire un pronostic
                     </a>
                     <a href="/dashboard"
@@ -260,7 +260,7 @@
                     </a>
                 @else
                     <a href="/login"
-                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
+                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
                         Jouer & Gagner
                     </a>
                     <a href="/map"
@@ -346,7 +346,7 @@
                             @endif
                         </div>
                         <div
-                            class="w-16 h-16 bg-soboa-orange/20 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-white">
+                            class="w-16 h-16 bg-soboa-orange/20 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-black">
                             {{ mb_substr($user->name, 0, 1) }}
                         </div>
                         <h3 class="font-bold text-white text-lg truncate">{{ $user->name }}</h3>
@@ -378,7 +378,7 @@
                         <span class="text-4xl group-hover:scale-125 transition-transform">📱</span>
                     </div>
                     <div
-                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
                         1</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Inscrivez-vous</h3>
                     <p class="text-gray-600">Créez votre compte avec votre numéro. C'est gratuit!</p>
@@ -391,7 +391,7 @@
                         <span class="text-4xl group-hover:scale-125 transition-transform">⚽</span>
                     </div>
                     <div
-                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
                         2</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Pronostiquez</h3>
                     <p class="text-gray-600">Prédisez les scores des matchs de la CAN.</p>
@@ -404,7 +404,7 @@
                         <span class="text-4xl group-hover:scale-125 transition-transform">📍</span>
                     </div>
                     <div
-                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
                         3</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Visitez les lieux</h3>
                     <p class="text-gray-600">+4 points bonus en visitant nos lieux partenaires.</p>
@@ -417,7 +417,7 @@
                         <span class="text-4xl group-hover:scale-125 transition-transform">🏆</span>
                     </div>
                     <div
-                        class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
                         4</div>
                     <h3 class="font-bold text-soboa-blue text-xl mb-2">Gagnez</h3>
                     <p class="text-gray-600">Accumulez des points et remportez des cadeaux!</p>
@@ -452,7 +452,7 @@
             <!-- CTA -->
             <div class="text-center mt-12">
                 <a href="/login"
-                    class="inline-flex items-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg">
+                    class="inline-flex items-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg">
                     Commencer maintenant
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

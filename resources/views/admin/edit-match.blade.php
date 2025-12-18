@@ -142,7 +142,7 @@
                             <a href="{{ route('admin.matches') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
                                 Annuler
                             </a>
-                            <button type="submit" class="bg-soboa-orange hover:bg-soboa-orange/90 text-white font-bold py-3 px-6 rounded-lg transition">
+                            <button type="submit" class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold py-3 px-6 rounded-lg transition">
                                 � Enregistrer
                             </button>
                         </div>

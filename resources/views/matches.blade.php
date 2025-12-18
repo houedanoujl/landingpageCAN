@@ -48,14 +48,14 @@
         <div class="bg-white rounded-xl shadow-sm p-4 sticky top-[64px] md:top-[80px] z-40 border border-gray-200">
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button @click="activePhase = 'all'; activeGroup = 'all'"
-                    :class="activePhase === 'all' ? 'bg-soboa-blue text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                    :class="activePhase === 'all' ? 'bg-soboa-blue text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                     class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition">
                     Tous
                 </button>
 
                 @php $hasMatches = ($phaseCounts['group_stage'] ?? 0) > 0; @endphp
                 <button @click="activePhase = 'group_stage'; activeGroup = 'all'"
-                    :class="activePhase === 'group_stage' ? 'bg-soboa-blue text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                    :class="activePhase === 'group_stage' ? 'bg-soboa-blue text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                     class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition {{ !$hasMatches ? 'opacity-50 cursor-not-allowed' : '' }}"
                     {{ !$hasMatches ? 'disabled' : '' }}>
                     Poules
@@ -66,7 +66,7 @@
 
                 @php $hasMatches = ($phaseCounts['round_of_16'] ?? 0) > 0; @endphp
                 <button @click="activePhase = 'round_of_16'; activeGroup = 'all'"
-                    :class="activePhase === 'round_of_16' ? 'bg-soboa-orange text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                    :class="activePhase === 'round_of_16' ? 'bg-soboa-orange text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                     class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition {{ !$hasMatches ? 'opacity-50 cursor-not-allowed' : '' }}"
                     {{ !$hasMatches ? 'disabled' : '' }}>
                     1/8e finale
@@ -77,7 +77,7 @@
 
                 @php $hasMatches = ($phaseCounts['quarter_final'] ?? 0) > 0; @endphp
                 <button @click="activePhase = 'quarter_final'; activeGroup = 'all'"
-                    :class="activePhase === 'quarter_final' ? 'bg-soboa-orange text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                    :class="activePhase === 'quarter_final' ? 'bg-soboa-orange text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                     class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition {{ !$hasMatches ? 'opacity-50 cursor-not-allowed' : '' }}"
                     {{ !$hasMatches ? 'disabled' : '' }}>
                     1/4 finale
@@ -88,7 +88,7 @@
 
                 @php $hasMatches = ($phaseCounts['semi_final'] ?? 0) > 0; @endphp
                 <button @click="activePhase = 'semi_final'; activeGroup = 'all'"
-                    :class="activePhase === 'semi_final' ? 'bg-soboa-orange text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                    :class="activePhase === 'semi_final' ? 'bg-soboa-orange text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                     class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition {{ !$hasMatches ? 'opacity-50 cursor-not-allowed' : '' }}"
                     {{ !$hasMatches ? 'disabled' : '' }}>
                     Demi-finales
@@ -99,7 +99,7 @@
 
                 @php $hasMatches = ($phaseCounts['third_place'] ?? 0) > 0; @endphp
                 <button @click="activePhase = 'third_place'; activeGroup = 'all'"
-                    :class="activePhase === 'third_place' ? 'bg-soboa-orange text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                    :class="activePhase === 'third_place' ? 'bg-soboa-orange text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                     class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition {{ !$hasMatches ? 'opacity-50 cursor-not-allowed' : '' }}"
                     {{ !$hasMatches ? 'disabled' : '' }}>
                     3e place
@@ -127,14 +127,14 @@
              x-transition>
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button @click="activeGroup = 'all'"
-                    :class="activeGroup === 'all' ? 'bg-soboa-blue text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                    :class="activeGroup === 'all' ? 'bg-soboa-blue text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                     class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition">
                     Tous les groupes
                 </button>
                 @foreach(['A', 'B', 'C', 'D', 'E', 'F'] as $group)
                     @php $hasMatches = ($groupCounts[$group] ?? 0) > 0; @endphp
                     <button @click="activeGroup = '{{ $group }}'"
-                        :class="activeGroup === '{{ $group }}' ? 'bg-soboa-blue text-white' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-white'"
+                        :class="activeGroup === '{{ $group }}' ? 'bg-soboa-blue text-black' : 'bg-gray-100 text-gray-600 hover:bg-soboa-orange hover:text-black'"
                         class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition {{ !$hasMatches ? 'opacity-50 cursor-not-allowed' : '' }}"
                         {{ !$hasMatches ? 'disabled' : '' }}>
                         Groupe {{ $group }}
@@ -393,7 +393,7 @@
                                             </div>
 
                                             <button type="submit"
-                                                class="prediction-submit w-full {{ $userPrediction ? 'bg-green-600 hover:bg-green-700' : 'bg-soboa-orange hover:bg-orange-600' }} text-white font-bold py-3 px-4 rounded-lg shadow transition transform active:scale-95 flex items-center justify-center gap-2">
+                                                class="prediction-submit w-full {{ $userPrediction ? 'bg-green-600 hover:bg-green-700' : 'bg-soboa-orange hover:bg-orange-600' }} text-black font-bold py-3 px-4 rounded-lg shadow transition transform active:scale-95 flex items-center justify-center gap-2">
                                                 <svg class="submit-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M5 13l4 4L19 7"></path>
@@ -407,7 +407,7 @@
                                     <div class="text-center">
                                         <p class="text-gray-600 mb-3">Connectez-vous pour faire vos pronostics</p>
                                         <a href="/login"
-                                            class="inline-block bg-soboa-orange hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow transition">
+                                            class="inline-block bg-soboa-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-lg shadow transition">
                                             Se connecter
                                         </a>
                                     </div>
@@ -437,7 +437,7 @@
                      x-transition:enter-end="opacity-100 transform translate-y-0">
                     <!-- En-tête de la phase -->
                     <div class="flex items-center gap-3">
-                        <div class="bg-soboa-orange text-white px-4 py-2 rounded-lg font-bold text-lg shadow">
+                        <div class="bg-soboa-orange text-black px-4 py-2 rounded-lg font-bold text-lg shadow">
                             @php
                                 $phaseName = match($phase) {
                                     'round_of_16' => '1/8e de Finale',
@@ -614,7 +614,7 @@
 
                                                 <!-- Submit button -->
                                                 <button type="submit"
-                                                    class="w-full {{ $userPrediction ? 'bg-green-600 hover:bg-green-700' : 'bg-soboa-orange hover:bg-orange-600' }} text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center gap-2">
+                                                    class="w-full {{ $userPrediction ? 'bg-green-600 hover:bg-green-700' : 'bg-soboa-orange hover:bg-orange-600' }} text-black font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center gap-2">
                                                     <span class="prediction-icon">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -629,7 +629,7 @@
                                         <div class="text-center">
                                             <p class="text-gray-600 mb-3">Connectez-vous pour faire vos pronostics</p>
                                             <a href="/login"
-                                                class="inline-block bg-soboa-orange hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow transition">
+                                                class="inline-block bg-soboa-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-lg shadow transition">
                                                 Se connecter
                                             </a>
                                         </div>

@@ -1,3 +1,5 @@
+import colors from 'tailwindcss/colors'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -11,18 +13,22 @@ export default {
         'montserrat': ['Montserrat', 'sans-serif'],
       },
       colors: {
+        // Alias standard colors to enforce theme
+        blue: colors.zinc,   // Remap Blue to Gray/Black
+        orange: colors.yellow, // Remap Orange to Yellow
+
         brand: {
-          dark: '#1a1a1a',
+          dark: '#000000',
           yellow: '#FFD700',
           green: '#008000',
         },
         soboa: {
-          blue: '#121212', // Dark/Black background
-          'blue-dark': '#000000', // Pure black
-          'blue-light': '#2C2C2C', // Dark gray
-          orange: '#FFD700', // Gazelle Yellow (Gold)
-          'orange-light': '#FFE44D', // Lighter Yellow
-          'orange-dark': '#CCAC00', // Darker Yellow
+          blue: '#000000', // Pure Black
+          'blue-dark': '#000000', // Black
+          'blue-light': '#18181b', // Zinc-900
+          orange: '#FFD700', // Gold/Yellow
+          'orange-light': '#FDE047', // Yellow-300
+          'orange-dark': '#EAB308', // Yellow-500
         },
       },
       animation: {

@@ -284,7 +284,7 @@
                     @if(session('user_id'))
                         <div class="hidden md:flex items-center gap-3">
                             <a href="/mes-pronostics"
-                                class="px-3 py-1.5 bg-soboa-orange/20 text-soboa-orange hover:bg-soboa-orange hover:text-white rounded-lg font-bold text-sm transition-all">
+                                class="px-3 py-1.5 bg-soboa-orange/20 text-soboa-orange hover:bg-soboa-orange hover:text-black rounded-lg font-bold text-sm transition-all">
                                 📋 Mes Pronostics
                             </a>
                             <a href="/dashboard" class="group flex items-center gap-3 pl-2 lg:pl-4 lg:border-l border-white/10">
@@ -304,7 +304,7 @@
                         </div>
                     @else
                         <a href="/login"
-                            class="hidden md:inline-flex bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            class="hidden md:inline-flex bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                             Jouer maintenant
                         </a>
                     @endif
@@ -367,7 +367,7 @@
                 @else
                     <div class="pt-4">
                         <a href="/login"
-                            class="block w-full bg-soboa-orange hover:bg-soboa-orange-dark text-white font-bold py-3 px-4 rounded-lg text-center shadow-lg transition-colors">
+                            class="block w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-4 rounded-lg text-center shadow-lg transition-colors">
                             Jouer maintenant
                         </a>
                     </div>

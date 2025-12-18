@@ -74,7 +74,7 @@
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Aucun pronostic</h2>
                 <p class="text-gray-600 mb-4">Vous n'avez pas encore fait de pronostic.</p>
                 <a href="/matches"
-                    class="inline-block bg-soboa-orange hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow transition">
+                    class="inline-block bg-soboa-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-lg shadow transition">
                     Voir les matchs
                 </a>
             </div>

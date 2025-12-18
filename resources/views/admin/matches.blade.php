@@ -58,7 +58,7 @@
                     </div>
                     <button
                         type="submit"
-                        class="bg-soboa-orange hover:bg-soboa-orange/90 text-white font-bold px-6 py-3 rounded-lg transition-colors"
+                        class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-6 py-3 rounded-lg transition-colors"
                     >
                         Rechercher
                     </button>
@@ -170,7 +170,7 @@
                                         📊 Pronostics
                                     </a>
                                     <a href="{{ route('admin.edit-match', $match->id) }}"
-                                       class="bg-soboa-orange hover:bg-soboa-orange/90 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors">
+                                       class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-3 py-1.5 rounded text-sm transition-colors">
                                         ✏️ Modifier
                                     </a>
                                     @if($match->status === 'finished')
