@@ -83,8 +83,9 @@
                     class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-soboa-orange via-soboa-blue to-soboa-orange">
                 </div>
 
-                <div class="w-24 h-24 mx-auto mb-6 flex items-center justify-center bg-white rounded-full shadow-lg p-2">
-                    <img src="/images/soboa.png" alt="SOBOA" class="w-full h-full object-contain">
+                <div
+                    class="w-24 h-24 mx-auto mb-6 flex items-center justify-center bg-white rounded-full shadow-lg p-2">
+                    <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-full h-full object-contain">
                 </div>
 
                 <h2 class="text-3xl font-black text-soboa-blue mb-2">Êtes-vous majeur ?</h2>
@@ -129,7 +130,7 @@
 
                 <!-- Icon -->
                 <div class="flex-shrink-0 bg-soboa-blue/10 p-3 rounded-xl">
-                    <img src="/images/soboa.png" alt="App Icon" class="w-12 h-12 object-contain">
+                    <img src="/images/logoGazelle.jpeg" alt="App Icon" class="w-12 h-12 object-contain">
                 </div>
 
                 <!-- Text -->
@@ -182,15 +183,19 @@
 
         <!-- Background -->
         <div class="absolute inset-0 overflow-hidden z-0">
-            <img src="/images/sen.webp" alt="" class="absolute inset-0 w-full h-full object-cover" :style="`transform: translateY(${parallaxOffset}px)`">
+            <img src="/images/sen.webp" alt="" class="absolute inset-0 w-full h-full object-cover"
+                :style="`transform: translateY(${parallaxOffset}px)`">
             <div class="absolute inset-0 bg-black opacity-50"></div>
         </div>
 
         <!-- Animated Shapes -->
-        <div class="absolute top-20 left-10 w-64 h-64 bg-soboa-orange/20 rounded-full blur-3xl animate-pulse-slow z-[5]">
+        <div
+            class="absolute top-20 left-10 w-64 h-64 bg-soboa-orange/20 rounded-full blur-3xl animate-pulse-slow z-[5]">
         </div>
-        <div class="absolute bottom-20 right-10 w-80 h-80 bg-soboa-orange/10 rounded-full blur-3xl animate-float z-[5]"></div>
-        <div class="absolute top-1/2 left-1/3 w-40 h-40 bg-white/5 rounded-full blur-2xl animate-bounce-slow z-[5]"></div>
+        <div class="absolute bottom-20 right-10 w-80 h-80 bg-soboa-orange/10 rounded-full blur-3xl animate-float z-[5]">
+        </div>
+        <div class="absolute top-1/2 left-1/3 w-40 h-40 bg-white/5 rounded-full blur-2xl animate-bounce-slow z-[5]">
+        </div>
 
         <!-- Content -->
         <div class="relative z-[10] text-center px-4 max-w-5xl mx-auto">

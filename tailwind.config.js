@@ -17,12 +17,12 @@ export default {
           green: '#008000',
         },
         soboa: {
-          blue: '#003399',
-          'blue-dark': '#002266',
-          'blue-light': '#0044cc',
-          orange: '#FF6600',
-          'orange-light': '#FF8533',
-          'orange-dark': '#CC5200',
+          blue: '#121212', // Dark/Black background
+          'blue-dark': '#000000', // Pure black
+          'blue-light': '#2C2C2C', // Dark gray
+          orange: '#FFD700', // Gazelle Yellow (Gold)
+          'orange-light': '#FFE44D', // Lighter Yellow
+          'orange-dark': '#CCAC00', // Darker Yellow
         },
       },
       animation: {

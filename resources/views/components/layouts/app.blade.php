@@ -38,7 +38,7 @@
 
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/site.webmanifest">
-    <meta name="theme-color" content="#003399">
+    <meta name="theme-color" content="#121212">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -66,7 +66,7 @@
         }
 
         .bg-pattern {
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23003399' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23121212' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .glass {
@@ -76,24 +76,24 @@
         }
 
         .glass-dark {
-            background: rgba(0, 51, 153, 0.92);
+            background: rgba(18, 18, 18, 0.92);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
         }
 
         .gradient-text {
-            background: linear-gradient(135deg, #FF6600 0%, #FF8533 100%);
+            background: linear-gradient(135deg, #FFD700 0%, #CCAC00 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .hero-gradient {
-            background: linear-gradient(135deg, #003399 0%, #002266 50%, #003399 100%);
+            background: linear-gradient(135deg, #121212 0%, #000000 50%, #121212 100%);
         }
 
         .orange-glow {
-            box-shadow: 0 0 40px rgba(255, 102, 0, 0.3);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
         }
 
         [x-cloak] {
@@ -259,7 +259,7 @@
                 <a href="/" class="flex items-center gap-3 group">
                     <div
                         class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden bg-white">
-                        <img src="/images/soboa.png" alt="SOBOA" class="w-full h-full object-contain p-1">
+                        <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-full h-full object-contain p-1">
                     </div>
                     <div class="text-white">
                         <span class="font-black text-lg md:text-xl tracking-tight">SOBOA FOOT TIME</span>
@@ -388,7 +388,7 @@
                 <div>
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-white">
-                            <img src="/images/soboa.png" alt="SOBOA" class="w-full h-full object-contain p-1">
+                            <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-full h-full object-contain p-1">
                         </div>
                         <div>
                             <span class="font-black text-xl">SOBOA FOOT TIME</span>
@@ -426,7 +426,7 @@
     <!-- Page Loader -->
     <div id="page-loader" class="fixed inset-0 z-[9999] bg-white flex items-center justify-center transition-opacity duration-500">
         <div class="relative flex flex-col items-center">
-            <img src="/images/soboa.png" alt="SOBOA" class="w-24 h-24 object-contain animate-pulse">
+            <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-24 h-24 object-contain animate-pulse">
             <div class="mt-4 flex gap-1">
                 <div class="w-3 h-3 bg-soboa-orange rounded-full animate-bounce" style="animation-delay: 0s"></div>
                 <div class="w-3 h-3 bg-soboa-blue rounded-full animate-bounce" style="animation-delay: 0.1s"></div>

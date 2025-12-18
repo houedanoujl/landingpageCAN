@@ -5,7 +5,7 @@
             <!-- Logo et titre -->
             <div class="text-center mb-8">
                 <div class="w-20 h-20 bg-white rounded-full mx-auto mb-4 shadow-lg flex items-center justify-center">
-                    <img src="/images/soboa.png" alt="SOBOA" class="w-16 h-16 object-contain">
+                    <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-16 h-16 object-contain">
                 </div>
                 <h1 class="text-3xl font-black text-soboa-blue">Connexion</h1>
                 <p class="text-gray-600 mt-2">Entrez votre numéro pour jouer</p>
@@ -63,7 +63,8 @@
 
                         <!-- CAPTCHA Mathématique -->
                         <div class="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
-                            <label class="block text-sm font-bold text-gray-700 mb-3">Sécurité: Résolvez cette opération</label>
+                            <label class="block text-sm font-bold text-gray-700 mb-3">Sécurité: Résolvez cette
+                                opération</label>
                             <div class="flex items-center gap-3 mb-4">
                                 <div class="text-lg font-bold text-gray-800">
                                     <span x-text="captchaNum1"></span>
@@ -234,7 +235,7 @@
                 },
 
                 getPlaceholder() {
-                    switch(this.countryCode) {
+                    switch (this.countryCode) {
                         case '+225': return '07 XX XX XX XX';
                         case '+221': return '77 XXX XX XX';
                         case '+33': return '06 XX XX XX XX';
@@ -256,7 +257,7 @@
                     // Côte d'Ivoire (+225): GARDER le 0 initial car format 10 chiffres (07...)
                     // Si l'utilisateur a oublié le 0, on pourrait potentiellement l'ajouter, 
                     // mais ici on laisse tel quel pour validation backend.
-                    
+
                     return digits;
                 },
 
@@ -350,7 +351,7 @@
                         if (data.success) {
                             // Sauvegarder le nom pour la prochaine fois
                             localStorage.setItem('user_name', this.name);
-                            
+
                             // Redirection après succès
                             window.location.href = data.redirect || '/matches';
                         } else {
