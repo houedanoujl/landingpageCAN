@@ -482,7 +482,7 @@
                                             <input type="hidden" name="match_info" value="{{ ($match->homeTeam ? $match->homeTeam->name : $match->team_a) }} vs {{ ($match->awayTeam ? $match->awayTeam->name : $match->team_b) }}">
 
                                             @php
-                                                $isKnockoutPhase = in_array($match->phase, ['round_of_16', 'quarter_final', 'semi_final', 'final']);
+                                                $isKnockoutPhase = in_array($match->phase, ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final']);
                                             @endphp
 
                                             <div class="flex items-center justify-center gap-4">

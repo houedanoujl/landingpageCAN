@@ -109,9 +109,11 @@
                     <label class="text-xs text-gray-500 mb-1 font-medium">{{ $match->team_a }}</label>
                     <input type="number" 
                            name="score_a" 
+                           id="score_a_{{ $match->id }}"
                            min="0" 
                            max="20" 
                            value="{{ $userPrediction->score_a ?? 0 }}"
+                           onchange="checkForPenalties{{ $match->id }}()"
                            class="w-16 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-soboa-orange focus:ring-soboa-orange transition-colors"
                            required>
                 </div>
@@ -123,13 +125,72 @@
                     <label class="text-xs text-gray-500 mb-1 font-medium">{{ $match->team_b }}</label>
                     <input type="number" 
                            name="score_b" 
+                           id="score_b_{{ $match->id }}"
                            min="0" 
                            max="20" 
                            value="{{ $userPrediction->score_b ?? 0 }}"
+                           onchange="checkForPenalties{{ $match->id }}()"
                            class="w-16 h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-soboa-orange focus:ring-soboa-orange transition-colors"
                            required>
                 </div>
             </div>
+            
+            @php
+                $knockoutPhases = ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
+                $isKnockoutPhase = in_array($match->phase, $knockoutPhases);
+            @endphp
+            
+            @if($isKnockoutPhase)
+            <!-- Section Tirs au But (visible seulement si égalité ET phase éliminatoire) -->
+            <div id="penaltiesSection{{ $match->id }}" class="mt-4 p-4 bg-yellow-50 border border-yellow-300 rounded-xl" style="display: none;">
+                <div class="text-center text-sm font-bold text-gray-700 mb-3">
+                    ⚽ En cas de tirs au but
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center justify-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all hover:bg-yellow-100 has-[:checked]:border-yellow-600 has-[:checked]:bg-yellow-100">
+                        <input type="radio" 
+                               name="penalty_winner" 
+                               value="home"
+                               {{ ($userPrediction->penalty_winner ?? '') === 'home' ? 'checked' : '' }}
+                               class="w-4 h-4 text-yellow-600">
+                        <span class="text-sm font-bold text-gray-800">{{ $match->team_a }}</span>
+                    </label>
+                    <label class="flex items-center justify-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all hover:bg-yellow-100 has-[:checked]:border-yellow-600 has-[:checked]:bg-yellow-100">
+                        <input type="radio" 
+                               name="penalty_winner" 
+                               value="away"
+                               {{ ($userPrediction->penalty_winner ?? '') === 'away' ? 'checked' : '' }}
+                               class="w-4 h-4 text-yellow-600">
+                        <span class="text-sm font-bold text-gray-800">{{ $match->team_b }}</span>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-600 mt-2 text-center">
+                    💡 Sélectionnez le vainqueur si vous prédisez une égalité
+                </p>
+            </div>
+            
+            <script>
+                function checkForPenalties{{ $match->id }}() {
+                    const scoreA = document.getElementById('score_a_{{ $match->id }}').value;
+                    const scoreB = document.getElementById('score_b_{{ $match->id }}').value;
+                    const penaltiesSection = document.getElementById('penaltiesSection{{ $match->id }}');
+                    
+                    if (scoreA !== '' && scoreB !== '' && scoreA === scoreB) {
+                        penaltiesSection.style.display = 'block';
+                    } else {
+                        penaltiesSection.style.display = 'none';
+                        // Décocher les radios si on cache la section
+                        const radios = penaltiesSection.querySelectorAll('input[type="radio"]');
+                        radios.forEach(radio => radio.checked = false);
+                    }
+                }
+                
+                // Vérifier au chargement
+                document.addEventListener('DOMContentLoaded', function() {
+                    checkForPenalties{{ $match->id }}();
+                });
+            </script>
+            @endif
             
             <button type="submit" 
                     class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-4 rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
