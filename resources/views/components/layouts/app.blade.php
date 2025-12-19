@@ -342,7 +342,7 @@
                 </a>
 
                 <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center gap-1">
+                <div class="hidden lg:flex items-center gap-1">
                     <a href="/"
                         class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Accueil</a>
                     <a href="/matches"
@@ -356,14 +356,14 @@
                 <!-- User Actions -->
                 <div class="flex items-center gap-3">
                     @if(session('user_id'))
-                        <div class="hidden md:flex items-center gap-3">
+                        <div class="hidden lg:flex items-center gap-3">
                             <a href="/mes-pronostics"
                                 class="px-3 py-1.5 bg-soboa-blue/10 text-black hover:bg-soboa-blue/20 hover:text-black rounded-lg font-bold text-sm transition-all">
                                 📋 Mes Pronostics
                             </a>
                             <a href="/dashboard"
-                                class="group flex items-center gap-3 pl-2 lg:pl-4 lg:border-l border-black/20">
-                                <div class="text-right hidden lg:block">
+                                class="group flex items-center gap-3 pl-2 xl:pl-4 xl:border-l border-black/20">
+                                <div class="text-right hidden xl:block">
                                     <span
                                         class="text-black group-hover:text-white font-bold text-sm block leading-tight transition-colors">{{ session('predictor_name') }}</span>
                                     <span class="text-[10px] text-black/60 uppercase tracking-wider font-semibold">Mon
@@ -382,14 +382,14 @@
                         </div>
                     @else
                         <a href="/login"
-                            class="hidden md:inline-flex bg-soboa-blue hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                            class="hidden lg:inline-flex bg-soboa-blue hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                             Jouer maintenant
                         </a>
                     @endif
 
-                    <!-- Mobile Menu Button -->
+                    <!-- Mobile Menu Button (shows below 1024px) -->
                     <button @click="mobileMenuOpen = !mobileMenuOpen"
-                        class="md:hidden p-2 text-black hover:bg-soboa-blue/10 rounded-lg transition-colors">
+                        class="lg:hidden p-2 text-black hover:bg-soboa-blue/10 rounded-lg transition-colors">
                         <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -410,7 +410,7 @@
             x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-4" x-cloak
-            class="md:hidden bg-soboa-orange border-t border-black/10 relative z-[100]">
+            class="lg:hidden bg-soboa-orange border-t border-black/10 relative z-[100]">
             <div class="px-4 py-4 space-y-2">
                 <a href="/"
                     class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">

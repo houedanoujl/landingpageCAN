@@ -200,11 +200,48 @@ class FreshDeploymentSeeder extends Seeder
             }
         }
 
+        // Mapping des noms d'équipes vers leurs ISO codes
+        $teamIsoMapping = [
+            'MAROC' => 'ma',
+            'ALGÉRIE' => 'dz',
+            'ALGERIE' => 'dz',
+            'ÉGYPTE' => 'eg',
+            'EGYPTE' => 'eg',
+            'TUNISIE' => 'tn',
+            'SÉNÉGAL' => 'sn',
+            'SENEGAL' => 'sn',
+            'CÔTE D\'IVOIRE' => 'ci',
+            'COTE D\'IVOIRE' => 'ci',
+            'COTE DIVOIRE' => 'ci',
+            'NIGERIA' => 'ng',
+            'MALI' => 'ml',
+            'BURKINA FASO' => 'bf',
+            'BÉNIN' => 'bj',
+            'BENIN' => 'bj',
+            'GUINÉE ÉQUATORIALE' => 'gq',
+            'GUINEE EQUATORIALE' => 'gq',
+            'CAMEROUN' => 'cm',
+            'RD CONGO' => 'cd',
+            'GABON' => 'ga',
+            'ANGOLA' => 'ao',
+            'OUGANDA' => 'ug',
+            'TANZANIE' => 'tz',
+            'SOUDAN' => 'sd',
+            'COMORES' => 'km',
+            'AFRIQUE DU SUD' => 'za',
+            'ZAMBIE' => 'zm',
+            'ZIMBABWE' => 'zw',
+            'MOZAMBIQUE' => 'mz',
+            'BOTSWANA' => 'bw',
+        ];
+
         $created = 0;
         foreach ($teamNames as $teamName) {
+            $isoCode = $teamIsoMapping[strtoupper($teamName)] ?? null;
+
             Team::create([
                 'name' => $teamName,
-                'iso_code' => null, // Can be updated manually later
+                'iso_code' => $isoCode,
                 'group' => null, // Can be updated manually later
             ]);
             $created++;

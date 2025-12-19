@@ -244,17 +244,21 @@
         @if($matchesByPhase->count() > 0)
         <div class="bg-white rounded-xl shadow-lg overflow-hidden" x-data="{ activePhase: '{{ $matchesByPhase->keys()->first() }}' }">
             <!-- Tabs navigation -->
-            <div class="border-b border-gray-200 overflow-x-auto">
-                <nav class="flex flex-wrap sm:flex-nowrap">
+            <div class="border-b border-gray-200 overflow-x-auto scrollbar-hide relative">
+                <!-- Gradient indicators for scroll on mobile -->
+                <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 lg:hidden"></div>
+
+                <nav class="flex flex-nowrap gap-1 px-1 py-1">
                     @foreach($phaseOrder as $phaseKey => $phaseName)
                         @if(isset($matchesByPhase[$phaseKey]) && $matchesByPhase[$phaseKey]->count() > 0)
-                            <button 
+                            <button
                                 @click="activePhase = '{{ $phaseKey }}'"
-                                :class="activePhase === '{{ $phaseKey }}' ? 'border-soboa-blue text-soboa-blue bg-blue-50 font-black' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-4 sm:px-6 border-b-2 font-bold text-xs sm:text-sm transition-all flex-shrink-0"
+                                :class="activePhase === '{{ $phaseKey }}' ? 'border-soboa-blue text-soboa-blue bg-blue-50 font-black shadow-sm' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'"
+                                class="whitespace-nowrap py-3 px-3 sm:px-6 border-b-3 font-bold text-sm sm:text-base transition-all flex-shrink-0 rounded-t-lg min-w-fit touch-manipulation active:scale-95"
                                 id="tab-{{ $phaseKey }}">
-                                {{ $phaseName }}
-                                <span class="ml-2 px-2 py-1 rounded-full text-xs" :class="activePhase === '{{ $phaseKey }}' ? 'bg-soboa-blue text-white' : 'bg-gray-100 text-gray-600'">
+                                <span class="hidden sm:inline">{{ $phaseName }}</span>
+                                <span class="sm:hidden">{{ str_replace(['Phase de Poules', '1/8e de Finale', 'Quarts de Finale', 'Demi-Finales', 'Match pour la 3e Place', 'Finale'], ['Poules', '1/8', 'Quarts', 'Demis', '3e Place', 'Finale'], $phaseName) }}</span>
+                                <span class="ml-1.5 sm:ml-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-bold" :class="activePhase === '{{ $phaseKey }}' ? 'bg-soboa-blue text-white' : 'bg-gray-200 text-gray-700'">
                                     {{ $matchesByPhase[$phaseKey]->count() }}
                                 </span>
                             </button>
@@ -272,14 +276,14 @@
                                 <!-- Sous-onglets pour les groupes -->
                                 <div class="mb-6" x-data="{ activeGroup: '{{ $groupStageByGroup->keys()->first() }}' }">
                                     <!-- Navigation groupes -->
-                                    <div class="flex flex-wrap gap-2 mb-6">
+                                    <div class="flex flex-wrap gap-2 mb-6 justify-center sm:justify-start">
                                         @foreach($groupStageByGroup as $groupName => $groupMatches)
-                                            <button 
+                                            <button
                                                 @click="activeGroup = '{{ $groupName }}'"
-                                                :class="activeGroup === '{{ $groupName }}' ? 'bg-soboa-blue text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                                                class="px-4 py-2 rounded-lg font-bold text-sm transition-all">
+                                                :class="activeGroup === '{{ $groupName }}' ? 'bg-soboa-blue text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                class="px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-all touch-manipulation active:scale-95 min-w-[80px] sm:min-w-[100px]">
                                                 {{ $groupName }}
-                                                <span class="ml-1 opacity-75">({{ $groupMatches->count() }})</span>
+                                                <span class="ml-1 opacity-75 text-xs">({{ $groupMatches->count() }})</span>
                                             </button>
                                         @endforeach
                                     </div>
@@ -397,8 +401,10 @@
                                 <span>📍</span>
                                 <span>Diffusé dans {{ $match->animations->count() }} PDV</span>
                             </h4>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($match->animations->take(10) as $animation)
+                            <!-- Scroll horizontal container -->
+                            <div class="overflow-x-auto scrollbar-hide -mx-6 px-6">
+                                <div class="flex gap-2 pb-2" style="min-width: min-content;">
+                                @foreach($match->animations as $animation)
                                     @php
                                         $bar = $animation->bar;
                                         $typeColors = [
@@ -409,7 +415,7 @@
                                         ];
                                         $colors = $typeColors[$bar->type_pdv ?? 'dakar'] ?? $typeColors['dakar'];
                                     @endphp
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }}">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }} whitespace-nowrap flex-shrink-0">
                                         <span>{{ $colors['icon'] }}</span>
                                         <span>{{ $bar->name }}</span>
                                         @if($bar->zone)
@@ -417,12 +423,7 @@
                                         @endif
                                     </span>
                                 @endforeach
-                                @if($match->animations->count() > 10)
-                                    <a href="/map" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 transition">
-                                        <span>+{{ $match->animations->count() - 10 }} autres</span>
-                                        <span>→</span>
-                                    </a>
-                                @endif
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -680,8 +681,10 @@
                                                             <span>📍</span>
                                                             <span>Diffusé dans {{ $match->animations->count() }} PDV</span>
                                                         </h4>
-                                                        <div class="flex flex-wrap gap-2">
-                                                            @foreach($match->animations->take(10) as $animation)
+                                                        <!-- Scroll horizontal container -->
+                                                        <div class="overflow-x-auto scrollbar-hide -mx-6 px-6">
+                                                            <div class="flex gap-2 pb-2" style="min-width: min-content;">
+                                                            @foreach($match->animations as $animation)
                                                                 @php
                                                                     $bar = $animation->bar;
                                                                     $typeColors = [
@@ -692,7 +695,7 @@
                                                                     ];
                                                                     $colors = $typeColors[$bar->type_pdv ?? 'dakar'] ?? $typeColors['dakar'];
                                                                 @endphp
-                                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }}">
+                                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }} whitespace-nowrap flex-shrink-0">
                                                                     <span>{{ $colors['icon'] }}</span>
                                                                     <span>{{ $bar->name }}</span>
                                                                     @if($bar->zone)
@@ -700,12 +703,7 @@
                                                                     @endif
                                                                 </span>
                                                             @endforeach
-                                                            @if($match->animations->count() > 10)
-                                                                <a href="/map" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 transition">
-                                                                    <span>+{{ $match->animations->count() - 10 }} autres</span>
-                                                                    <span>→</span>
-                                                                </a>
-                                                            @endif
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 @endif
@@ -1344,6 +1342,27 @@
         }
         .animate-slide-out {
             animation: slide-out 0.3s ease-in;
+        }
+
+        /* Hide scrollbar for tabs navigation */
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;  /* Chrome, Safari, Opera */
+        }
+
+        /* Smooth scroll for tabs */
+        .overflow-x-auto {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Better touch targets for mobile */
+        .touch-manipulation {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
     </style>
 </x-layouts.app>
