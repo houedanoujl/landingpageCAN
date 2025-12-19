@@ -276,13 +276,13 @@ class VenuesSeeder extends Seeder
                         'match_name' => $matchData['match_name'],
                     ],
                     [
-                        'team_a' => 'TBD',
-                        'team_b' => 'TBD',
+                        'team_a' => 'À déterminer',
+                        'team_b' => 'À déterminer',
                         'home_team_id' => null,
                         'away_team_id' => null,
                         'status' => 'scheduled',
                         'phase' => $matchData['phase'],
-                        'stadium' => 'TBD',
+                        'stadium' => 'À déterminer',
                     ]
                 );
             } else {
@@ -297,7 +297,7 @@ class VenuesSeeder extends Seeder
                         'away_team_id' => $matchData['away_team_id'],
                         'status' => 'scheduled',
                         'phase' => $matchData['phase'],
-                        'stadium' => 'TBD',
+                        'stadium' => 'À déterminer',
                     ]
                 );
             }

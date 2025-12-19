@@ -133,8 +133,8 @@ class NewMatchesSeeder extends Seeder
             $phaseName = $isTbd ? $matchInfo['team_1'] : null;
             
             MatchModel::create([
-                'team_a' => $isTbd ? 'TBD' : $matchInfo['team_1'],
-                'team_b' => $isTbd ? 'TBD' : $matchInfo['team_2'],
+                'team_a' => $isTbd ? 'À déterminer' : $matchInfo['team_1'],
+                'team_b' => $isTbd ? 'À déterminer' : $matchInfo['team_2'],
                 'match_date' => $dateString,
                 'status' => 'scheduled',
                 'phase_name' => $phaseName,
