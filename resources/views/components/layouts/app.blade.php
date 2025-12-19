@@ -275,14 +275,12 @@
             <div class="flex items-center justify-between py-4">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-3 group">
-                    <div
-                        class="w-[85px] h-[85px] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden bg-white">
-                        <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-full h-full object-contain p-1">
-                    </div>
                     <div class="text-black">
-                        <span class="font-black text-lg md:text-xl tracking-tight">SOBOA FOOT TIME</span>
-                        <span class="text-black font-bold text-xs md:text-sm block -mt-1">Le jeu commence
-                            ici</span>
+                        <span
+                            class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none block">GAZELLE</span>
+                        <span
+                            class="text-black font-extrabold text-[10px] md:text-xs block tracking-[0.2em] uppercase opacity-90">Le
+                            goût de notre victoire</span>
                     </div>
                 </a>
 
@@ -416,8 +414,9 @@
                             <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-full h-full object-contain p-1">
                         </div>
                         <div>
-                            <span class="font-black text-xl">SOBOA FOOT TIME</span>
-                            <span class="text-soboa-orange block text-sm font-bold">Le jeu commence ici</span>
+                            <span class="font-black text-xl uppercase">GAZELLE</span>
+                            <span class="text-soboa-orange block text-sm font-bold uppercase tracking-wider">Le goût de
+                                notre victoire</span>
                         </div>
                     </div>
                     <p class="text-white/60 text-sm">Pronostiquez, jouez et gagnez avec SOBOA FOOT TIME !</p>
@@ -442,7 +441,7 @@
                 </div>
             </div>
             <div class="border-t border-white/10 pt-6 text-center">
-                <p class="text-white/50 text-xs">© {{ date('Y') }} SOBOA. Tous droits réservés SOBOA Sénégal</p>
+                <p class="text-white/50 text-xs">© {{ date('Y') }} GAZELLE. Tous droits réservés SOBOA Sénégal</p>
             </div>
         </div>
     </footer>
@@ -462,21 +461,51 @@
     </div>
 
     <script>
-        // Page Transitions Logic
-        document.addEventListener('DOMContentLoaded', () => {
+        // Optimized Page Transitions Logic
+        window.addEventListener('DOMContentLoaded', () => {
             const loader = document.getElementById('page-loader');
+            
+            // Function to hide loader with a slight fade
+            const hideLoader = () => {
+                if (loader) {
+                    loader.classList.add('opacity-0');
+                    setTimeout(() => {
+                        loader.classList.add('pointer-events-none');
+                    }, 300); // Wait for transition
+                }
+            };
 
-            // Hide loader after a short delay
-            setTimeout(() => {
-                loader.classList.add('opacity-0', 'pointer-events-none');
-            }, 500);
+            // Hide loader immediately (bfcache handle will cover back nav)
+            hideLoader();
 
-            // Show loader on link click
+            // Handle browser back/forward cache (bfcache)
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    // Page was restored from cache (User hit "Back")
+                    hideLoader();
+                }
+            });
+
+            // Show loader on link click for better "perceived" speed on slow connections
             document.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', (e) => {
                     const href = link.getAttribute('href');
-                    // Only for internal links that are not anchors or js
-                    if (href && href.startsWith('/') && !href.startsWith('#') && !link.hasAttribute('target')) {
+                    
+                    // Conditions to show loader:
+                    // 1. Internal link (starts with / or current domain)
+                    // 2. Not an anchor (#)
+                    // 3. Not a JS action (javascript:)
+                    // 4. Not opening in a new tab (_blank)
+                    // 5. Not a download link
+                    if (href && href.startsWith('/') && 
+                        !href.startsWith('#') && 
+                        !href.includes(':') && 
+                        !link.hasAttribute('target') && 
+                        !link.hasAttribute('download')) {
+                        
+                        // Check if it's the same URL (no need to show loader)
+                        if (href === window.location.pathname) return;
+
                         loader.classList.remove('opacity-0', 'pointer-events-none');
                     }
                 });

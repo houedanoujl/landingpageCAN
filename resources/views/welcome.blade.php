@@ -199,21 +199,25 @@
 
         <!-- Content -->
         <div class="relative z-[10] text-center px-4 max-w-5xl mx-auto">
-            <!-- SOBOA FOOT TIME Badge -->
+            <!-- Branding Badge -->
             <div
-                class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-white/20">
-                <span class="text-3xl">⚽</span>
-                <span class="text-white font-bold text-lg">SOBOA FOOT TIME</span>
+                class="inline-flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl px-8 py-4 mb-8 border border-white/20 shadow-2xl">
+                <span
+                    class="text-white font-black text-2xl md:text-3xl tracking-tighter uppercase leading-none">GAZELLE</span>
+                <span
+                    class="text-soboa-orange font-bold text-xs md:text-sm tracking-[0.2em] uppercase mt-1 opacity-90">Le
+                    goût de notre victoire</span>
             </div>
 
             <!-- Main Heading -->
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight uppercase">
                 Pronostiquez<br>
                 <span class="gradient-text">& Gagnez!</span>
             </h1>
 
-            <p class="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto font-medium">
-                Le jeu commence ici ! Devinez les scores, visitez nos lieux partenaires et gagnez des cadeaux !
+            <p class="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
+                Tentez de gagner <span class="text-soboa-orange font-bold underline underline-offset-4">un billet
+                    d’avion pour la finale</span> et pleins d’autres lots !
             </p>
 
             <!-- Countdown Timer -->
@@ -285,7 +289,8 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
-                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">SOBOA FOOT TIME</span>
+                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">GAZELLE | LE GOÛT DE
+                        NOTRE VICTOIRE</span>
                     <div class="flex items-center gap-2 mt-2">
                         <h2 class="text-3xl md:text-4xl font-black text-soboa-blue">Prochains matchs</h2>
                         <span class="text-3xl md:text-4xl">⚽</span>
