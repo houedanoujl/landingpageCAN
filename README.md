@@ -87,3 +87,10 @@ UPDATE users SET role = 'admin' WHERE phone_number = '+225XXXXXXXXXX';
 - Alpine.js
 - Firebase Auth (SMS)
 - MySQL
+
+
+# Sur production
+php artisan migrate --force && \
+php artisan db:seed --class=ProductionSyncSeeder --import --force && \
+php artisan cache:clear && \
+php artisan config:clear
