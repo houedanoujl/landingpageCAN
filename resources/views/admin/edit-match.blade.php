@@ -56,7 +56,7 @@
 
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Phase du tournoi *</label>
-                        <select name="phase" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
+                        <select name="phase" required onchange="checkForPenalties()" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                             <option value="">Sélectionner...</option>
                             <option value="group_stage" {{ old('phase', $match->phase) === 'group_stage' ? 'selected' : '' }}>Phase de poules</option>
                             <option value="round_of_16" {{ old('phase', $match->phase) === 'round_of_16' ? 'selected' : '' }}>1/8e de finale</option>
@@ -180,7 +180,7 @@
                         </div>
                     </div>
 
-                    <!-- Tirs au But (visible uniquement si égalité) -->
+                    <!-- Tirs au But (visible uniquement si égalité ET phase à élimination directe) -->
                     <div id="penaltiesSection" class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6" style="display: none;">
                         <div class="mb-4">
                             <label class="flex items-center gap-3 cursor-pointer">
@@ -194,7 +194,8 @@
                                 <span class="font-bold text-gray-800">⚽ Ce match a eu des tirs au but</span>
                             </label>
                             <p class="text-sm text-gray-600 ml-8 mt-1">
-                                ℹ️ Si coché, aucun point ne sera attribué pour le score exact (car c'est une égalité)
+                                ℹ️ Si coché, aucun point ne sera attribué pour le score exact (car c'est une égalité)<br>
+                                💡 Les TAB ne sont disponibles que pour les phases à élimination directe
                             </p>
                         </div>
 
@@ -338,9 +339,15 @@
         function checkForPenalties() {
             const scoreA = document.getElementById('score_a').value;
             const scoreB = document.getElementById('score_b').value;
+            const phase = document.querySelector('select[name="phase"]').value;
             const penaltiesSection = document.getElementById('penaltiesSection');
 
-            if (scoreA !== '' && scoreB !== '' && scoreA === scoreB) {
+            // Les TAB ne sont possibles que dans les phases à élimination directe
+            const knockoutPhases = ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
+            const isKnockoutPhase = knockoutPhases.includes(phase);
+
+            // Afficher la section TAB si : égalité ET phase à élimination directe
+            if (scoreA !== '' && scoreB !== '' && scoreA === scoreB && isKnockoutPhase) {
                 penaltiesSection.style.display = 'block';
             } else {
                 penaltiesSection.style.display = 'none';

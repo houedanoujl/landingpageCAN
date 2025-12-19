@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.app title="Admin - Modifier Point de Vente">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <div class="mb-8">
             <a href="{{ route('admin.venues.index') }}" class="text-soboa-blue hover:text-blue-700 font-bold flex items-center gap-2 mb-4">
@@ -124,4 +124,4 @@
             </form>
         </div>
     </div>
-</x-layouts.admin>
+</x-layouts.app>

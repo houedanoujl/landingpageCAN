@@ -49,6 +49,12 @@ class ResetUserPoints extends Command
         $user->points_total = 0;
         $user->save();
         
+        // IMPORTANT: Marquer aussi les pronostics comme "points_earned = 0"
+        // pour éviter qu'ils soient recalculés automatiquement
+        $this->info('📝 Réinitialisation des points sur les pronostics...');
+        $predictions = \App\Models\Prediction::where('user_id', $user->id)->update(['points_earned' => 0]);
+        $this->line("   {$predictions} pronostics réinitialisés");
+        
         // Optionnel : supprimer aussi les pronostics
         if (!$keepPredictions) {
             if ($this->confirm('🎯 Voulez-vous aussi supprimer tous les pronostics de cet utilisateur ?', false)) {

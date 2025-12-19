@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.app title="Admin - Points de Vente">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
@@ -289,4 +289,4 @@
             cb.addEventListener('change', updateBulkPanel);
         });
     </script>
-</x-layouts.admin>
+</x-layouts.app>

@@ -417,6 +417,10 @@ class AdminController extends Controller
             $user->points_total = 0;
             $user->save();
             
+            // IMPORTANT: Marquer les pronostics comme "points_earned = 0"
+            // pour éviter que les points soient recalculés automatiquement
+            \App\Models\Prediction::where('user_id', $user->id)->update(['points_earned' => 0]);
+            
             return response()->json([
                 'success' => true,
                 'message' => "Points réinitialisés avec succès!\n\n" .
