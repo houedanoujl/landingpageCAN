@@ -147,9 +147,9 @@ class ProcessMatchPoints implements ShouldQueue
             }
 
             // 3. Exact Score (+3 points extra)
-            // Donner les points si le score est exact, même si l'utilisateur a prédit des TAB
-            // (car un match nul 2-2 reste un score exact même s'il n'y a pas eu de TAB)
-            if ($prediction->score_a == $match->score_a && $prediction->score_b == $match->score_b) {
+            // RÈGLE IMPORTANTE: Si le match a eu des TAB, PAS de points pour score exact
+            // Car un match avec TAB n'est pas considéré comme un "score exact" - c'est une égalité qui s'est décidée aux penalties
+            if (!$matchHadPenalties && $prediction->score_a == $match->score_a && $prediction->score_b == $match->score_b) {
                 $alreadyExact = \App\Models\PointLog::where('user_id', $prediction->user_id)
                     ->where('source', 'prediction_exact')
                     ->where('match_id', $this->matchId)

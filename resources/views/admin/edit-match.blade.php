@@ -158,9 +158,11 @@
                                 <label class="text-xs text-gray-500 block mb-2">Domicile</label>
                                 <input type="number" 
                                        name="score_a" 
+                                       id="score_a"
                                        value="{{ old('score_a', $match->score_a) }}"
                                        min="0" 
                                        max="20"
+                                       onchange="checkForPenalties()"
                                        class="w-20 h-16 text-center text-3xl font-black border-2 border-gray-300 rounded-xl focus:border-soboa-orange focus:ring-soboa-orange">
                             </div>
                             <span class="text-3xl font-bold text-gray-400 mt-6">-</span>
@@ -168,11 +170,59 @@
                                 <label class="text-xs text-gray-500 block mb-2">Extérieur</label>
                                 <input type="number" 
                                        name="score_b" 
+                                       id="score_b"
                                        value="{{ old('score_b', $match->score_b) }}"
                                        min="0" 
                                        max="20"
+                                       onchange="checkForPenalties()"
                                        class="w-20 h-16 text-center text-3xl font-black border-2 border-gray-300 rounded-xl focus:border-soboa-orange focus:ring-soboa-orange">
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Tirs au But (visible uniquement si égalité) -->
+                    <div id="penaltiesSection" class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6" style="display: none;">
+                        <div class="mb-4">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" 
+                                       name="had_penalties" 
+                                       id="had_penalties"
+                                       value="1"
+                                       {{ old('had_penalties', $match->winner ? 1 : 0) ? 'checked' : '' }}
+                                       onchange="togglePenaltyWinner()"
+                                       class="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500">
+                                <span class="font-bold text-gray-800">⚽ Ce match a eu des tirs au but</span>
+                            </label>
+                            <p class="text-sm text-gray-600 ml-8 mt-1">
+                                ℹ️ Si coché, aucun point ne sera attribué pour le score exact (car c'est une égalité)
+                            </p>
+                        </div>
+
+                        <div id="penaltyWinnerSection" class="mt-4" style="display: none;">
+                            <label class="block text-sm font-bold text-gray-700 mb-3">
+                                🏆 Vainqueur aux tirs au but *
+                            </label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="flex items-center justify-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-yellow-100 has-[:checked]:border-yellow-600 has-[:checked]:bg-yellow-100">
+                                    <input type="radio" 
+                                           name="winner" 
+                                           value="home"
+                                           {{ old('winner', $match->winner) === 'home' ? 'checked' : '' }}
+                                           class="w-5 h-5 text-yellow-600">
+                                    <span class="font-bold text-gray-800">🏠 Équipe Domicile</span>
+                                </label>
+                                <label class="flex items-center justify-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-yellow-100 has-[:checked]:border-yellow-600 has-[:checked]:bg-yellow-100">
+                                    <input type="radio" 
+                                           name="winner" 
+                                           value="away"
+                                           {{ old('winner', $match->winner) === 'away' ? 'checked' : '' }}
+                                           class="w-5 h-5 text-yellow-600">
+                                    <span class="font-bold text-gray-800">✈️ Équipe Extérieur</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-3">
+                                💡 Les utilisateurs qui ont prédit le bon vainqueur aux TAB recevront +3 pts
+                            </p>
                         </div>
                     </div>
 
@@ -278,6 +328,42 @@
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', updateCount);
             });
+
+            // Vérifier au chargement si les tirs au but doivent être affichés
+            checkForPenalties();
+            togglePenaltyWinner();
         });
+
+        // Vérifier si les scores sont égaux pour afficher la section TAB
+        function checkForPenalties() {
+            const scoreA = document.getElementById('score_a').value;
+            const scoreB = document.getElementById('score_b').value;
+            const penaltiesSection = document.getElementById('penaltiesSection');
+
+            if (scoreA !== '' && scoreB !== '' && scoreA === scoreB) {
+                penaltiesSection.style.display = 'block';
+            } else {
+                penaltiesSection.style.display = 'none';
+                // Réinitialiser les champs si on cache la section
+                document.getElementById('had_penalties').checked = false;
+                togglePenaltyWinner();
+            }
+        }
+
+        // Afficher/cacher la sélection du vainqueur selon la checkbox
+        function togglePenaltyWinner() {
+            const hadPenalties = document.getElementById('had_penalties').checked;
+            const winnerSection = document.getElementById('penaltyWinnerSection');
+
+            if (hadPenalties) {
+                winnerSection.style.display = 'block';
+            } else {
+                winnerSection.style.display = 'none';
+                // Décocher les radios si on cache la section
+                document.querySelectorAll('input[name="winner"]').forEach(radio => {
+                    radio.checked = false;
+                });
+            }
+        }
     </script>
 </x-layouts.app>

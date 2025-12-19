@@ -209,6 +209,8 @@ class AdminController extends Controller
             'score_a' => 'nullable|integer|min:0|max:20',
             'score_b' => 'nullable|integer|min:0|max:20',
             'status' => 'required|in:scheduled,live,finished',
+            'had_penalties' => 'nullable|boolean',
+            'winner' => 'nullable|in:home,away',
             'venue_ids' => 'nullable|array',
             'venue_ids.*' => 'exists:bars,id',
         ]);
@@ -220,6 +222,12 @@ class AdminController extends Controller
 
         $homeTeam = Team::find($request->home_team_id);
         $awayTeam = Team::find($request->away_team_id);
+
+        // Gérer les tirs au but : si had_penalties est true ET score_a == score_b, on stocke le winner
+        $winner = null;
+        if ($request->had_penalties && $request->score_a == $request->score_b && $request->winner) {
+            $winner = $request->winner;
+        }
 
         $match->update([
             'team_a' => $homeTeam->name,
@@ -233,6 +241,7 @@ class AdminController extends Controller
             'score_a' => $request->score_a,
             'score_b' => $request->score_b,
             'status' => $request->status,
+            'winner' => $winner, // NULL si pas de TAB, 'home' ou 'away' si TAB
         ]);
 
         // Synchroniser les animations (PDV assignés)
