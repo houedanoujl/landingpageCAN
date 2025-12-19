@@ -1047,7 +1047,7 @@ class AdminController extends Controller
 
         $request->validate([
             'match_ids' => 'required|array|min:1',
-            'match_ids.*' => 'integer|exists:match_games,id',
+            'match_ids.*' => 'integer|exists:matches,id',
         ]);
 
         $matchIds = $request->match_ids;

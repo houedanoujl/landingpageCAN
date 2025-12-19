@@ -31,35 +31,34 @@ class HomeController extends Controller
         // (indépendamment du lieu sélectionné - le filtre par lieu s'applique sur /matches)
         $senegalTeam = Team::where('iso_code', 'sn')->first();
 
-        if ($senegalTeam) {
-            // Prioriser les matches du Sénégal
-            $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
-                ->where('status', '!=', 'finished')
-                ->where('match_date', '>=', now())
-                ->where(function ($query) use ($senegalTeam) {
-                    $query->where('home_team_id', $senegalTeam->id)
-                        ->orWhere('away_team_id', $senegalTeam->id);
-                })
-                ->orderBy('match_date', 'asc')
-                ->take(4)
-                ->get();
-        } else {
-            $upcomingMatches = collect();
-        }
+        // Afficher uniquement les matchs à venir
+        // Pour les phases finales : ne les afficher qu'à partir de la date du 1er match de cette phase
+        $allUpcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
+            ->where('status', '!=', 'finished')
+            ->where('match_date', '>=', now())
+            ->orderBy('match_date', 'asc')
+            ->get();
 
-        // Fallback: si pas assez de matches du Sénégal, compléter avec d'autres matches
-        if ($upcomingMatches->count() < 4) {
-            $excludeIds = $upcomingMatches->pluck('id')->toArray();
-            $additionalMatches = MatchGame::with(['homeTeam', 'awayTeam'])
-                ->where('status', '!=', 'finished')
-                ->where('match_date', '>=', now())
-                ->whereNotIn('id', $excludeIds)
-                ->orderBy('match_date', 'asc')
-                ->take(4 - $upcomingMatches->count())
-                ->get();
-
-            $upcomingMatches = $upcomingMatches->merge($additionalMatches);
-        }
+        // Filtrer pour ne garder que les phases dont le premier match est accessible
+        $upcomingMatches = $allUpcomingMatches->filter(function ($match) use ($allUpcomingMatches) {
+            // Toujours afficher les matchs de phase de poule
+            if ($match->phase === 'group_stage') {
+                return true;
+            }
+            
+            // Pour les phases finales, vérifier si on a atteint la date du premier match de cette phase
+            $firstMatchOfPhase = $allUpcomingMatches
+                ->where('phase', $match->phase)
+                ->sortBy('match_date')
+                ->first();
+            
+            if ($firstMatchOfPhase) {
+                // Afficher la phase seulement si on est à J-1 du premier match de cette phase
+                return now() >= $firstMatchOfPhase->match_date->subDay();
+            }
+            
+            return false;
+        });
 
         // Fetch top 3 users for leaderboard
         $topUsers = User::orderBy('points_total', 'desc')->take(3)->get();
@@ -83,13 +82,34 @@ class HomeController extends Controller
 
     public function matches(Request $request)
     {
-        // Afficher TOUS les matchs (accès universel)
-        // La géolocalisation sera détectée automatiquement en arrière-plan pour le bonus
-        $allMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
-            ->where('match_date', '>=', now()->subDays(1)) // Matchs d'hier à aujourd'hui et futurs
+        // Récupérer tous les matchs futurs
+        $allFutureMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
+            ->where('status', '!=', 'finished')
+            ->where('match_date', '>=', now())
             ->orderBy('phase', 'asc')
             ->orderBy('match_date', 'asc')
             ->get();
+
+        // Filtrer pour ne garder que les phases dont le premier match est accessible
+        $allMatches = $allFutureMatches->filter(function ($match) use ($allFutureMatches) {
+            // Toujours afficher les matchs de phase de poule
+            if ($match->phase === 'group_stage') {
+                return true;
+            }
+            
+            // Pour les phases finales, vérifier si on a atteint la date du premier match de cette phase
+            $firstMatchOfPhase = $allFutureMatches
+                ->where('phase', $match->phase)
+                ->sortBy('match_date')
+                ->first();
+            
+            if ($firstMatchOfPhase) {
+                // Afficher la phase seulement si on est à J-1 du premier match de cette phase
+                return now() >= $firstMatchOfPhase->match_date->subDay();
+            }
+            
+            return false;
+        });
 
         // Grouper les matchs par phase
         $matchesByPhase = $allMatches->groupBy('phase');

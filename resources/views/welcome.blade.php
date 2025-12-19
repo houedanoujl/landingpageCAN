@@ -309,11 +309,11 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @forelse($upcomingMatches as $match)
                     <x-match-card :match="$match" />
                 @empty
-                    <div class="col-span-3 text-center py-16 bg-white rounded-2xl shadow">
+                    <div class="col-span-full text-center py-16 bg-white rounded-2xl shadow">
                         <div
                             class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
                             <span class="text-4xl">⚽</span>
