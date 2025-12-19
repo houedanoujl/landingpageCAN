@@ -16,23 +16,20 @@ npm ci
 npm run build
 
 # ==========================================
-# MIGRATIONS ET SEEDERS
+# MIGRATIONS (SANS --seed global!)
 # ==========================================
 
 echo "🔄 Running migrations..."
 $FORGE_PHP artisan migrate --force
 
-echo "🌍 Seeding Teams (équipes nationales)..."
-$FORGE_PHP artisan db:seed --class=TeamSeeder --force
+# ==========================================
+# PRODUCTION-SAFE SEEDING
+# ==========================================
+# Uses ProductionSafeSeeder instead of individual seeders
+# CRITICAL: Preserves users and predictions (no truncate!)
 
-echo "🏟️ Seeding Stadiums (stades)..."
-$FORGE_PHP artisan db:seed --class=StadiumSeeder --force
-
-echo "⚽ Seeding Matches (matchs de la CAN)..."
-$FORGE_PHP artisan db:seed --class=MatchSeeder --force
-
-echo "📍 Fixing Venues & Animations (60 PDV + coordonnées + liens)..."
-$FORGE_PHP artisan db:seed --class=FixAnimationsSeeder --force
+echo "🌱 Running PRODUCTION-SAFE seeders..."
+$FORGE_PHP artisan db:seed --class=ProductionSafeSeeder --force
 
 echo "🔧 Optimizing application..."
 $FORGE_PHP artisan optimize
@@ -40,11 +37,15 @@ $FORGE_PHP artisan optimize
 echo "🔗 Creating storage link..."
 $FORGE_PHP artisan storage:link
 
+# ==========================================
+# CACHE CLEARING (FIX 404 error!)
+# ==========================================
+
 echo "🧹 Clearing caches..."
 $FORGE_PHP artisan config:clear
 $FORGE_PHP artisan cache:clear
 $FORGE_PHP artisan view:clear
-$FORGE_PHP artisan route:clear
+$FORGE_PHP artisan route:clear  # ← CRITICAL: Fixes 404 on "modifier" link
 
 $ACTIVATE_RELEASE()
 

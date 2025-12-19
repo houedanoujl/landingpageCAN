@@ -12,14 +12,8 @@ class TeamSeeder extends Seeder
      */
     public function run(): void
     {
-        // Désactiver les contraintes de clés étrangères
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-        // Supprimer toutes les équipes existantes
-        Team::truncate();
-
-        // Réactiver les contraintes de clés étrangères
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // Production-safe: updateOrCreate instead of truncate
+        // Preserves existing teams and their relationships (matches, predictions, etc.)
 
         $teams = [
             // Group A
@@ -59,10 +53,22 @@ class TeamSeeder extends Seeder
             ['name' => 'Mozambique', 'iso_code' => 'mz', 'group' => 'F'],
         ];
 
+        $created = 0;
+        $updated = 0;
+
         foreach ($teams as $team) {
-            Team::create($team);
+            $teamModel = Team::updateOrCreate(
+                ['name' => $team['name']], // Unique key
+                $team // All data to update/create
+            );
+
+            if ($teamModel->wasRecentlyCreated) {
+                $created++;
+            } else {
+                $updated++;
+            }
         }
 
-        $this->command->info('✅ 24 équipes de la CAN créées avec succès!');
+        $this->command->info("✅ Teams: {$created} created, {$updated} updated (Total: " . count($teams) . ")");
     }
 }

@@ -14,14 +14,9 @@ class MatchSeeder extends Seeder
      */
     public function run(): void
     {
-        // Désactiver les contraintes de clés étrangères
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-        // Supprimer tous les matchs existants
-        MatchGame::truncate();
-
-        // Réactiver les contraintes de clés étrangères
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // Production-safe: updateOrCreate instead of truncate
+        // CRITICAL: Preserves matches and their predictions (cascade delete!)
+        // Uses composite key: home_team_id + away_team_id + match_date for uniqueness
 
         $matches = [
             // Group Stage Matches from Animation Data
@@ -57,6 +52,7 @@ class MatchSeeder extends Seeder
         ];
 
         $created = 0;
+        $updated = 0;
 
         foreach ($matches as $matchData) {
             $homeTeamId = null;
@@ -87,23 +83,49 @@ class MatchSeeder extends Seeder
                 }
             }
 
-            MatchGame::create([
-                'home_team_id' => $homeTeamId,
-                'away_team_id' => $awayTeamId,
-                'team_a' => $teamA,
-                'team_b' => $teamB,
-                'match_date' => Carbon::parse($matchData['date']),
-                'phase' => $matchData['phase'] ?? 'group_stage',
-                'group_name' => $matchData['grp'],
-                'stadium' => $matchData['stadium'],
-                'status' => 'scheduled',
-                'score_a' => null,
-                'score_b' => null,
-            ]);
+            $matchDate = Carbon::parse($matchData['date']);
 
-            $created++;
+            // Composite unique key to prevent duplicates
+            // For TBD matches (null teams): use date + phase
+            // For known matches: use home_team_id + away_team_id + match_date
+            $uniqueKey = [];
+            if ($homeTeamId && $awayTeamId) {
+                $uniqueKey = [
+                    'home_team_id' => $homeTeamId,
+                    'away_team_id' => $awayTeamId,
+                    'match_date' => $matchDate,
+                ];
+            } else {
+                // TBD knockout matches: unique by date + phase
+                $uniqueKey = [
+                    'match_date' => $matchDate,
+                    'phase' => $matchData['phase'] ?? 'group_stage',
+                ];
+            }
+
+            $matchModel = MatchGame::updateOrCreate(
+                $uniqueKey, // Composite unique key
+                [
+                    'home_team_id' => $homeTeamId,
+                    'away_team_id' => $awayTeamId,
+                    'team_a' => $teamA,
+                    'team_b' => $teamB,
+                    'match_date' => $matchDate,
+                    'phase' => $matchData['phase'] ?? 'group_stage',
+                    'group_name' => $matchData['grp'],
+                    'stadium' => $matchData['stadium'],
+                    'status' => 'scheduled',
+                    // Preserve existing scores if match already exists
+                ]
+            );
+
+            if ($matchModel->wasRecentlyCreated) {
+                $created++;
+            } else {
+                $updated++;
+            }
         }
 
-        $this->command->info("✅ {$created} matchs créés avec succès!");
+        $this->command->info("✅ Matches: {$created} created, {$updated} updated (Total: " . ($created + $updated) . ")");
     }
 }

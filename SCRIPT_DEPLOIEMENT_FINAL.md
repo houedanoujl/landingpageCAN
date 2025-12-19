@@ -27,32 +27,23 @@ echo "🔄 Running migrations..."
 $FORGE_PHP artisan migrate --force
 
 # ==========================================
-# NETTOYAGE DES ANCIENNES DONNÉES
+# PRODUCTION-SAFE SEEDING
 # ==========================================
-echo "🧹 Cleaning old invalid animations..."
-$FORGE_PHP artisan tinker --execute="
-    \$invalidAnimations = \App\Models\Animation::whereNotExists(function(\$query) {
-        \$query->select(\Illuminate\Support\Facades\DB::raw(1))
-              ->from('matches')
-              ->whereColumn('matches.id', 'animations.match_id');
-    })->delete();
-    echo 'Deleted ' . \$invalidAnimations . ' invalid animations' . PHP_EOL;
-"
+# ✅ Utilise updateOrCreate() au lieu de truncate()
+# ✅ Préserve : users, predictions, user_points
+# ✅ Met à jour : teams, matches, venues, animations
+# ✅ Idempotent : peut être exécuté plusieurs fois
 
-# ==========================================
-# SEEDERS DANS L'ORDRE
-# ==========================================
-echo "🌍 Seeding Teams (24 équipes)..."
-$FORGE_PHP artisan db:seed --class=TeamSeeder --force
+echo "🌱 Production-safe seeding..."
+$FORGE_PHP artisan db:seed --class=ProductionSafeSeeder --force
 
-echo "🏟️ Seeding Stadiums (6 stades)..."
-$FORGE_PHP artisan db:seed --class=StadiumSeeder --force
-
-echo "⚽ Seeding Matches (25+ matchs)..."
-$FORGE_PHP artisan db:seed --class=MatchSeeder --force
-
-echo "📍 Fixing Venues & Animations (60 PDV + 62 animations)..."
-$FORGE_PHP artisan db:seed --class=FixAnimationsSeeder --force
+# ✅ Garanties de Sécurité :
+# - Users préservés (aucune suppression)
+# - Predictions préservées (pas de cascade delete)
+# - User points préservés
+# - updateOrCreate() au lieu de truncate()
+# - Transactions avec rollback automatique
+# - Vérification de l'intégrité des données en fin de seeding
 
 # ==========================================
 # OPTIMISATIONS
@@ -95,34 +86,50 @@ Après déploiement, vous devriez avoir:
 Avant de déployer en production:
 
 ```bash
-# Nettoyer les animations invalides
+# Créer des users et predictions de test pour vérifier la sécurité
 docker exec -w /app landingpagecan-laravel.test-1 php artisan tinker --execute="
-    \$deleted = \App\Models\Animation::whereNotExists(function(\$query) {
-        \$query->select(\Illuminate\Support\Facades\DB::raw(1))
-              ->from('matches')
-              ->whereColumn('matches.id', 'animations.match_id');
-    })->delete();
-    echo 'Deleted ' . \$deleted . ' invalid animations' . PHP_EOL;
+    echo 'Creating test user and prediction...' . PHP_EOL;
+    \$user = \App\Models\User::firstOrCreate(
+        ['email' => 'test@test.com'],
+        ['name' => 'Test User', 'password' => bcrypt('password')]
+    );
+    echo 'User created/found: ' . \$user->email . PHP_EOL;
+
+    \$match = \App\Models\MatchGame::first();
+    if (\$match) {
+        \$prediction = \App\Models\Prediction::firstOrCreate(
+            ['user_id' => \$user->id, 'match_id' => \$match->id],
+            ['score_a' => 2, 'score_b' => 1]
+        );
+        echo 'Prediction created/found for match: ' . \$match->team_a . ' vs ' . \$match->team_b . PHP_EOL;
+    }
 "
 
-# Exécuter tous les seeders
-docker exec -w /app landingpagecan-laravel.test-1 php artisan db:seed --class=TeamSeeder
-docker exec -w /app landingpagecan-laravel.test-1 php artisan db:seed --class=StadiumSeeder
-docker exec -w /app landingpagecan-laravel.test-1 php artisan db:seed --class=MatchSeeder
-docker exec -w /app landingpagecan-laravel.test-1 php artisan db:seed --class=FixAnimationsSeeder
-
-# Vérifier
+# Compter AVANT seeding
 docker exec -w /app landingpagecan-laravel.test-1 php artisan tinker --execute="
-    echo '=== FINAL CHECK ===' . PHP_EOL;
-    echo 'Teams: ' . \App\Models\Team::count() . PHP_EOL;
+    echo 'BEFORE SEEDING:' . PHP_EOL;
+    echo 'Users: ' . \App\Models\User::count() . PHP_EOL;
+    echo 'Predictions: ' . \App\Models\Prediction::count() . PHP_EOL;
+"
+
+# Exécuter ProductionSafeSeeder (orchestrateur)
+docker exec -w /app landingpagecan-laravel.test-1 php artisan db:seed --class=ProductionSafeSeeder
+
+# ✅ ProductionSafeSeeder affichera automatiquement les statistiques complètes
+# incluant la vérification de l'intégrité des users et predictions
+
+# Vérification supplémentaire (optionnelle)
+docker exec -w /app landingpagecan-laravel.test-1 php artisan tinker --execute="
+    echo PHP_EOL . '=== ADDITIONAL VERIFICATION ===' . PHP_EOL;
+    echo 'Teams: ' . \App\Models\Team::count() . ' (expected: 24)' . PHP_EOL;
     echo 'Stadiums: ' . \App\Models\Stadium::count() . PHP_EOL;
-    echo 'Matches: ' . \App\Models\MatchGame::count() . PHP_EOL;
-    echo 'Venues: ' . \App\Models\Bar::count() . PHP_EOL;
-    echo 'Valid Animations: ' . \App\Models\Animation::whereExists(function(\$q) {
-        \$q->select(\Illuminate\Support\Facades\DB::raw(1))
-          ->from('matches')
-          ->whereColumn('matches.id', 'animations.match_id');
-    })->count() . PHP_EOL;
+    echo 'Matches: ' . \App\Models\MatchGame::count() . ' (expected: 25+)' . PHP_EOL;
+    echo 'Venues: ' . \App\Models\Bar::count() . ' (expected: 60)' . PHP_EOL;
+    echo 'Venues with coords: ' . \App\Models\Bar::whereNotNull('latitude')->count() . ' (expected: 60)' . PHP_EOL;
+    echo 'Animations: ' . \App\Models\Animation::count() . ' (expected: 62+)' . PHP_EOL;
+    echo PHP_EOL . '🔒 CRITICAL - User Data:' . PHP_EOL;
+    echo 'Users: ' . \App\Models\User::count() . ' (MUST BE PRESERVED!)' . PHP_EOL;
+    echo 'Predictions: ' . \App\Models\Prediction::count() . ' (MUST BE PRESERVED!)' . PHP_EOL;
 "
 ```
 
