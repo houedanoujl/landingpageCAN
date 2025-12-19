@@ -275,6 +275,10 @@
             <div class="flex items-center justify-between py-4">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-3 group">
+                    <div
+                        class="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden bg-white border-2 border-white">
+                        <img src="/images/logoGazelle.jpeg" alt="GAZELLE" class="w-full h-full object-contain p-0.5">
+                    </div>
                     <div class="text-black">
                         <span
                             class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none block">GAZELLE</span>
@@ -410,8 +414,9 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="text-center md:text-left">
                     <div class="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-white">
-                            <img src="/images/logoGazelle.jpeg" alt="SOBOA" class="w-full h-full object-contain p-1">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-white border border-white/20">
+                            <img src="/images/logoGazelle.jpeg" alt="GAZELLE" class="w-full h-full object-contain p-1">
                         </div>
                         <div>
                             <span class="font-black text-xl uppercase">GAZELLE</span>
@@ -464,7 +469,7 @@
         // Optimized Page Transitions Logic
         window.addEventListener('DOMContentLoaded', () => {
             const loader = document.getElementById('page-loader');
-            
+
             // Function to hide loader with a slight fade
             const hideLoader = () => {
                 if (loader) {
@@ -490,19 +495,19 @@
             document.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', (e) => {
                     const href = link.getAttribute('href');
-                    
+
                     // Conditions to show loader:
                     // 1. Internal link (starts with / or current domain)
                     // 2. Not an anchor (#)
                     // 3. Not a JS action (javascript:)
                     // 4. Not opening in a new tab (_blank)
                     // 5. Not a download link
-                    if (href && href.startsWith('/') && 
-                        !href.startsWith('#') && 
-                        !href.includes(':') && 
-                        !link.hasAttribute('target') && 
+                    if (href && href.startsWith('/') &&
+                        !href.startsWith('#') &&
+                        !href.includes(':') &&
+                        !link.hasAttribute('target') &&
                         !link.hasAttribute('download')) {
-                        
+
                         // Check if it's the same URL (no need to show loader)
                         if (href === window.location.pathname) return;
 

@@ -202,6 +202,9 @@
             <!-- Branding Badge -->
             <div
                 class="inline-flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl px-8 py-4 mb-8 border border-white/20 shadow-2xl">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center p-2 mb-3 shadow-inner">
+                    <img src="/images/logoGazelle.jpeg" alt="GAZELLE" class="w-full h-full object-contain">
+                </div>
                 <span
                     class="text-white font-black text-2xl md:text-3xl tracking-tighter uppercase leading-none">GAZELLE</span>
                 <span
