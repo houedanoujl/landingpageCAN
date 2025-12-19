@@ -1,0 +1,53 @@
+AJOUTER CETTE MÉTHODE DANS AdminController.php
+
+APRÈS la méthode deleteUser (ligne ~390), AVANT la section // ==================== BARS ====================
+
+Ajouter ce code :
+
+    /**
+     * Reset user points to zero and delete all point logs
+     */
+    public function resetUserPoints($id)
+    {
+        if (!$this->checkAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Accès non autorisé.'], 403);
+        }
+
+        try {
+            $user = User::findOrFail($id);
+            
+            // Compter les logs avant suppression
+            $logsCount = \App\Models\PointLog::where('user_id', $user->id)->count();
+            $previousPoints = $user->points_total;
+            
+            // Supprimer tous les logs de points
+            \App\Models\PointLog::where('user_id', $user->id)->delete();
+            
+            // Réinitialiser les points
+            $user->points_total = 0;
+            $user->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Points réinitialisés avec succès!\n\n" .
+                            "• Points supprimés: {$previousPoints} pts\n" .
+                            "• Logs supprimés: {$logsCount}\n" .
+                            "• Nouveaux points: 0 pts"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+---
+
+OU ajoutez directement via nano/vim :
+
+nano app/Http/Controllers/Web/AdminController.php
+
+Chercher la ligne avec "return redirect()->route('admin.users')->with('success', 'Utilisateur supprimé avec succès.');"
+
+Ajouter la nouvelle méthode juste après cette ligne et avant la section BARS.

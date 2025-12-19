@@ -263,12 +263,11 @@ class AdminController extends Controller
             }
         }
 
-        // DÉSACTIVÉ: Le calcul automatique des points est désactivé
-        // L'admin doit utiliser le bouton "Recalculer" manuellement pour chaque match
-        // if ($nowFinished && $request->score_a !== null && $request->score_b !== null && !$wasFinished) {
-        //     ProcessMatchPoints::dispatch($match->id);
-        //     return redirect()->route('admin.matches')->with('success', "Match mis à jour. Calcul des points en cours...");
-        // }
+        // Calcul automatique des points si le match vient d'être terminé
+        if ($nowFinished && $request->score_a !== null && $request->score_b !== null && !$wasFinished) {
+            ProcessMatchPoints::dispatch($match->id);
+            return redirect()->route('admin.matches')->with('success', "Match terminé ! Les points sont en cours de calcul...");
+        }
 
         return redirect()->route('admin.matches')->with('success', 'Match mis à jour avec succès.');
     }
@@ -307,9 +306,15 @@ class AdminController extends Controller
             return back()->with('error', 'Le match doit être terminé pour calculer les points.');
         }
 
+        // Dispatcher le job de calcul des points
         ProcessMatchPoints::dispatch($match->id);
 
-        return back()->with('success', 'Calcul des points déclenché pour ce match.');
+        // Traiter immédiatement la queue si possible (mode sync)
+        if (config('queue.default') === 'sync') {
+            return back()->with('success', 'Points recalculés avec succès !');
+        }
+
+        return back()->with('success', 'Calcul des points en cours... Rafraîchissez la page dans quelques secondes.');
     }
 
     // ==================== USERS ====================
@@ -387,6 +392,44 @@ class AdminController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', 'Utilisateur supprimé avec succès.');
+    }
+
+    /**
+     * Reset user points to zero and delete all point logs
+     */
+    public function resetUserPoints($id)
+    {
+        if (!$this->checkAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Accès non autorisé.'], 403);
+        }
+
+        try {
+            $user = User::findOrFail($id);
+            
+            // Compter les logs avant suppression
+            $logsCount = \App\Models\PointLog::where('user_id', $user->id)->count();
+            $previousPoints = $user->points_total;
+            
+            // Supprimer tous les logs de points
+            \App\Models\PointLog::where('user_id', $user->id)->delete();
+            
+            // Réinitialiser les points
+            $user->points_total = 0;
+            $user->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Points réinitialisés avec succès!\n\n" .
+                            "• Points supprimés: {$previousPoints} pts\n" .
+                            "• Logs supprimés: {$logsCount}\n" .
+                            "• Nouveaux points: 0 pts"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // ==================== BARS (Points de Vente) ====================
@@ -541,23 +584,6 @@ class AdminController extends Controller
         $bar = Bar::findOrFail($id);
         $bar->update(['is_active' => !$bar->is_active]);
 
-        $status = $bar->is_active ? 'activé' : 'désactivé';
-        return back()->with('success', "Point de vente {$status} avec succès.");
-    }
-
-    /**
-     * Delete a bar
-     */
-    public function deleteBar($id)
-    {
-        if (!$this->checkAdmin()) {
-            return redirect('/')->with('error', 'Accès non autorisé.');
-        }
-
-        $bar = Bar::findOrFail($id);
-        $bar->delete();
-
-        return redirect()->route('admin.bars')->with('success', 'Point de vente supprimé avec succès.');
     }
 
     /**

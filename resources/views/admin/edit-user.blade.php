@@ -56,8 +56,18 @@
 
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">Points Total *</label>
-                            <input type="number" name="points_total" value="{{ old('points_total', $user->points_total) }}" required min="0"
-                                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
+                            <div class="flex gap-3 items-center">
+                                <input type="number" name="points_total" value="{{ old('points_total', $user->points_total) }}" required min="0"
+                                       class="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
+                                <button type="button" 
+                                        onclick="resetUserPoints({{ $user->id }})"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition whitespace-nowrap">
+                                    🔄 Réinitialiser
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                💡 Le bouton "Réinitialiser" mettra les points à zéro et supprimera l'historique des points
+                            </p>
                         </div>
 
                         <!-- Info -->
@@ -92,4 +102,50 @@
 
         </div>
     </div>
+
+    <script>
+        function resetUserPoints(userId) {
+            if (!confirm('⚠️ ATTENTION!\n\nCette action va:\n• Mettre les points à zéro\n• Supprimer tout l\'historique des points\n• Cette action est IRRÉVERSIBLE\n\nÊtes-vous absolument sûr ?')) {
+                return;
+            }
+
+            // Afficher un loader
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ En cours...';
+            btn.disabled = true;
+
+            // Envoyer la requête
+            fetch(`/admin/users/${userId}/reset-points`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour le champ de points
+                    document.querySelector('input[name="points_total"]').value = 0;
+                    
+                    // Afficher un message de succès
+                    alert('✅ Points réinitialisés avec succès!\n\n' + data.message);
+                    
+                    // Recharger la page pour avoir les données à jour
+                    window.location.reload();
+                } else {
+                    alert('❌ Erreur: ' + (data.message || 'Une erreur est survenue'));
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Erreur lors de la réinitialisation des points');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
 </x-layouts.app>

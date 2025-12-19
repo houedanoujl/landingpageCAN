@@ -345,12 +345,12 @@
                                             @elseif($log->source === 'prediction_participation')
                                                 <span class="text-2xl">🎲</span>
                                                 <span class="font-bold text-gray-800">Participation au pronostic</span>
-                                            @elseif($log->source === 'prediction_correct_winner')
+                                            @elseif($log->source === 'prediction_winner' || $log->source === 'prediction_correct_winner')
                                                 <span class="text-2xl">🎯</span>
-                                                <span class="font-bold text-gray-800">Bon pronostic (vainqueur)</span>
-                                            @elseif($log->source === 'prediction_exact_score')
+                                                <span class="font-bold text-gray-800">Bon vainqueur</span>
+                                            @elseif($log->source === 'prediction_exact' || $log->source === 'prediction_exact_score')
                                                 <span class="text-2xl">🎊</span>
-                                                <span class="font-bold text-gray-800">Score exact !</span>
+                                                <span class="font-bold text-gray-800">Score exact</span>
                                             @else
                                                 <span class="text-2xl">⭐</span>
                                                 <span
