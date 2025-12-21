@@ -588,6 +588,8 @@ class AdminController extends Controller
         $bar = Bar::findOrFail($id);
         $bar->update(['is_active' => !$bar->is_active]);
 
+        $status = $bar->is_active ? 'activé' : 'désactivé';
+        return redirect()->route('admin.bars')->with('success', "Le bar \"{$bar->name}\" a été {$status} avec succès.");
     }
 
     /**

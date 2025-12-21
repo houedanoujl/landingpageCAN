@@ -198,7 +198,7 @@
         </div>
 
         <!-- Content -->
-        <div class="relative z-[10] text-center px-4 max-w-5xl mx-auto">
+        <div class="relative z-[10] text-center px-6 md:px-8 py-12 md:py-16 max-w-5xl mx-auto">
             <!-- Branding Badge with Animation -->
             <div
                 class="inline-flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl px-8 py-4 mb-8 border border-white/20 shadow-2xl animate-fade-in-down">
@@ -255,7 +255,7 @@
             </div>
 
             <!-- CTA Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 @if(session('user_id'))
                     <a href="/matches"
                         class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
@@ -279,7 +279,7 @@
         </div>
 
         <!-- Scroll Indicator -->
-        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div class="absolute bottom-12 md:bottom-16 left-1/2 -translate-x-1/2 animate-bounce">
             <svg class="w-8 h-8 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3">
                 </path>
@@ -287,8 +287,46 @@
         </div>
     </section>
 
-    <!-- Upcoming Matches Section -->
-    <section class="py-16 bg-gray-50">
+    <!-- Upcoming Matches Section with Carousel -->
+    <section class="py-16 bg-gray-50" x-data="{
+        currentSlide: 0,
+        matchesCount: {{ count($upcomingMatches) }},
+        slidesPerView: 1,
+        init() {
+            this.updateSlidesPerView();
+            window.addEventListener('resize', () => this.updateSlidesPerView());
+        },
+        updateSlidesPerView() {
+            if (window.innerWidth >= 1280) {
+                this.slidesPerView = 4;
+            } else if (window.innerWidth >= 1024) {
+                this.slidesPerView = 3;
+            } else if (window.innerWidth >= 768) {
+                this.slidesPerView = 2;
+            } else {
+                this.slidesPerView = 1;
+            }
+        },
+        get maxSlide() {
+            return Math.max(0, this.matchesCount - this.slidesPerView);
+        },
+        next() {
+            if (this.currentSlide < this.maxSlide) {
+                this.currentSlide++;
+            }
+        },
+        prev() {
+            if (this.currentSlide > 0) {
+                this.currentSlide--;
+            }
+        },
+        get canGoNext() {
+            return this.currentSlide < this.maxSlide;
+        },
+        get canGoPrev() {
+            return this.currentSlide > 0;
+        }
+    }">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
@@ -309,20 +347,55 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @forelse($upcomingMatches as $match)
-                    <x-match-card :match="$match" />
-                @empty
-                    <div class="col-span-full text-center py-16 bg-white rounded-2xl shadow">
-                        <div
-                            class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-4xl">⚽</span>
+            @if(count($upcomingMatches) > 0)
+                <!-- Carousel Container -->
+                <div class="relative">
+                    <!-- Navigation Buttons -->
+                    <button @click="prev()" x-show="canGoPrev"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white hover:bg-soboa-orange text-soboa-blue hover:text-black w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 group">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+
+                    <button @click="next()" x-show="canGoNext"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white hover:bg-soboa-orange text-soboa-blue hover:text-black w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 group">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Carousel Track -->
+                    <div class="overflow-hidden">
+                        <div class="flex transition-transform duration-500 ease-out gap-6"
+                            :style="`transform: translateX(-${currentSlide * (100 / slidesPerView)}%)`">
+                            @foreach($upcomingMatches as $match)
+                                <div class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
+                                    <x-match-card :match="$match" />
+                                </div>
+                            @endforeach
                         </div>
-                        <p class="text-gray-500 font-medium">Aucun match programmé pour le moment.</p>
-                        <p class="text-gray-400 text-sm mt-2">Revenez bientôt pour voir le calendrier complet!</p>
                     </div>
-                @endforelse
-            </div>
+
+                    <!-- Dots Indicator -->
+                    <div class="flex justify-center gap-2 mt-8">
+                        <template x-for="i in (maxSlide + 1)" :key="i">
+                            <button @click="currentSlide = i - 1"
+                                class="w-2 h-2 rounded-full transition-all duration-300"
+                                :class="currentSlide === (i - 1) ? 'bg-soboa-orange w-8' : 'bg-gray-300 hover:bg-gray-400'">
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            @else
+                <div class="text-center py-16 bg-white rounded-2xl shadow">
+                    <div class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-4xl">⚽</span>
+                    </div>
+                    <p class="text-gray-500 font-medium">Aucun match programmé pour le moment.</p>
+                    <p class="text-gray-400 text-sm mt-2">Revenez bientôt pour voir le calendrier complet!</p>
+                </div>
+            @endif
         </div>
     </section>
 

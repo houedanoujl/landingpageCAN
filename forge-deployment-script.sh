@@ -24,15 +24,15 @@ echo "🔄 Running migrations..."
 $FORGE_PHP artisan migrate --force
 
 # ==========================================
-# PRODUCTION SEEDING (WITH LOCAL DATA)
+# FRESH DEPLOYMENT SEEDING (WITH CSV DATA)
 # ==========================================
-# Uses DatabaseSeeder to import data from seeders
-# ✅ Preserves: ALL existing data (users, predictions, teams, matches, venues)
-# 🔄 Updates: teams, matches, venues with latest data from seeders
-# ⚠️  Note: Uses updateOrCreate to avoid duplicates
+# Uses FreshDeploymentSeeder to import fresh data from venues.csv
+# ✅ Preserves: users (user data intact)
+# 🔄 Refreshes: teams, matches, venues, animations from CSV
+# ⚠️  Note: Predictions will be reset for new matches
 
-echo "🌱 Running PRODUCTION seeders (with local data)..."
-$FORGE_PHP artisan db:seed --class=DatabaseSeeder --force
+echo "🌱 Running FRESH DEPLOYMENT seeders (with CSV import)..."
+$FORGE_PHP artisan db:seed --class=FreshDeploymentSeeder --force
 
 echo "🔧 Optimizing application..."
 $FORGE_PHP artisan optimize
