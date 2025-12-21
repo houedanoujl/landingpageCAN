@@ -25,13 +25,16 @@ BLUE='\033[0;34m'
 MAGENTA='\033[0;35m'
 NC='\033[0m'
 
-# Configuration Forge (depuis .env.production)
+# Configuration Forge (depuis .env.production local)
+echo -e "${BLUE}📄 Chargement de la configuration Forge...${NC}"
+
 if [ ! -f "$SCRIPT_DIR/.env.production" ]; then
     echo -e "${RED}Erreur: .env.production introuvable${NC}"
     echo "Créez-le d'abord avec vos credentials Forge"
     exit 1
 fi
 
+echo -e "${BLUE}   ✓ Chargement de .env.production (local)${NC}"
 source "$SCRIPT_DIR/.env.production"
 
 # Vérifier les variables
@@ -43,6 +46,9 @@ if [ -z "$PRODUCTION_HOST" ] || [ -z "$PRODUCTION_USER" ] || [ -z "$PRODUCTION_P
     echo "  - PRODUCTION_PATH"
     exit 1
 fi
+
+echo -e "${GREEN}   ✓ Configuration chargée avec succès${NC}"
+echo ""
 
 # Fonctions utilitaires
 log_header() {
@@ -179,6 +185,8 @@ show_production_stats() {
 
     ssh "$PRODUCTION_USER@$PRODUCTION_HOST" << EOF
         cd "$PRODUCTION_PATH"
+
+        echo "📄 Chargement .env de Forge..."
         source .env
 
         mysql -h "\$DB_HOST" -u "\$DB_USERNAME" -p"\$DB_PASSWORD" "\$DB_DATABASE" -e "
@@ -214,7 +222,9 @@ backup_production() {
         cd "$PRODUCTION_PATH"
         mkdir -p storage/backups
 
+        echo "📄 Chargement du fichier .env de Forge..."
         source .env
+        echo "   ✓ Variables .env chargées (DB_HOST=\$DB_HOST, DB_DATABASE=\$DB_DATABASE)"
 
         echo "📦 Dump de la base production..."
         mysqldump -h "\$DB_HOST" -u "\$DB_USERNAME" -p"\$DB_PASSWORD" "\$DB_DATABASE" \
@@ -292,7 +302,10 @@ import_to_production() {
     ssh "$PRODUCTION_USER@$PRODUCTION_HOST" << EOF
         set -e
         cd "$PRODUCTION_PATH"
+
+        echo "📄 Chargement du fichier .env de Forge..."
         source .env
+        echo "   ✓ Connexion MySQL: \$DB_HOST / \$DB_DATABASE"
 
         echo "🗑️  Suppression de toutes les données..."
         mysql -h "\$DB_HOST" -u "\$DB_USERNAME" -p"\$DB_PASSWORD" "\$DB_DATABASE" << 'SQLEOF'
@@ -332,6 +345,8 @@ verify_import() {
     log_info "Statistiques PRODUCTION (après import):"
     ssh "$PRODUCTION_USER@$PRODUCTION_HOST" << EOF
         cd "$PRODUCTION_PATH"
+
+        echo "📄 Chargement .env de Forge..."
         source .env
 
         mysql -h "\$DB_HOST" -u "\$DB_USERNAME" -p"\$DB_PASSWORD" "\$DB_DATABASE" -e "
