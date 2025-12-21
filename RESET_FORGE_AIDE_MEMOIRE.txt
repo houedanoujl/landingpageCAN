@@ -1,0 +1,60 @@
+═══════════════════════════════════════════════════════════
+  AIDE-MÉMOIRE : RESET PRODUCTION FORGE
+═══════════════════════════════════════════════════════════
+
+┌───────────────────────────────────────────────────────────┐
+│  COMMANDE RAPIDE                                          │
+└───────────────────────────────────────────────────────────┘
+
+  ./reset-production-forge.sh
+
+
+┌───────────────────────────────────────────────────────────┐
+│  CE QUI VA SE PASSER                                      │
+└───────────────────────────────────────────────────────────┘
+
+  1. Backup production (Forge + local)
+  2. Export base locale
+  3. Upload vers Forge (SSH)
+  4. Import en production
+  5. Cache clear automatique
+
+  ⚠️  ÉCRASE TOUTES LES DONNÉES PRODUCTION
+
+
+┌───────────────────────────────────────────────────────────┐
+│  CONFIRMATIONS REQUISES                                   │
+└───────────────────────────────────────────────────────────┘
+
+  1. Tapez: oui
+  2. Tapez: RESET
+
+
+┌───────────────────────────────────────────────────────────┐
+│  RESTAURER EN CAS DE PROBLÈME                             │
+└───────────────────────────────────────────────────────────┘
+
+  ssh forge@landingpagecan-qlrx6mvs.on-forge.com
+  cd /home/forge/landingpagecan-qlrx6mvs.on-forge.com/current
+  source .env
+  mysql -h $DB_HOST -u $DB_USERNAME -p$DB_PASSWORD $DB_DATABASE \
+    < storage/backups/pre_reset_TIMESTAMP.sql
+
+
+┌───────────────────────────────────────────────────────────┐
+│  DOCUMENTATION                                            │
+└───────────────────────────────────────────────────────────┘
+
+  Quick Start  : FORGE_QUICK_START.md
+  Guide        : FORGE_RESET_GUIDE.md
+  Résumé       : FORGE_SUMMARY.md
+
+
+┌───────────────────────────────────────────────────────────┐
+│  VÉRIFIER APRÈS RESET                                     │
+└───────────────────────────────────────────────────────────┘
+
+  https://landingpagecan-qlrx6mvs.on-forge.com
+
+
+═══════════════════════════════════════════════════════════
