@@ -4,6 +4,8 @@
 # SCRIPT DE DÉPLOIEMENT FORGE - PRODUCTION
 # GAZELLE - Le goût de notre victoire
 # ==========================================
+# MODE: CODE ONLY - Ne touche PAS à la base de données
+# ==========================================
 
 $CREATE_RELEASE()
 
@@ -17,18 +19,27 @@ npm ci
 npm run build
 
 # ==========================================
-# MIGRATIONS
+# MIGRATIONS - DÉSACTIVÉES
+# ==========================================
+# ⚠️ Les migrations sont désactivées pour préserver la base de données
+# Les données existantes (matchs, animations, PDV, équipes, utilisateurs)
+# ne seront pas affectées par le déploiement.
+#
+# Si vous devez exécuter une migration manuellement:
+# ssh forge@your-server
+# cd /home/forge/your-site/current
+# php artisan migrate --force
 # ==========================================
 
-echo "🔄 Running migrations..."
-$FORGE_PHP artisan migrate --force
+# echo "🔄 Running migrations..."
+# $FORGE_PHP artisan migrate --force
 
 # ==========================================
 # PRODUCTION SEEDING - DÉSACTIVÉ DÉFINITIVEMENT
 # ==========================================
 # ⚠️ NE JAMAIS EXÉCUTER LE SEEDER EN PRODUCTION !
 # 
-# Le ProductionSeeder SUPPRIME:
+# Le ProductionSeeder SUPPRIME DÉFINITIVEMENT:
 # - Toutes les animations (perdues définitivement)
 # - Tous les matchs
 # - Tous les PDV
@@ -66,4 +77,4 @@ $ACTIVATE_RELEASE()
 
 $RESTART_QUEUES()
 
-echo "✅ Deployment completed successfully!"
+echo "✅ Deployment completed successfully (CODE ONLY - DB unchanged)!"
