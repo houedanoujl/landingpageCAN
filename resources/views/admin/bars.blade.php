@@ -90,6 +90,23 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Filtre par type de PDV -->
+                        <div>
+                            <label for="type_pdv" class="block text-sm font-bold text-gray-700 mb-2">
+                                🏷️ Type de PDV
+                            </label>
+                            <select
+                                id="type_pdv"
+                                name="type_pdv"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-soboa-orange focus:border-transparent"
+                            >
+                                <option value="">Tous les types</option>
+                                @foreach($typePdvOptions as $value => $label)
+                                <option value="{{ $value }}" {{ request('type_pdv') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- Filtre par matches assignés -->
                         <div>
                             <label for="has_matches" class="block text-sm font-bold text-gray-700 mb-2">
@@ -114,7 +131,7 @@
                             >
                                 Rechercher
                             </button>
-                            @if(request()->hasAny(['search', 'zone', 'status', 'has_matches']))
+                            @if(request()->hasAny(['search', 'zone', 'status', 'has_matches', 'type_pdv']))
                             <a
                                 href="{{ route('admin.bars') }}"
                                 class="bg-gray-500 hover:bg-gray-600 text-white font-bold px-6 py-2 rounded-lg transition-colors"
@@ -125,7 +142,7 @@
                         </div>
                     </div>
 
-                    @if(request()->hasAny(['search', 'zone', 'status', 'has_matches']))
+                    @if(request()->hasAny(['search', 'zone', 'status', 'has_matches', 'type_pdv']))
                     <div class="pt-2 text-sm text-gray-600">
                         <strong>{{ $bars->total() }}</strong> résultat(s) trouvé(s)
                         @if(request('search'))
@@ -159,6 +176,7 @@
                         <tr>
                             <th class="text-left p-4 font-bold text-gray-700">Nom</th>
                             <th class="text-left p-4 font-bold text-gray-700">Zone</th>
+                            <th class="text-left p-4 font-bold text-gray-700">Type PDV</th>
                             <th class="text-left p-4 font-bold text-gray-700">Matchs Assignés</th>
                             <th class="text-center p-4 font-bold text-gray-700">Statut</th>
                             <th class="text-center p-4 font-bold text-gray-700">Actions</th>
@@ -185,6 +203,26 @@
                                     <span class="text-gray-700 font-medium">{{ $bar->zone }}</span>
                                 @else
                                     <span class="text-gray-400 italic text-sm">Non définie</span>
+                                @endif
+                            </td>
+                            <td class="p-4">
+                                @if($bar->type_pdv)
+                                    @php
+                                        $typePdvColors = [
+                                            'dakar' => 'bg-blue-100 text-blue-800',
+                                            'regions' => 'bg-green-100 text-green-800',
+                                            'chr' => 'bg-purple-100 text-purple-800',
+                                            'fanzone' => 'bg-orange-100 text-orange-800',
+                                            'fanzone_public' => 'bg-yellow-100 text-yellow-800',
+                                            'fanzone_hotel' => 'bg-pink-100 text-pink-800',
+                                        ];
+                                        $colorClass = $typePdvColors[$bar->type_pdv] ?? 'bg-gray-100 text-gray-800';
+                                    @endphp
+                                    <span class="px-2 py-1 rounded-full text-xs font-bold {{ $colorClass }}">
+                                        {{ $bar->type_pdv_name }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400 italic text-sm">Non défini</span>
                                 @endif
                             </td>
                             <td class="p-4">

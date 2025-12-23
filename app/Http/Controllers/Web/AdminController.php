@@ -478,6 +478,11 @@ class AdminController extends Controller
             }
         }
 
+        // Filtre par type de PDV
+        if ($request->filled('type_pdv')) {
+            $query->where('type_pdv', $request->type_pdv);
+        }
+
         $bars = $query->orderBy('name')->paginate(20);
 
         // Get unique zones for filter dropdown
@@ -486,7 +491,10 @@ class AdminController extends Controller
             ->orderBy('zone')
             ->pluck('zone');
 
-        return view('admin.bars', compact('bars', 'zones'));
+        // Get type PDV options
+        $typePdvOptions = Bar::getTypePdvOptions();
+
+        return view('admin.bars', compact('bars', 'zones', 'typePdvOptions'));
     }
 
     /**
