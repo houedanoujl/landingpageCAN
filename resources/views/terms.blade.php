@@ -30,7 +30,7 @@
                         <p><strong>2.1 Âge minimum :</strong> La participation au Jeu est strictement réservée aux personnes majeures, 
                         âgées de <span class="text-soboa-orange font-bold">18 ans révolus</span> à la date d'inscription.</p>
                         
-                        <p><strong>2.2 Territoire :</strong> Le Jeu est ouvert aux résidents de Côte d'Ivoire et du Sénégal.</p>
+                        <p><strong>2.2 Territoire :</strong> Le Jeu est ouvert aux résidents du Sénégal.</p>
                         
                         <p><strong>2.3 Inscription :</strong> La participation nécessite une inscription préalable via un numéro 
                         de téléphone mobile valide. Un seul compte par numéro de téléphone est autorisé.</p>
@@ -134,16 +134,6 @@
                     <p class="leading-relaxed">
                         Tout litige relatif au Jeu sera soumis au droit ivoirien. Les tribunaux d'Abidjan seront 
                         seuls compétents pour connaître de tout litige.
-                    </p>
-                </section>
-
-                <!-- Contact -->
-                <section class="bg-gray-50 p-6 rounded-xl">
-                    <h2 class="text-xl font-bold text-soboa-blue mb-3">📞 Contact</h2>
-                    <p class="leading-relaxed">
-                        Pour toute question relative au Jeu ou aux présentes CGU, veuillez contacter :<br>
-                        <strong>SOBOA - Service SOBOA FOOT TIME</strong><br>
-                        Email : foottime@soboa.ci
                     </p>
                 </section>
 

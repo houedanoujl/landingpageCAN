@@ -152,7 +152,7 @@
     <!-- Hero Section - Grande Fête du Foot Africain Celebration -->
     <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden" x-data="{
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
-                 targetDate: new Date('2025-12-21T20:00:00').getTime(),
+                 targetDate: @if($nextMatch) new Date('{{ $nextMatch->match_date->format('Y-m-d\TH:i:s') }}').getTime() @else new Date('2025-12-21T20:00:00').getTime() @endif,
                  scrollY: 0,
                  parallaxOffset: 0,
                  init() {
@@ -225,8 +225,64 @@
 
             <!-- Countdown Timer -->
             <div class="mb-10">
-                <p class="text-soboa-orange font-bold text-sm uppercase tracking-widest mb-4">Premier match - Maroc vs
-                    Comores</p>
+                @if($nextMatch)
+                    @php
+                        $timeUntilMatch = $nextMatch->match_date->diffInHours(now());
+                        $isToday = $nextMatch->match_date->isToday();
+                        $isTomorrow = $nextMatch->match_date->isTomorrow();
+                    @endphp
+                    
+                    <p class="text-soboa-orange font-bold text-sm uppercase tracking-widest mb-4">
+                        @if($isToday)
+                            🔥 Match aujourd'hui - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }} 🔥
+                        @elseif($isTomorrow)
+                            ⚡ Match demain - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }} ⚡
+                        @elseif($timeUntilMatch <= 72)
+                            🚀 Prochain match - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }} 🚀
+                        @else
+                            Prochain match - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
+                        @endif
+                    </p>
+                    
+                    <!-- Teams flags display -->
+                    <div class="flex items-center justify-center gap-6 mb-6">
+                        <div class="text-center">
+                            <div class="team-flag w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl mb-2 mx-auto">
+                                <img src="{{ $nextMatch->homeTeam->flag_url_80 }}" 
+                                     alt="{{ $nextMatch->homeTeam->name }}" 
+                                     class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-white font-semibold text-xs md:text-sm">{{ $nextMatch->homeTeam->name }}</span>
+                        </div>
+                        
+                        <div class="vs-text text-white font-bold text-2xl md:text-3xl">VS</div>
+                        
+                        <div class="text-center">
+                            <div class="team-flag w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl mb-2 mx-auto">
+                                <img src="{{ $nextMatch->awayTeam->flag_url_80 }}" 
+                                     alt="{{ $nextMatch->awayTeam->name }}" 
+                                     class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-white font-semibold text-xs md:text-sm">{{ $nextMatch->awayTeam->name }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-white/60 text-xs md:text-sm mb-4">
+                        {{ $nextMatch->match_date->format('d M Y à H:i') }}
+                        @if($nextMatch->stadium)
+                            • {{ $nextMatch->stadium }}
+                        @endif
+                        @if($nextMatch->phase === 'group_stage') 
+                            • Groupe {{ $nextMatch->group_name }}
+                        @else
+                            • {{ ucfirst(str_replace('_', ' ', $nextMatch->phase)) }}
+                        @endif
+                    </div>
+                @else
+                    <p class="text-soboa-orange font-bold text-sm uppercase tracking-widest mb-4">
+                        Prochain match - À définir
+                    </p>
+                @endif
                 <div class="flex justify-center gap-3 md:gap-6">
                     <div
                         class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">

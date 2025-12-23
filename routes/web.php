@@ -15,6 +15,7 @@ Route::get('/matches', [HomeController::class, 'matches'])->name('matches');
 Route::get('/leaderboard', [HomeController::class, 'leaderboard'])->name('leaderboard');
 Route::get('/map', [HomeController::class, 'map'])->name('map');
 Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+Route::get('/animations', [HomeController::class, 'animations'])->name('animations');
 Route::get('/conditions', function () {
     return view('terms');
 })->name('terms');

@@ -144,6 +144,19 @@
             </div>
         </div>
 
+        <!-- Mention 18+ -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="flex items-center justify-center gap-3">
+                <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-black text-xs">18+</span>
+                </div>
+                <p class="text-red-700 text-sm font-medium">
+                    Ce jeu est réservé aux plus de 18 ans. 
+                    <a href="{{ route('terms') }}" class="underline hover:text-red-900">Conditions de participation</a>
+                </p>
+            </div>
+        </div>
+
         <!-- Onglets des phases -->
         @if($matchesByPhase->count() > 0)
             <div class="bg-white rounded-xl shadow-lg overflow-hidden"
@@ -347,7 +360,9 @@
                                                                     @if($match->status !== 'finished')
                                                                         @php
                                                                             $userPrediction = $userPredictions[$match->id] ?? null;
-                                                                            $isPredictionLocked = \Carbon\Carbon::parse($match->match_date)->subMinutes(15)->isPast();
+                                                                            // Verrouiller 20 minutes APRÈS le début du match
+                                                                            $lockMinutes = config('game.prediction_lock_minutes_after_start', 20);
+                                                                            $isPredictionLocked = \Carbon\Carbon::parse($match->match_date)->addMinutes($lockMinutes)->isPast();
                                                                         @endphp
 
                                                                         @if(session('user_id'))
@@ -662,7 +677,9 @@
                                                     @if($match->status !== 'finished')
                                                         @php
                                                             $userPrediction = $userPredictions[$match->id] ?? null;
-                                                            $isPredictionLocked = \Carbon\Carbon::parse($match->match_date)->subMinutes(15)->isPast();
+                                                            // Verrouiller 20 minutes APRÈS le début du match
+                                                            $lockMinutes = config('game.prediction_lock_minutes_after_start', 20);
+                                                            $isPredictionLocked = \Carbon\Carbon::parse($match->match_date)->addMinutes($lockMinutes)->isPast();
                                                         @endphp
 
                                                         @if(session('user_id'))

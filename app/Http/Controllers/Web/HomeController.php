@@ -60,13 +60,16 @@ class HomeController extends Controller
             return false;
         });
 
+        // Récupérer le prochain match pour le hero
+        $nextMatch = $upcomingMatches->first();
+
         // Fetch top 3 users for leaderboard
         $topUsers = User::orderBy('points_total', 'desc')->take(3)->get();
 
         // Count venues for stats
         $venueCount = Bar::where('is_active', true)->count();
 
-        return view('welcome', compact('upcomingMatches', 'topUsers', 'venueCount', 'selectedVenue'));
+        return view('welcome', compact('upcomingMatches', 'nextMatch', 'topUsers', 'venueCount', 'selectedVenue'));
     }
 
     public function venues()
@@ -350,5 +353,101 @@ class HomeController extends Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
+    }
+
+    /**
+     * Page Calendrier des Animations
+     * Affiche toutes les animations avec filtrage par date et géolocalisation
+     */
+    public function animations(Request $request)
+    {
+        // Récupérer toutes les animations à venir avec les relations
+        $animations = Animation::with(['bar', 'match.homeTeam', 'match.awayTeam'])
+            ->whereHas('match', function($query) {
+                $query->where('match_date', '>=', now()->subHours(3)); // Inclure les matchs récents
+            })
+            ->whereHas('bar', function($query) {
+                $query->where('is_active', true);
+            })
+            ->orderBy('animation_date', 'asc')
+            ->get();
+
+        // Grouper par date
+        $animationsByDate = $animations->groupBy(function($animation) {
+            return \Carbon\Carbon::parse($animation->animation_date)->format('Y-m-d');
+        });
+
+        // Récupérer tous les PDV uniques qui ont des animations
+        $venuesWithAnimations = Bar::whereHas('animations', function($query) {
+            $query->whereHas('match', function($q) {
+                $q->where('match_date', '>=', now()->subHours(3));
+            });
+        })->where('is_active', true)->orderBy('name')->get();
+
+        // Récupérer les types de PDV uniques
+        $venueTypes = $venuesWithAnimations->pluck('type_pdv')->unique()->filter()->values();
+
+        return view('animations', compact('animations', 'animationsByDate', 'venuesWithAnimations', 'venueTypes'));
+    }
+
+    /**
+     * Page Temps Forts
+     * Filtre les animations par PDV spécifique
+     */
+    public function highlights(Request $request)
+    {
+        $venueId = $request->get('venue_id');
+        $zone = $request->get('zone');
+        $type = $request->get('type');
+
+        // Query de base pour les animations
+        $query = Animation::with(['bar', 'match.homeTeam', 'match.awayTeam'])
+            ->whereHas('match', function($q) {
+                $q->where('match_date', '>=', now()->subHours(3));
+            })
+            ->whereHas('bar', function($q) {
+                $q->where('is_active', true);
+            });
+
+        // Filtrer par PDV spécifique
+        if ($venueId) {
+            $query->where('bar_id', $venueId);
+        }
+
+        // Filtrer par zone
+        if ($zone) {
+            $query->whereHas('bar', function($q) use ($zone) {
+                $q->where('zone', $zone);
+            });
+        }
+
+        // Filtrer par type de PDV
+        if ($type) {
+            $query->whereHas('bar', function($q) use ($type) {
+                $q->where('type_pdv', $type);
+            });
+        }
+
+        $animations = $query->orderBy('animation_date', 'asc')->get();
+
+        // Récupérer tous les PDV pour le filtre
+        $venues = Bar::whereHas('animations', function($q) {
+            $q->whereHas('match', function($mq) {
+                $mq->where('match_date', '>=', now()->subHours(3));
+            });
+        })->where('is_active', true)->orderBy('name')->get();
+
+        // Zones uniques
+        $zones = $venues->pluck('zone')->unique()->filter()->sort()->values();
+
+        // Types de PDV uniques
+        $types = $venues->pluck('type_pdv')->unique()->filter()->values();
+
+        // Grouper les animations par date
+        $animationsByDate = $animations->groupBy(function($animation) {
+            return \Carbon\Carbon::parse($animation->animation_date)->format('Y-m-d');
+        });
+
+        return view('highlights', compact('animations', 'animationsByDate', 'venues', 'zones', 'types', 'venueId', 'zone', 'type'));
     }
 }

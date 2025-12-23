@@ -50,9 +50,10 @@ return [
     'max_points_per_match' => 7, // 1 + 3 + 3 = 7 points max
 
     /**
-     * Prediction lock time (minutes before match starts)
+     * Prediction lock time (minutes AFTER match starts)
+     * Les pronostics sont verrouillés 20 minutes après le coup d'envoi
      */
-    'prediction_lock_minutes' => 15,
+    'prediction_lock_minutes_after_start' => 20,
 
     /**
      * Cache configuration for performance

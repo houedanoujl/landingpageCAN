@@ -78,13 +78,14 @@ class PredictionController extends Controller
             return back()->with('error', 'Ce match est en cours. Les pronostics sont fermés.');
         }
 
-        // Lock predictions 15 minutes before match starts
-        $lockTime = $match->match_date->copy()->subMinutes(15);
+        // Verrouiller les pronostics 20 minutes APRÈS le début du match
+        $lockMinutesAfterStart = config('game.prediction_lock_minutes_after_start', 20);
+        $lockTime = $match->match_date->copy()->addMinutes($lockMinutesAfterStart);
         if (now()->gte($lockTime)) {
             if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-                return response()->json(['message' => 'Les pronostics sont fermés 15 minutes avant le début du match.'], 422);
+                return response()->json(['message' => 'Les pronostics sont fermés 20 minutes après le début du match.'], 422);
             }
-            return back()->with('error', 'Les pronostics sont fermés 15 minutes avant le début du match.');
+            return back()->with('error', 'Les pronostics sont fermés 20 minutes après le début du match.');
         }
 
         // Déterminer le gagnant prédit
@@ -121,7 +122,7 @@ class PredictionController extends Controller
             // Award bonus points if prediction made from a venue (optional)
             $venuePointsAwarded = 0;
             if ($venue) {
-                $venuePointsAwarded = $this->pointsService->awardPredictionVenuePoints($user, $venue->id);
+                $venuePointsAwarded = $this->pointsService->awardPredictionVenuePoints($user, $match->id, $venue->id);
             }
 
             // Refresh user to get updated points_total

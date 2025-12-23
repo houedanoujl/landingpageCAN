@@ -369,6 +369,8 @@
                         class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Accueil</a>
                     <a href="/matches"
                         class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Pronostics</a>
+                    <a href="/animations"
+                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">📅 Animations</a>
                     <a href="/leaderboard"
                         class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Classement</a>
                     <a href="/map"
@@ -440,6 +442,9 @@
                 <a href="/matches"
                     class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
                     Pronostics</a>
+                <a href="/animations"
+                    class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
+                    📅 Calendrier Animations</a>
                 <a href="/leaderboard"
                     class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
                     Classement</a>
@@ -530,6 +535,27 @@
                     </ul>
                 </div>
             </div>
+            
+            <!-- Mention légale 18+ -->
+            <div class="bg-red-600/20 border border-red-500/30 rounded-xl p-4 mt-6">
+                <div class="flex items-center justify-center gap-3">
+                    <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-black text-lg">18+</span>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-red-400 font-bold text-sm">Ce jeu est réservé aux plus de 18 ans</p>
+                        <p class="text-white/60 text-xs mt-1">
+                            L'abus d'alcool est dangereux pour la santé. À consommer avec modération.
+                        </p>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ route('terms') }}" class="text-soboa-orange hover:text-white text-xs underline transition-colors">
+                        📋 Consulter les conditions de participation
+                    </a>
+                </div>
+            </div>
+            
             <div class="border-t border-white/10 pt-6 text-center">
                 <p class="text-white/50 text-xs">© {{ date('Y') }} GAZELLE. Tous droits réservés SOBOA Sénégal</p>
             </div>
