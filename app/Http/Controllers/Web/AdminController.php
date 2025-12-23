@@ -641,18 +641,17 @@ class AdminController extends Controller
             // BOM UTF-8 pour Excel
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // En-têtes (avec TYPE_PDV et ANIMATIONS optionnels)
-            fputcsv($file, ['nom', 'adresse', 'latitude', 'longitude', 'TYPE_PDV', 'ANIMATIONS']);
+            // En-têtes avec colonnes séparées pour les animations
+            fputcsv($file, ['nom', 'adresse', 'latitude', 'longitude', 'TYPE_PDV', 'DATE_ANIMATION', 'HEURE_ANIMATION', 'EQUIPE_A', 'EQUIPE_B']);
 
             // Exemples avec les différents types et animations
-            fputcsv($file, ['Bar Le Sphinx', 'Rue 10 x Avenue Hassan II Dakar', '14.692778', '-17.447938', 'dakar', '']);
-            fputcsv($file, ['Chez Fatou', 'Place de l\'Indépendance Dakar', '14.693350', '-17.448830', 'dakar', '']);
-            fputcsv($file, ['Restaurant Le Teranga', 'Almadies Dakar', '14.741234', '-17.521000', 'chr', '2025-01-21 17:00|Sénégal vs Cameroun']);
-            fputcsv($file, ['Hotel Djoloff', 'Corniche Ouest Dakar', '14.716677', '-17.481383', 'chr', '2025-01-21 17:00|Sénégal vs Cameroun;2025-01-25 20:00|Sénégal vs Mali']);
-            fputcsv($file, ['Fanzone Stade', 'Avenue Léopold Senghor', '14.683456', '-17.445678', 'fanzone', '']);
-            fputcsv($file, ['Fanzone Place Nation', 'Place de la Nation Dakar', '14.670000', '-17.440000', 'fanzone_public', '2025-01-21 17:00|Sénégal vs Cameroun']);
-            fputcsv($file, ['Noom Hotel', 'Almadies Dakar', '14.695270', '-17.473630', 'fanzone_hotel', '']);
-            fputcsv($file, ['Bar Saint-Louis', 'Place Faidherbe Saint-Louis', '16.017500', '-16.500000', 'regions', '']);
+            fputcsv($file, ['Bar Le Sphinx', 'Rue 10 x Avenue Hassan II Dakar', '14.692778', '-17.447938', 'dakar', '', '', '', '']);
+            fputcsv($file, ['Restaurant Le Teranga', 'Almadies Dakar', '14.741234', '-17.521000', 'chr', '2025-01-21', '17:00', 'Sénégal', 'Cameroun']);
+            fputcsv($file, ['Hotel Djoloff', 'Corniche Ouest Dakar', '14.716677', '-17.481383', 'chr', '2025-01-25', '20:00', 'Sénégal', 'Mali']);
+            fputcsv($file, ['Fanzone Stade', 'Avenue Léopold Senghor', '14.683456', '-17.445678', 'fanzone', '', '', '', '']);
+            fputcsv($file, ['Fanzone Place Nation', 'Place de la Nation Dakar', '14.670000', '-17.440000', 'fanzone_public', '2025-01-21', '17:00', 'Sénégal', 'Cameroun']);
+            fputcsv($file, ['Noom Hotel', 'Almadies Dakar', '14.695270', '-17.473630', 'fanzone_hotel', '', '', '', '']);
+            fputcsv($file, ['Bar Saint-Louis', 'Place Faidherbe Saint-Louis', '16.017500', '-16.500000', 'regions', '', '', '', '']);
 
             fclose($file);
         };
@@ -745,8 +744,15 @@ class AdminController extends Controller
                 }
             }
 
+            // Détecter les colonnes d'animation
+            $dateAnimIndex = array_search('date_animation', $headerNormalized);
+            $heureAnimIndex = array_search('heure_animation', $headerNormalized);
+            $equipeAIndex = array_search('equipe_a', $headerNormalized);
+            $equipeBIndex = array_search('equipe_b', $headerNormalized);
+
             $imported = 0;
-            $skipped = 0;
+            $updated = 0;
+            $animationsCreated = 0;
             $errors = [];
             $lineNumber = 1;
 
@@ -811,15 +817,86 @@ class AdminController extends Controller
                         unset($barData['type_pdv']);
                     }
                     $existingBar->update($barData);
-                    $skipped++; // On compte comme "mis à jour" (label sera adapté)
+                    $bar = $existingBar;
+                    $updated++;
                 } else {
                     // Créer un nouveau point de vente
-                    Bar::create(array_merge([
+                    $bar = Bar::create(array_merge([
                         'name' => $name,
                         'address' => $address,
                         'type_pdv' => $typePdv,
                     ], $barData));
                     $imported++;
+                }
+
+                // Traiter les colonnes d'animation si présentes
+                if ($dateAnimIndex !== false && $heureAnimIndex !== false && 
+                    $equipeAIndex !== false && $equipeBIndex !== false) {
+                    
+                    $dateAnim = isset($data[$dateAnimIndex]) ? trim($data[$dateAnimIndex]) : '';
+                    $heureAnim = isset($data[$heureAnimIndex]) ? trim($data[$heureAnimIndex]) : '';
+                    $equipeA = isset($data[$equipeAIndex]) ? trim($data[$equipeAIndex]) : '';
+                    $equipeB = isset($data[$equipeBIndex]) ? trim($data[$equipeBIndex]) : '';
+
+                    // Si toutes les données d'animation sont présentes
+                    if (!empty($dateAnim) && !empty($heureAnim) && !empty($equipeA) && !empty($equipeB)) {
+                        // Chercher le match correspondant
+                        $match = MatchGame::where(function($q) use ($equipeA, $equipeB) {
+                            $q->where(function($q2) use ($equipeA, $equipeB) {
+                                $q2->where('team_a', 'LIKE', "%{$equipeA}%")
+                                   ->where('team_b', 'LIKE', "%{$equipeB}%");
+                            })->orWhere(function($q2) use ($equipeA, $equipeB) {
+                                $q2->where('team_b', 'LIKE', "%{$equipeA}%")
+                                   ->where('team_a', 'LIKE', "%{$equipeB}%");
+                            });
+                        })->first();
+
+                        // Si pas de match trouvé, essayer via les équipes liées
+                        if (!$match) {
+                            $teamA = Team::where('name', 'LIKE', "%{$equipeA}%")->first();
+                            $teamB = Team::where('name', 'LIKE', "%{$equipeB}%")->first();
+                            
+                            if ($teamA && $teamB) {
+                                $match = MatchGame::where(function($q) use ($teamA, $teamB) {
+                                    $q->where(function($q2) use ($teamA, $teamB) {
+                                        $q2->where('home_team_id', $teamA->id)
+                                           ->where('away_team_id', $teamB->id);
+                                    })->orWhere(function($q2) use ($teamA, $teamB) {
+                                        $q2->where('home_team_id', $teamB->id)
+                                           ->where('away_team_id', $teamA->id);
+                                    });
+                                })->first();
+                            }
+                        }
+
+                        if ($match) {
+                            // Vérifier si l'animation n'existe pas déjà
+                            $existingAnimation = Animation::where('bar_id', $bar->id)
+                                ->where('match_id', $match->id)
+                                ->first();
+
+                            if (!$existingAnimation) {
+                                // Parser la date et l'heure
+                                try {
+                                    $animDate = \Carbon\Carbon::parse($dateAnim)->format('Y-m-d');
+                                    $animTime = strlen($heureAnim) <= 5 ? $heureAnim . ':00' : $heureAnim;
+                                    
+                                    Animation::create([
+                                        'bar_id' => $bar->id,
+                                        'match_id' => $match->id,
+                                        'animation_date' => $animDate,
+                                        'animation_time' => $animTime,
+                                        'is_active' => true,
+                                    ]);
+                                    $animationsCreated++;
+                                } catch (\Exception $e) {
+                                    $errors[] = "Ligne {$lineNumber} : Erreur date/heure animation - {$e->getMessage()}";
+                                }
+                            }
+                        } else {
+                            $errors[] = "Ligne {$lineNumber} : Match '{$equipeA} vs {$equipeB}' non trouvé";
+                        }
+                    }
                 }
             }
 
@@ -828,8 +905,12 @@ class AdminController extends Controller
             // Message de résultat
             $message = "{$imported} point(s) de vente créé(s).";
 
-            if ($skipped > 0) {
-                $message .= " {$skipped} existant(s) mis à jour.";
+            if ($updated > 0) {
+                $message .= " {$updated} existant(s) mis à jour.";
+            }
+
+            if ($animationsCreated > 0) {
+                $message .= " {$animationsCreated} animation(s) créée(s).";
             }
 
             if (count($errors) > 0) {
