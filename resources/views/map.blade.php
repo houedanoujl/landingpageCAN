@@ -560,10 +560,12 @@
             @foreach($venues as $venue)
                 @php
                     $typeBadges = [
-                        'dakar' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'icon' => '🏙️', 'label' => 'Dakar'],
-                        'regions' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => '🗺️', 'label' => 'Régions'],
-                        'chr' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'icon' => '🍽️', 'label' => 'CHR'],
-                        'fanzone' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-800', 'icon' => '🎉', 'label' => 'Fanzone'],
+                        'dakar' => ['bg' => '#dbeafe', 'text' => '#1e40af', 'icon' => '🏙️', 'label' => 'Dakar'],
+                        'regions' => ['bg' => '#dcfce7', 'text' => '#166534', 'icon' => '🗺️', 'label' => 'Régions'],
+                        'chr' => ['bg' => '#ffedd5', 'text' => '#9a3412', 'icon' => '🍽️', 'label' => 'CHR'],
+                        'fanzone' => ['bg' => '#f3e8ff', 'text' => '#6b21a8', 'icon' => '🎉', 'label' => 'Fanzone'],
+                        'fanzone_public' => ['bg' => '#fef9c3', 'text' => '#a16207', 'icon' => '🎪', 'label' => 'Fanzone tout public'],
+                        'fanzone_hotel' => ['bg' => '#fce7f3', 'text' => '#be185d', 'icon' => '🏨', 'label' => 'Fanzone hôtel'],
                     ];
                     $badge = $typeBadges[$venue->type_pdv ?? 'dakar'] ?? $typeBadges['dakar'];
                 @endphp
@@ -578,8 +580,8 @@
                                 <strong style="font-size: 16px; color: #003399;">{{ $venue->name }}</strong>
                             </div>
                             <div style="margin-bottom: 8px;">
-                                <span style="display: inline-block; background-color: {{ $badge['bg'] === 'bg-blue-100' ? '#dbeafe' : ($badge['bg'] === 'bg-green-100' ? '#dcfce7' : ($badge['bg'] === 'bg-orange-100' ? '#ffedd5' : '#f3e8ff')) }}; 
-                                       color: {{ $badge['text'] === 'text-blue-800' ? '#1e40af' : ($badge['text'] === 'text-green-800' ? '#166534' : ($badge['text'] === 'text-orange-800' ? '#9a3412' : '#6b21a8')) }}; 
+                                <span style="display: inline-block; background-color: {{ $badge['bg'] }}; 
+                                       color: {{ $badge['text'] }}; 
                                        padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">
                                     {{ $badge['label'] }}
                                 </span>
