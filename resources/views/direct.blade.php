@@ -1,4 +1,4 @@
-<x-layouts.app title="Direct - CAN 2025">
+<x-layouts.app title="Direct - Scores en Live">
     <div class="min-h-screen bg-gray-50">
         
         <!-- Header -->
@@ -17,10 +17,10 @@
                     EN DIRECT
                 </div>
                 <h1 class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-2xl flex items-center justify-center gap-3">
-                    <span class="text-5xl">⚽</span> CAN 2025 LIVE
+                    <span class="text-5xl">⚽</span> SCORES EN LIVE
                 </h1>
                 <p class="text-white/80 mt-4 max-w-2xl mx-auto font-medium drop-shadow-lg">
-                    Suivez tous les scores en direct et les résultats de la Coupe d'Afrique des Nations 2025
+                    Suivez tous les scores en direct et les résultats des matchs
                 </p>
             </div>
         </div>
@@ -44,7 +44,7 @@
                                 Scores en Direct
                                 <span class="bg-white text-red-600 text-xs font-black px-2 py-0.5 rounded animate-pulse">LIVE</span>
                             </h2>
-                            <p class="text-white/70 text-sm">Résultats et classements CAN 2025</p>
+                            <p class="text-white/70 text-sm">Résultats et classements en temps réel</p>
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                         </div>
                     </div>
                     <p class="text-gray-600 text-sm mb-4">
-                        Faites vos pronostics sur les matchs de la CAN et gagnez jusqu'à 7 points par match !
+                        Faites vos pronostics sur les matchs et gagnez jusqu'à 7 points par match !
                     </p>
                     <a href="/matches" class="inline-flex items-center gap-2 text-soboa-blue font-bold text-sm hover:text-soboa-blue/80 transition-colors">
                         Voir les matchs <span>→</span>
@@ -125,11 +125,11 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-gray-800">Animations</h3>
-                            <p class="text-gray-500 text-sm">Vivez la CAN</p>
+                            <p class="text-gray-500 text-sm">Vivez l'expérience</p>
                         </div>
                     </div>
                     <p class="text-gray-600 text-sm mb-4">
-                        Découvrez les animations dans les points de vente partenaires pendant la CAN !
+                        Découvrez les animations dans les points de vente partenaires !
                     </p>
                     <a href="/animations" class="inline-flex items-center gap-2 text-purple-600 font-bold text-sm hover:text-purple-700 transition-colors">
                         Voir le calendrier <span>→</span>
