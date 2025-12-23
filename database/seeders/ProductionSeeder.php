@@ -99,12 +99,18 @@ class ProductionSeeder extends Seeder
     {
         $this->command->info('🗑️  Nettoyage des données de planning...');
 
+        // Désactiver les vérifications de clés étrangères
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
         // Supprimer les animations
         Animation::truncate();
         $this->command->line('   - Truncated: animations');
 
-        // Nettoyer les vieilles prédictions (optionnel - garder uniquement les actives)
-        // Prediction::where('created_at', '<', now()->subMonths(3))->delete();
+        // Supprimer la table match_notifications si elle existe
+        if (DB::getSchemaBuilder()->hasTable('match_notifications')) {
+            DB::table('match_notifications')->truncate();
+            $this->command->line('   - Truncated: match_notifications');
+        }
 
         // Supprimer les matchs
         MatchGame::truncate();
@@ -117,6 +123,9 @@ class ProductionSeeder extends Seeder
         // Supprimer les PDV
         Bar::truncate();
         $this->command->line('   - Truncated: bars');
+
+        // Réactiver les vérifications de clés étrangères
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info('✓ Nettoyage terminé (données utilisateurs préservées)');
         $this->command->newLine();
