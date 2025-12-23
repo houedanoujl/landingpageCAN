@@ -204,21 +204,30 @@
                                                         <td class="px-4 py-3 text-right">
                                                             <div class="flex items-center justify-end gap-1">
                                                                 <a href="{{ route('admin.match-predictions', $match->id) }}"
-                                                                   class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-2 py-1 rounded text-xs transition-colors">
+                                                                   class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
+                                                                   title="Voir les pronostics">
                                                                     📊
                                                                 </a>
                                                                 <a href="{{ route('admin.edit-match', $match->id) }}"
-                                                                   class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-2 py-1 rounded text-xs transition-colors">
+                                                                   class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-2 py-1 rounded text-xs transition-colors"
+                                                                   title="Modifier">
                                                                     ✏️
                                                                 </a>
+                                                                <button type="button" onclick="duplicateMatch({{ $match->id }})"
+                                                                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
+                                                                        title="Dupliquer">
+                                                                    📋
+                                                                </button>
                                                                 @if($match->status === 'finished')
                                                                 <button type="button" onclick="calculatePoints({{ $match->id }})"
-                                                                        class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold px-2 py-1 rounded text-xs transition-colors">
+                                                                        class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
+                                                                        title="Recalculer les points">
                                                                     🔄
                                                                 </button>
                                                                 @endif
                                                                 <button type="button" onclick="deleteMatch({{ $match->id }})"
-                                                                        class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded text-xs transition-colors">
+                                                                        class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
+                                                                        title="Supprimer">
                                                                     🗑️
                                                                 </button>
                                                             </div>
@@ -294,21 +303,30 @@
                                                 <td class="px-4 py-4 text-right">
                                                     <div class="flex items-center justify-end gap-2">
                                                         <a href="{{ route('admin.match-predictions', $match->id) }}"
-                                                           class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors">
+                                                           class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
+                                                           title="Voir les pronostics">
                                                             📊 Pronostics
                                                         </a>
                                                         <a href="{{ route('admin.edit-match', $match->id) }}"
-                                                           class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-3 py-1.5 rounded text-sm transition-colors">
+                                                           class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-3 py-1.5 rounded text-sm transition-colors"
+                                                           title="Modifier">
                                                             ✏️ Modifier
                                                         </a>
+                                                        <button type="button" onclick="duplicateMatch({{ $match->id }})"
+                                                                class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
+                                                                title="Dupliquer ce match">
+                                                            📋 Dupliquer
+                                                        </button>
                                                         @if($match->status === 'finished')
                                                         <button type="button" onclick="calculatePoints({{ $match->id }})"
-                                                                class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors">
+                                                                class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
+                                                                title="Recalculer les points">
                                                             🔄 Recalculer
                                                         </button>
                                                         @endif
                                                         <button type="button" onclick="deleteMatch({{ $match->id }})"
-                                                                class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors">
+                                                                class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
+                                                                title="Supprimer">
                                                             🗑️
                                                         </button>
                                                     </div>
@@ -545,6 +563,27 @@
 
                     form.appendChild(csrfInput);
                     form.appendChild(methodInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+
+                // Duplicate match function
+                function duplicateMatch(matchId) {
+                    if (!confirm('Dupliquer ce match avec ses animations ?')) {
+                        return;
+                    }
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/matches/${matchId}/duplicate`;
+
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = csrfToken;
+
+                    form.appendChild(csrfInput);
                     document.body.appendChild(form);
                     form.submit();
                 }

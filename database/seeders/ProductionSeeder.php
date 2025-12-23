@@ -16,10 +16,14 @@ class ProductionSeeder extends Seeder
     /**
      * SEEDER DÉFINITIF DE PRODUCTION
      *
-     * Ce seeder synchronise les données de production avec le développement local
-     * SANS toucher aux données utilisateurs (users, predictions).
+     * ⚠️ ATTENTION: Ce seeder réinitialise les matchs, équipes et PDV.
+     * Les animations sont synchronisées mais peuvent être perdues si les IDs changent.
+     * 
+     * EN PRODUCTION: Utilisez plutôt l'interface d'administration pour:
+     * - Importer les PDV via CSV (Admin > Points de Vente > Importer CSV)
+     * - Créer/modifier les animations manuellement
      *
-     * Utilisation:
+     * Utilisation (DEV UNIQUEMENT):
      * php artisan db:seed --class=ProductionSeeder
      */
     public function run(): void
@@ -30,12 +34,17 @@ class ProductionSeeder extends Seeder
         $this->command->info('║   Synchronisation Dev → Production     ║');
         $this->command->info('╚════════════════════════════════════════╝');
         $this->command->newLine();
+        
+        $this->command->warn('⚠️  ATTENTION: Ce seeder réinitialise les données de planning.');
+        $this->command->warn('   Les animations manuellement créées seront PERDUES.');
+        $this->command->warn('   En production, utilisez l\'interface admin à la place.');
+        $this->command->newLine();
 
         // 📊 État initial
         $this->showInitialState();
 
         // ⚠️ Confirmation
-        if ($this->command->confirm('⚠️  Voulez-vous continuer? Les données de planning seront RÉINITIALISÉES (utilisateurs préservés)', true)) {
+        if ($this->command->confirm('⚠️  Voulez-vous vraiment continuer? Les animations seront SUPPRIMÉES', false)) {
 
             DB::beginTransaction();
 
@@ -93,7 +102,8 @@ class ProductionSeeder extends Seeder
     }
 
     /**
-     * Nettoie les données de planning (préserve users et predictions)
+     * Nettoie les données de planning (préserve users et predictions SEULEMENT)
+     * ⚠️ Les animations sont supprimées car elles dépendent des IDs de bars/matches
      */
     protected function cleanPlanningData(): void
     {
@@ -102,9 +112,10 @@ class ProductionSeeder extends Seeder
         // Désactiver les vérifications de clés étrangères
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        // Supprimer les animations
+        // Supprimer les animations (nécessaire car bar_id et match_id changent)
+        $animCount = Animation::count();
         Animation::truncate();
-        $this->command->line('   - Truncated: animations');
+        $this->command->line("   - Truncated: animations ({$animCount} supprimées)");
 
         // Supprimer la table match_notifications si elle existe
         if (DB::getSchemaBuilder()->hasTable('match_notifications')) {
@@ -325,13 +336,14 @@ class ProductionSeeder extends Seeder
     }
 
     /**
-     * Import des animations (liens match-PDV)
+     * Import des animations (liens match-PDV) - Utilise updateOrCreate pour préserver les existantes
      */
     protected function importAnimations(array $csvData): void
     {
-        $this->command->info('🔗 Import des animations...');
+        $this->command->info('🔗 Synchronisation des animations...');
 
         $created = 0;
+        $updated = 0;
 
         foreach ($csvData as $row) {
             $bar = Bar::where('name', $row['venue_name'])
@@ -353,17 +365,27 @@ class ProductionSeeder extends Seeder
 
             if (!$match) continue;
 
-            Animation::create([
-                'match_id' => $match->id,
-                'bar_id' => $bar->id,
-                'animation_date' => $dateTime->toDateString(),
-                'animation_time' => $dateTime->format('H:i'),
-            ]);
+            // Utiliser updateOrCreate pour ne pas dupliquer
+            $animation = Animation::updateOrCreate(
+                [
+                    'match_id' => $match->id,
+                    'bar_id' => $bar->id,
+                ],
+                [
+                    'animation_date' => $dateTime->toDateString(),
+                    'animation_time' => $dateTime->format('H:i'),
+                    'is_active' => true,
+                ]
+            );
 
-            $created++;
+            if ($animation->wasRecentlyCreated) {
+                $created++;
+            } else {
+                $updated++;
+            }
         }
 
-        $this->command->line("   ✓ {$created} animations créées");
+        $this->command->line("   ✓ {$created} animations créées, {$updated} mises à jour");
         $this->command->newLine();
     }
 

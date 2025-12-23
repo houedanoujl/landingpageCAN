@@ -292,6 +292,54 @@ class AdminController extends Controller
     }
 
     /**
+     * Duplicate a match with its animations
+     */
+    public function duplicateMatch($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $originalMatch = MatchGame::with('animations')->findOrFail($id);
+
+        // Créer une copie du match
+        $newMatch = $originalMatch->replicate();
+        $newMatch->status = 'scheduled'; // Le nouveau match est toujours programmé
+        $newMatch->score_a = null;
+        $newMatch->score_b = null;
+        $newMatch->match_name = $originalMatch->match_name . ' (copie)';
+        
+        // Décaler la date d'un jour par défaut
+        if ($newMatch->match_date) {
+            $newMatch->match_date = \Carbon\Carbon::parse($originalMatch->match_date)->addDay();
+        }
+        
+        $newMatch->save();
+
+        // Dupliquer les animations associées
+        $animationsCount = 0;
+        foreach ($originalMatch->animations as $animation) {
+            $newAnimation = $animation->replicate();
+            $newAnimation->match_id = $newMatch->id;
+            
+            // Décaler la date d'animation aussi
+            if ($newAnimation->animation_date) {
+                $newAnimation->animation_date = \Carbon\Carbon::parse($animation->animation_date)->addDay();
+            }
+            
+            $newAnimation->save();
+            $animationsCount++;
+        }
+
+        $message = "Match \"{$originalMatch->team_a} vs {$originalMatch->team_b}\" dupliqué avec succès !";
+        if ($animationsCount > 0) {
+            $message .= " ({$animationsCount} animation(s) copiée(s))";
+        }
+
+        return redirect()->route('admin.matches')->with('success', $message);
+    }
+
+    /**
      * Manually trigger points calculation for a match
      */
     public function calculatePoints($id)

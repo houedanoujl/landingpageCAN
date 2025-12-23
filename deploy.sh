@@ -24,14 +24,22 @@ echo "🔄 Running migrations..."
 $FORGE_PHP artisan migrate --force
 
 # ==========================================
-# PRODUCTION SEEDING - DÉSACTIVÉ
+# PRODUCTION SEEDING - DÉSACTIVÉ DÉFINITIVEMENT
 # ==========================================
-# ⚠️ Le ProductionSeeder réinitialise les données de planning
-# Ne pas l'exécuter automatiquement car il supprime les animations
-# ajoutées manuellement en production.
+# ⚠️ NE JAMAIS EXÉCUTER LE SEEDER EN PRODUCTION !
+# 
+# Le ProductionSeeder SUPPRIME:
+# - Toutes les animations (perdues définitivement)
+# - Tous les matchs
+# - Tous les PDV
+# - Toutes les équipes
 #
-# Pour synchroniser manuellement depuis le CSV local:
-# php artisan db:seed --class=ProductionSeeder --force
+# Pour ajouter des données en production, utilisez:
+# 1. L'interface admin: /admin/bars (import CSV)
+# 2. L'interface admin: /admin/matches (création manuelle)
+#
+# Le CSV d'import supporte maintenant les animations:
+# nom,adresse,latitude,longitude,TYPE_PDV,DATE_ANIMATION,HEURE_ANIMATION,EQUIPE_A,EQUIPE_B
 # ==========================================
 
 # echo "🌱 Running PRODUCTION seeders..."
