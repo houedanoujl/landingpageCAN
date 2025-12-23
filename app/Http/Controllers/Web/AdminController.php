@@ -641,18 +641,18 @@ class AdminController extends Controller
             // BOM UTF-8 pour Excel
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // En-têtes (avec TYPE_PDV optionnel)
-            fputcsv($file, ['nom', 'adresse', 'latitude', 'longitude', 'TYPE_PDV']);
+            // En-têtes (avec TYPE_PDV et ANIMATIONS optionnels)
+            fputcsv($file, ['nom', 'adresse', 'latitude', 'longitude', 'TYPE_PDV', 'ANIMATIONS']);
 
-            // Exemples avec les différents types
-            fputcsv($file, ['Bar Le Sphinx', 'Rue 10 x Avenue Hassan II Dakar', '14.692778', '-17.447938', 'dakar']);
-            fputcsv($file, ['Chez Fatou', 'Place de l\'Indépendance Dakar', '14.693350', '-17.448830', 'dakar']);
-            fputcsv($file, ['Restaurant Le Teranga', 'Almadies Dakar', '14.741234', '-17.521000', 'chr']);
-            fputcsv($file, ['Hotel Djoloff', 'Corniche Ouest Dakar', '14.716677', '-17.481383', 'chr']);
-            fputcsv($file, ['Fanzone Stade', 'Avenue Léopold Senghor', '14.683456', '-17.445678', 'fanzone']);
-            fputcsv($file, ['Fanzone Place Nation', 'Place de la Nation Dakar', '14.670000', '-17.440000', 'fanzone_public']);
-            fputcsv($file, ['Noom Hotel', 'Almadies Dakar', '14.695270', '-17.473630', 'fanzone_hotel']);
-            fputcsv($file, ['Bar Saint-Louis', 'Place Faidherbe Saint-Louis', '16.017500', '-16.500000', 'regions']);
+            // Exemples avec les différents types et animations
+            fputcsv($file, ['Bar Le Sphinx', 'Rue 10 x Avenue Hassan II Dakar', '14.692778', '-17.447938', 'dakar', '']);
+            fputcsv($file, ['Chez Fatou', 'Place de l\'Indépendance Dakar', '14.693350', '-17.448830', 'dakar', '']);
+            fputcsv($file, ['Restaurant Le Teranga', 'Almadies Dakar', '14.741234', '-17.521000', 'chr', '2025-01-21 17:00|Sénégal vs Cameroun']);
+            fputcsv($file, ['Hotel Djoloff', 'Corniche Ouest Dakar', '14.716677', '-17.481383', 'chr', '2025-01-21 17:00|Sénégal vs Cameroun;2025-01-25 20:00|Sénégal vs Mali']);
+            fputcsv($file, ['Fanzone Stade', 'Avenue Léopold Senghor', '14.683456', '-17.445678', 'fanzone', '']);
+            fputcsv($file, ['Fanzone Place Nation', 'Place de la Nation Dakar', '14.670000', '-17.440000', 'fanzone_public', '2025-01-21 17:00|Sénégal vs Cameroun']);
+            fputcsv($file, ['Noom Hotel', 'Almadies Dakar', '14.695270', '-17.473630', 'fanzone_hotel', '']);
+            fputcsv($file, ['Bar Saint-Louis', 'Place Faidherbe Saint-Louis', '16.017500', '-16.500000', 'regions', '']);
 
             fclose($file);
         };
