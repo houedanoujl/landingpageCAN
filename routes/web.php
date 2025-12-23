@@ -64,6 +64,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::put('/matches/{id}', [AdminController::class, 'updateMatch'])->name('update-match');
     Route::delete('/matches/{id}', [AdminController::class, 'deleteMatch'])->name('delete-match');
     Route::post('/matches/{id}/duplicate', [AdminController::class, 'duplicateMatch'])->name('duplicate-match');
+    Route::post('/matches/{id}/quick-update', [AdminController::class, 'quickUpdateMatch'])->name('quick-update-match');
     Route::post('/matches/{id}/calculate-points', [AdminController::class, 'calculatePoints'])->name('calculate-points');
 
     // Match-Venue Management (AJAX)

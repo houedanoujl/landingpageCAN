@@ -168,16 +168,43 @@
                                                             <span class="text-gray-500 text-xs block">{{ $match->match_date->format('H:i') }}</span>
                                                         </td>
                                                         <td class="px-4 py-3">
-                                                            <div class="flex items-center gap-2">
-                                                                @if($match->homeTeam)
-                                                                <img src="https://flagcdn.com/w40/{{ $match->homeTeam->iso_code }}.png" class="w-6 h-4 rounded shadow">
-                                                                @endif
-                                                                <span class="font-bold text-sm">{{ $match->team_a }}</span>
-                                                                <span class="text-gray-400 text-xs">vs</span>
-                                                                <span class="font-bold text-sm">{{ $match->team_b }}</span>
-                                                                @if($match->awayTeam)
-                                                                <img src="https://flagcdn.com/w40/{{ $match->awayTeam->iso_code }}.png" class="w-6 h-4 rounded shadow">
-                                                                @endif
+                                                            <div class="flex items-center gap-1" id="match-teams-{{ $match->id }}">
+                                                                <!-- Équipe domicile -->
+                                                                <div class="flex items-center gap-1">
+                                                                    <img id="flag-home-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->homeTeam?->iso_code ?? 'xx' }}.png" class="w-5 h-3 rounded shadow" onerror="this.style.display='none'">
+                                                                    <select 
+                                                                        class="team-select text-xs font-bold border border-gray-200 rounded px-1 py-0.5 bg-white hover:border-soboa-orange focus:border-soboa-orange focus:ring-1 focus:ring-soboa-orange cursor-pointer"
+                                                                        onchange="updateMatchTeam({{ $match->id }}, 'home', this.value)"
+                                                                        style="max-width: 100px;"
+                                                                    >
+                                                                        <option value="">--</option>
+                                                                        @foreach($teams as $team)
+                                                                        <option value="{{ $team->id }}" data-iso="{{ $team->iso_code }}" {{ $match->home_team_id == $team->id ? 'selected' : '' }}>
+                                                                            {{ $team->name }}
+                                                                        </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </div>
+                                                                <span class="text-gray-400 text-xs mx-1">vs</span>
+                                                                <!-- Équipe extérieur -->
+                                                                <div class="flex items-center gap-1">
+                                                                    <select 
+                                                                        class="team-select text-xs font-bold border border-gray-200 rounded px-1 py-0.5 bg-white hover:border-soboa-orange focus:border-soboa-orange focus:ring-1 focus:ring-soboa-orange cursor-pointer"
+                                                                        onchange="updateMatchTeam({{ $match->id }}, 'away', this.value)"
+                                                                        style="max-width: 100px;"
+                                                                    >
+                                                                        <option value="">--</option>
+                                                                        @foreach($teams as $team)
+                                                                        <option value="{{ $team->id }}" data-iso="{{ $team->iso_code }}" {{ $match->away_team_id == $team->id ? 'selected' : '' }}>
+                                                                            {{ $team->name }}
+                                                                        </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                    <img id="flag-away-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->awayTeam?->iso_code ?? 'xx' }}.png" class="w-5 h-3 rounded shadow" onerror="this.style.display='none'">
+                                                                </div>
+                                                                <span id="save-indicator-{{ $match->id }}" class="hidden text-green-500 text-xs ml-1">✓</span>
+                                                            </div>
+                                                        </td>
                                                             </div>
                                                         </td>
                                                         <td class="px-4 py-3 text-center">
@@ -267,16 +294,41 @@
                                                     <span class="text-gray-500 text-sm block">{{ $match->match_date->format('H:i') }}</span>
                                                 </td>
                                                 <td class="px-4 py-4">
-                                                    <div class="flex items-center gap-3">
-                                                        @if($match->homeTeam)
-                                                        <img src="https://flagcdn.com/w40/{{ $match->homeTeam->iso_code }}.png" class="w-8 h-6 rounded shadow">
-                                                        @endif
-                                                        <span class="font-bold">{{ $match->team_a }}</span>
-                                                        <span class="text-gray-400">vs</span>
-                                                        <span class="font-bold">{{ $match->team_b }}</span>
-                                                        @if($match->awayTeam)
-                                                        <img src="https://flagcdn.com/w40/{{ $match->awayTeam->iso_code }}.png" class="w-8 h-6 rounded shadow">
-                                                        @endif
+                                                    <div class="flex items-center gap-2" id="match-teams-knockout-{{ $match->id }}">
+                                                        <!-- Équipe domicile -->
+                                                        <div class="flex items-center gap-1">
+                                                            <img id="flag-home-ko-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->homeTeam?->iso_code ?? 'xx' }}.png" class="w-6 h-4 rounded shadow" onerror="this.style.display='none'">
+                                                            <select 
+                                                                class="team-select text-sm font-bold border border-gray-200 rounded px-2 py-1 bg-white hover:border-soboa-orange focus:border-soboa-orange focus:ring-1 focus:ring-soboa-orange cursor-pointer"
+                                                                onchange="updateMatchTeam({{ $match->id }}, 'home', this.value)"
+                                                                style="max-width: 130px;"
+                                                            >
+                                                                <option value="">-- Équipe --</option>
+                                                                @foreach($teams as $team)
+                                                                <option value="{{ $team->id }}" data-iso="{{ $team->iso_code }}" {{ $match->home_team_id == $team->id ? 'selected' : '' }}>
+                                                                    {{ $team->name }}
+                                                                </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <span class="text-gray-400 mx-1">vs</span>
+                                                        <!-- Équipe extérieur -->
+                                                        <div class="flex items-center gap-1">
+                                                            <select 
+                                                                class="team-select text-sm font-bold border border-gray-200 rounded px-2 py-1 bg-white hover:border-soboa-orange focus:border-soboa-orange focus:ring-1 focus:ring-soboa-orange cursor-pointer"
+                                                                onchange="updateMatchTeam({{ $match->id }}, 'away', this.value)"
+                                                                style="max-width: 130px;"
+                                                            >
+                                                                <option value="">-- Équipe --</option>
+                                                                @foreach($teams as $team)
+                                                                <option value="{{ $team->id }}" data-iso="{{ $team->iso_code }}" {{ $match->away_team_id == $team->id ? 'selected' : '' }}>
+                                                                    {{ $team->name }}
+                                                                </option>
+                                                                @endforeach
+                                                            </select>
+                                                            <img id="flag-away-ko-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->awayTeam?->iso_code ?? 'xx' }}.png" class="w-6 h-4 rounded shadow" onerror="this.style.display='none'">
+                                                        </div>
+                                                        <span id="save-indicator-ko-{{ $match->id }}" class="hidden text-green-500 text-sm ml-1">✓</span>
                                                     </div>
                                                 </td>
                                                 <td class="px-4 py-4 text-center">
@@ -603,6 +655,68 @@
                     form.appendChild(csrfInput);
                     document.body.appendChild(form);
                     form.submit();
+                }
+
+                // Update match team (AJAX)
+                async function updateMatchTeam(matchId, teamType, teamId) {
+                    if (!teamId) return;
+
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                    
+                    // Préparer les données
+                    const data = {};
+                    if (teamType === 'home') {
+                        data.home_team_id = teamId;
+                    } else {
+                        data.away_team_id = teamId;
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/matches/${matchId}/quick-update`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify(data),
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Mettre à jour le drapeau
+                            const updated = result.updated;
+                            if (teamType === 'home' && updated.home_team) {
+                                const flagImg = document.getElementById(`flag-home-${matchId}`) || document.getElementById(`flag-home-ko-${matchId}`);
+                                if (flagImg) {
+                                    flagImg.src = `https://flagcdn.com/w40/${updated.home_team.iso_code}.png`;
+                                    flagImg.style.display = '';
+                                }
+                            }
+                            if (teamType === 'away' && updated.away_team) {
+                                const flagImg = document.getElementById(`flag-away-${matchId}`) || document.getElementById(`flag-away-ko-${matchId}`);
+                                if (flagImg) {
+                                    flagImg.src = `https://flagcdn.com/w40/${updated.away_team.iso_code}.png`;
+                                    flagImg.style.display = '';
+                                }
+                            }
+
+                            // Afficher l'indicateur de sauvegarde
+                            const indicator = document.getElementById(`save-indicator-${matchId}`) || document.getElementById(`save-indicator-ko-${matchId}`);
+                            if (indicator) {
+                                indicator.classList.remove('hidden');
+                                setTimeout(() => {
+                                    indicator.classList.add('hidden');
+                                }, 2000);
+                            }
+                        } else {
+                            alert('Erreur: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de la mise à jour');
+                    }
                 }
             </script>
 

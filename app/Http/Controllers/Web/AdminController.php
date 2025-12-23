@@ -92,8 +92,11 @@ class AdminController extends Controller
         }
 
         $matches = $query->orderBy('match_date', 'asc')->paginate(30)->withQueryString();
+        
+        // Récupérer toutes les équipes pour les sélecteurs
+        $teams = Team::orderBy('name')->get();
 
-        return view('admin.matches', compact('matches'));
+        return view('admin.matches', compact('matches', 'teams'));
     }
 
     /**
@@ -337,6 +340,62 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.matches')->with('success', $message);
+    }
+
+    /**
+     * Quick update match teams (AJAX)
+     */
+    public function quickUpdateMatch(Request $request, $id)
+    {
+        if (!$this->checkAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Accès non autorisé.'], 403);
+        }
+
+        $match = MatchGame::findOrFail($id);
+
+        // Valider les données
+        $request->validate([
+            'home_team_id' => 'nullable|exists:teams,id',
+            'away_team_id' => 'nullable|exists:teams,id',
+        ]);
+
+        $updated = [];
+
+        // Mise à jour équipe domicile
+        if ($request->has('home_team_id')) {
+            $homeTeam = Team::find($request->home_team_id);
+            if ($homeTeam) {
+                $match->home_team_id = $homeTeam->id;
+                $match->team_a = $homeTeam->name;
+                $updated['home_team'] = [
+                    'id' => $homeTeam->id,
+                    'name' => $homeTeam->name,
+                    'iso_code' => $homeTeam->iso_code,
+                ];
+            }
+        }
+
+        // Mise à jour équipe extérieur
+        if ($request->has('away_team_id')) {
+            $awayTeam = Team::find($request->away_team_id);
+            if ($awayTeam) {
+                $match->away_team_id = $awayTeam->id;
+                $match->team_b = $awayTeam->name;
+                $updated['away_team'] = [
+                    'id' => $awayTeam->id,
+                    'name' => $awayTeam->name,
+                    'iso_code' => $awayTeam->iso_code,
+                ];
+            }
+        }
+
+        $match->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Match mis à jour',
+            'updated' => $updated,
+        ]);
     }
 
     /**
