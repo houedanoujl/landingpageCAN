@@ -19,6 +19,18 @@
                     $matchLabel = $match->display_label;
                     $isADeterminer = $match->is_tbd;
 
+                    // Parser l'heure qui peut être en format "15 H", "15:00", "15H00", etc.
+                    $displayTime = $animation->animation_time;
+                    if ($displayTime) {
+                        if (preg_match('/^(\d{1,2})\s*[Hh]?\s*(\d{0,2})?$/', trim($displayTime), $matches)) {
+                            $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                            $minute = isset($matches[2]) && $matches[2] !== '' ? str_pad($matches[2], 2, '0', STR_PAD_LEFT) : '00';
+                            $displayTime = $hour . ':' . $minute;
+                        } elseif (preg_match('/^(\d{1,2}):(\d{2})/', $displayTime, $matches)) {
+                            $displayTime = str_pad($matches[1], 2, '0', STR_PAD_LEFT) . ':' . $matches[2];
+                        }
+                    }
+
                     return [
                         'id' => $animation->id,
                         'match_label' => $matchLabel,
@@ -29,7 +41,7 @@
                         'status' => $match->status,
                         'is_tbd' => $isADeterminer,
                         'date' => \Carbon\Carbon::parse($animation->animation_date)->format('d/m'),
-                        'time' => $animation->animation_time,
+                        'time' => $displayTime,
                     ];
                 })->values()->toArray()
             ];
@@ -503,7 +515,7 @@
             </div>
         </div>
 
-        <!-- Section Calendrier des Animations -->
+        <!-- Section Calendrier des Animations - GRILLE CLASSIQUE -->
         <div class="max-w-7xl mx-auto px-4 py-12">
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-soboa-blue to-soboa-blue-dark">
@@ -514,99 +526,222 @@
                 </div>
 
                 @if(isset($animations) && $animations->count() > 0)
-                <div class="p-6" x-data="{ openDate: null }">
-                    <div class="space-y-4">
-                        @foreach($animations as $date => $dayAnimations)
+                @php
+                    // Décembre 2025 - premier mois
+                    $currentMonth = \Carbon\Carbon::create(2025, 12, 1);
+                    $endMonth = $currentMonth->copy()->endOfMonth();
+                    $startOfWeek = $currentMonth->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+                    $endOfWeek = $endMonth->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+                    
+                    // Créer un tableau des animations par date pour un accès rapide
+                    $animationsByDate = [];
+                    foreach ($animations as $date => $dayAnimations) {
+                        $animationsByDate[$date] = $dayAnimations;
+                    }
+                @endphp
+                
+                <div class="p-4 md:p-6">
+                    <!-- Mois affiché -->
+                    <div class="flex items-center justify-center mb-6">
+                        <h4 class="text-2xl font-black text-soboa-blue capitalize">
+                            {{ $currentMonth->locale('fr')->isoFormat('MMMM YYYY') }}
+                        </h4>
+                    </div>
+                    
+                    <!-- En-têtes des jours de la semaine -->
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr);" class="border-b-2 border-soboa-blue mb-1">
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Lun</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Mar</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Mer</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Jeu</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Ven</div>
+                        <div class="py-3 text-center font-bold text-soboa-orange bg-soboa-orange/5">Sam</div>
+                        <div class="py-3 text-center font-bold text-soboa-orange bg-soboa-orange/5">Dim</div>
+                    </div>
+                    
+                    <!-- GRILLE CALENDRIER -->
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr);">
+                        @php
+                            $currentDate = $startOfWeek->copy();
+                            $today = \Carbon\Carbon::today();
+                        @endphp
+                        
+                        @while($currentDate <= $endOfWeek)
                             @php
-                                $carbonDate = \Carbon\Carbon::parse($date);
-                                $isToday = $carbonDate->isToday();
-                                $isPast = $carbonDate->isPast() && !$isToday;
-                                $formattedDate = $carbonDate->locale('fr')->isoFormat('dddd D MMMM YYYY');
+                                $dateKey = $currentDate->format('Y-m-d');
+                                $isCurrentMonth = $currentDate->month === 12; // Décembre
+                                $isToday = $currentDate->isSameDay($today);
+                                $hasAnimations = isset($animationsByDate[$dateKey]);
+                                $dayAnimations = $hasAnimations ? $animationsByDate[$dateKey] : collect();
+                                $isWeekend = $currentDate->isWeekend();
                             @endphp
-                            <div class="border rounded-xl overflow-hidden {{ $isToday ? 'border-soboa-orange border-2' : ($isPast ? 'border-gray-200 opacity-60' : 'border-gray-200') }}">
-                                <!-- Date Header -->
-                                <button 
-                                    @click="openDate = openDate === '{{ $date }}' ? null : '{{ $date }}'"
-                                    class="w-full flex items-center justify-between p-4 {{ $isToday ? 'bg-soboa-orange/10' : 'bg-gray-50' }} hover:bg-soboa-orange/5 transition"
-                                >
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-12 h-12 rounded-xl {{ $isToday ? 'bg-soboa-orange text-black' : ($isPast ? 'bg-gray-300 text-gray-600' : 'bg-soboa-blue text-white') }} flex flex-col items-center justify-center font-bold shadow">
-                                            <span class="text-lg leading-none">{{ $carbonDate->format('d') }}</span>
-                                            <span class="text-[10px] uppercase">{{ $carbonDate->locale('fr')->shortMonthName }}</span>
-                                        </div>
-                                        <div class="text-left">
-                                            <p class="font-bold {{ $isToday ? 'text-soboa-orange' : 'text-gray-800' }} capitalize">
-                                                {{ $isToday ? "Aujourd'hui" : $carbonDate->locale('fr')->dayName }}
-                                            </p>
-                                            <p class="text-sm text-gray-500">{{ $dayAnimations->count() }} animation(s)</p>
-                                        </div>
+                            
+                            <div class="border border-gray-200 {{ $isCurrentMonth ? '' : 'bg-gray-100' }} {{ $isToday ? 'bg-yellow-50 ring-2 ring-soboa-orange ring-inset' : '' }} {{ $isWeekend && $isCurrentMonth ? 'bg-gray-50' : '' }}" style="min-height: 90px;">
+                                <!-- Numéro du jour -->
+                                <div class="p-1 {{ $isToday ? 'bg-soboa-orange' : ($hasAnimations && $isCurrentMonth ? 'bg-soboa-blue' : '') }}">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-lg font-black {{ $isToday ? 'text-black' : ($hasAnimations && $isCurrentMonth ? 'text-white' : ($isCurrentMonth ? 'text-gray-800' : 'text-gray-400')) }}">
+                                            {{ $currentDate->day }}
+                                        </span>
                                         @if($isToday)
-                                            <span class="ml-2 bg-soboa-orange text-black text-xs font-bold px-2 py-1 rounded-full animate-pulse">EN COURS</span>
+                                            <span class="text-[10px] font-bold text-black">AUJOURD'HUI</span>
                                         @endif
                                     </div>
-                                    <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': openDate === '{{ $date }}' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </button>
+                                </div>
                                 
-                                <!-- Animations List -->
-                                <div x-show="openDate === '{{ $date }}'" x-collapse x-cloak>
-                                    <div class="divide-y divide-gray-100">
-                                        @foreach($dayAnimations as $animation)
-                                            <div class="p-4 hover:bg-gray-50 transition">
-                                                <div class="flex flex-col md:flex-row md:items-center gap-4">
-                                                    <!-- Heure -->
-                                                    <div class="flex items-center gap-2 md:w-24">
-                                                        <span class="text-xl">⏰</span>
-                                                        <span class="font-bold text-soboa-blue">{{ $animation->animation_time ? \Carbon\Carbon::parse($animation->animation_time)->format('H:i') : 'TBD' }}</span>
-                                                    </div>
-                                                    
-                                                    <!-- Match -->
-                                                    @if($animation->match)
-                                                    <div class="flex-1 flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                                                        @if($animation->match->homeTeam && !$animation->match->is_tbd)
-                                                            <img src="{{ $animation->match->homeTeam->flag_url }}" class="w-8 h-6 object-contain rounded shadow-sm" alt="">
-                                                        @else
-                                                            <span class="w-8 h-6 bg-gray-200 rounded flex items-center justify-center text-xs">?</span>
-                                                        @endif
-                                                        <span class="font-semibold text-gray-800 flex-1 text-center">
-                                                            {{ $animation->match->display_label }}
-                                                        </span>
-                                                        @if($animation->match->awayTeam && !$animation->match->is_tbd)
-                                                            <img src="{{ $animation->match->awayTeam->flag_url }}" class="w-8 h-6 object-contain rounded shadow-sm" alt="">
-                                                        @else
-                                                            <span class="w-8 h-6 bg-gray-200 rounded flex items-center justify-center text-xs">?</span>
-                                                        @endif
-                                                        
-                                                        @if($animation->match->status === 'finished')
-                                                            <span class="ml-2 bg-soboa-orange/20 text-soboa-orange font-bold px-2 py-1 rounded text-sm">
-                                                                {{ $animation->match->score_a }} - {{ $animation->match->score_b }}
-                                                            </span>
-                                                        @elseif($animation->match->status === 'live')
-                                                            <span class="ml-2 bg-red-500 text-white font-bold px-2 py-1 rounded text-sm animate-pulse">LIVE</span>
-                                                        @endif
-                                                    </div>
-                                                    @endif
-                                                    
-                                                    <!-- Lieu -->
-                                                    @if($animation->bar)
-                                                    <div class="flex items-center gap-2 md:w-auto">
-                                                        <span class="text-lg">📍</span>
-                                                        <div>
-                                                            <p class="font-semibold text-gray-800 text-sm">{{ $animation->bar->name }}</p>
-                                                            @if($animation->bar->zone)
-                                                                <p class="text-xs text-gray-500">{{ $animation->bar->zone }}</p>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                    @endif
-                                                </div>
+                                <!-- Animations du jour -->
+                                @if($hasAnimations && $isCurrentMonth)
+                                    <div class="p-1 space-y-1">
+                                        @foreach($dayAnimations->take(2) as $animation)
+                                            @php
+                                                $displayTime = '';
+                                                if ($animation->animation_time) {
+                                                    $timeStr = $animation->animation_time;
+                                                    if (preg_match('/^(\d{1,2})\s*[Hh]?\s*(\d{0,2})?$/', trim($timeStr), $matches)) {
+                                                        $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                                                        $displayTime = $hour . 'h';
+                                                    } elseif (preg_match('/^(\d{1,2}):(\d{2})/', $timeStr, $matches)) {
+                                                        $displayTime = $matches[1] . 'h';
+                                                    }
+                                                }
+                                            @endphp
+                                            <div class="bg-soboa-blue/10 rounded px-1 py-0.5 text-[10px] md:text-xs truncate" title="{{ $animation->match ? $animation->match->display_label : '' }}">
+                                                <span class="font-bold text-soboa-blue">{{ $displayTime }}</span>
+                                                @if($animation->match && $animation->match->homeTeam && !$animation->match->is_tbd)
+                                                    <img src="{{ $animation->match->homeTeam->flag_url }}" class="w-3 h-2 inline-block ml-1" alt="">
+                                                @endif
+                                                @if($animation->match && $animation->match->awayTeam && !$animation->match->is_tbd)
+                                                    <img src="{{ $animation->match->awayTeam->flag_url }}" class="w-3 h-2 inline-block" alt="">
+                                                @endif
                                             </div>
                                         @endforeach
+                                        @if($dayAnimations->count() > 2)
+                                            <div class="text-[10px] text-soboa-orange font-bold px-1">
+                                                +{{ $dayAnimations->count() - 2 }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                            
+                            @php
+                                $currentDate->addDay();
+                            @endphp
+                        @endwhile
+                    </div>
+                    
+                    <!-- Janvier 2026 -->
+                    @php
+                        $currentMonth2 = \Carbon\Carbon::create(2026, 1, 1);
+                        $endMonth2 = $currentMonth2->copy()->endOfMonth();
+                        $startOfWeek2 = $currentMonth2->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+                        $endOfWeek2 = $endMonth2->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+                    @endphp
+                    
+                    <!-- Titre Janvier 2026 -->
+                    <div class="flex items-center justify-center my-6 pt-6 border-t-2 border-gray-200">
+                        <h4 class="text-2xl font-black text-soboa-blue capitalize">
+                            {{ $currentMonth2->locale('fr')->isoFormat('MMMM YYYY') }}
+                        </h4>
+                    </div>
+                    
+                    <!-- En-têtes des jours Janvier 2026 -->
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr);" class="border-b-2 border-soboa-blue mb-1">
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Lun</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Mar</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Mer</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Jeu</div>
+                        <div class="py-3 text-center font-bold text-soboa-blue bg-soboa-blue/5">Ven</div>
+                        <div class="py-3 text-center font-bold text-soboa-orange bg-soboa-orange/5">Sam</div>
+                        <div class="py-3 text-center font-bold text-soboa-orange bg-soboa-orange/5">Dim</div>
+                    </div>
+                    
+                    <!-- GRILLE JANVIER 2026 -->
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr);">
+                        @php
+                            $currentDate2 = $startOfWeek2->copy();
+                        @endphp
+                        
+                        @while($currentDate2 <= $endOfWeek2)
+                            @php
+                                $dateKey2 = $currentDate2->format('Y-m-d');
+                                $isCurrentMonth2 = $currentDate2->month === 1 && $currentDate2->year === 2026; // Janvier 2026
+                                $isToday2 = $currentDate2->isSameDay($today);
+                                $hasAnimations2 = isset($animationsByDate[$dateKey2]);
+                                $dayAnimations2 = $hasAnimations2 ? $animationsByDate[$dateKey2] : collect();
+                                $isWeekend2 = $currentDate2->isWeekend();
+                            @endphp
+                            
+                            <div class="border border-gray-200 {{ $isCurrentMonth2 ? '' : 'bg-gray-100' }} {{ $isToday2 ? 'bg-yellow-50 ring-2 ring-soboa-orange ring-inset' : '' }} {{ $isWeekend2 && $isCurrentMonth2 ? 'bg-gray-50' : '' }}" style="min-height: 90px;">
+                                <!-- Numéro du jour -->
+                                <div class="p-1 {{ $isToday2 ? 'bg-soboa-orange' : ($hasAnimations2 && $isCurrentMonth2 ? 'bg-soboa-blue' : '') }}">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-lg font-black {{ $isToday2 ? 'text-black' : ($hasAnimations2 && $isCurrentMonth2 ? 'text-white' : ($isCurrentMonth2 ? 'text-gray-800' : 'text-gray-400')) }}">
+                                            {{ $currentDate2->day }}
+                                        </span>
+                                        @if($isToday2)
+                                            <span class="text-[10px] font-bold text-black">AUJOURD'HUI</span>
+                                        @endif
                                     </div>
                                 </div>
+                                
+                                <!-- Animations du jour -->
+                                @if($hasAnimations2 && $isCurrentMonth2)
+                                    <div class="p-1 space-y-1">
+                                        @foreach($dayAnimations2->take(2) as $animation)
+                                            @php
+                                                $displayTime = '';
+                                                if ($animation->animation_time) {
+                                                    $timeStr = $animation->animation_time;
+                                                    if (preg_match('/^(\d{1,2})\s*[Hh]?\s*(\d{0,2})?$/', trim($timeStr), $matches)) {
+                                                        $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                                                        $displayTime = $hour . 'h';
+                                                    } elseif (preg_match('/^(\d{1,2}):(\d{2})/', $timeStr, $matches)) {
+                                                        $displayTime = $matches[1] . 'h';
+                                                    }
+                                                }
+                                            @endphp
+                                            <div class="bg-soboa-blue/10 rounded px-1 py-0.5 text-[10px] md:text-xs truncate" title="{{ $animation->match ? $animation->match->display_label : '' }}">
+                                                <span class="font-bold text-soboa-blue">{{ $displayTime }}</span>
+                                                @if($animation->match && $animation->match->homeTeam && !$animation->match->is_tbd)
+                                                    <img src="{{ $animation->match->homeTeam->flag_url }}" class="w-3 h-2 inline-block ml-1" alt="">
+                                                @endif
+                                                @if($animation->match && $animation->match->awayTeam && !$animation->match->is_tbd)
+                                                    <img src="{{ $animation->match->awayTeam->flag_url }}" class="w-3 h-2 inline-block" alt="">
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                        @if($dayAnimations2->count() > 2)
+                                            <div class="text-[10px] text-soboa-orange font-bold px-1">
+                                                +{{ $dayAnimations2->count() - 2 }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
-                        @endforeach
+                            
+                            @php
+                                $currentDate2->addDay();
+                            @endphp
+                        @endwhile
+                    </div>
+                    
+                    <!-- Légende -->
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <div class="flex flex-wrap items-center justify-center gap-6 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 bg-soboa-blue rounded"></div>
+                                <span class="text-gray-700 font-medium">Jour avec animation(s)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 bg-soboa-orange rounded"></div>
+                                <span class="text-gray-700 font-medium">Aujourd'hui</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 bg-gray-100 border border-gray-300 rounded"></div>
+                                <span class="text-gray-700 font-medium">Hors mois</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @else
