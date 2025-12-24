@@ -32,7 +32,7 @@
                             Calendrier des <span class="text-soboa-orange">Animations</span>
                         </h1>
                         <p class="text-white/80 font-medium text-sm md:text-base mt-2 max-w-md">
-                            Retrouvez tous les matchs de la CAN 2025 diffusés dans nos points de vente partenaires
+                            Retrouvez tous les matchs diffusés dans nos points de vente partenaires
                         </p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3">

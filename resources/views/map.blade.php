@@ -1,4 +1,4 @@
-<x-layouts.app title="Points de Vente">
+<x-layouts.app title="Animations Gazelle">
 
     @php
         $venuesData = $venues->map(function ($venue) {
@@ -272,12 +272,10 @@
                 <div class="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
             </div>
             <div class="relative z-10 max-w-7xl mx-auto text-center">
-                <span class="text-soboa-orange font-black text-sm uppercase tracking-widest drop-shadow-md">Gagnez +4
-                    points</span>
-                <h1 class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-2xl">Points de vente partenaires
-                </h1>
+                <span class="text-soboa-orange font-black text-sm uppercase tracking-widest drop-shadow-md">🎉 Le goût de notre victoire</span>
+                <h1 class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-2xl">Animations Gazelle</h1>
                 <p class="text-white/80 mt-4 max-w-2xl mx-auto font-medium drop-shadow-lg">
-                    Visitez nos lieux partenaires et gagnez 4 points bonus par jour !
+                    Découvrez les lieux partenaires et vivez les matchs avec nous ! Gagnez 4 points bonus par visite.
                 </p>
             </div>
         </div>
@@ -505,7 +503,278 @@
             </div>
         </div>
 
+        <!-- Section Calendrier des Animations -->
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-soboa-blue to-soboa-blue-dark">
+                    <h3 class="text-2xl font-black text-white flex items-center gap-3">
+                        <span>📅</span> Calendrier des animations
+                    </h3>
+                    <p class="text-white/80 mt-1">Retrouvez toutes les animations à venir dans nos lieux partenaires</p>
+                </div>
+
+                @if(isset($animations) && $animations->count() > 0)
+                <div class="p-6" x-data="{ openDate: null }">
+                    <div class="space-y-4">
+                        @foreach($animations as $date => $dayAnimations)
+                            @php
+                                $carbonDate = \Carbon\Carbon::parse($date);
+                                $isToday = $carbonDate->isToday();
+                                $isPast = $carbonDate->isPast() && !$isToday;
+                                $formattedDate = $carbonDate->locale('fr')->isoFormat('dddd D MMMM YYYY');
+                            @endphp
+                            <div class="border rounded-xl overflow-hidden {{ $isToday ? 'border-soboa-orange border-2' : ($isPast ? 'border-gray-200 opacity-60' : 'border-gray-200') }}">
+                                <!-- Date Header -->
+                                <button 
+                                    @click="openDate = openDate === '{{ $date }}' ? null : '{{ $date }}'"
+                                    class="w-full flex items-center justify-between p-4 {{ $isToday ? 'bg-soboa-orange/10' : 'bg-gray-50' }} hover:bg-soboa-orange/5 transition"
+                                >
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-xl {{ $isToday ? 'bg-soboa-orange text-black' : ($isPast ? 'bg-gray-300 text-gray-600' : 'bg-soboa-blue text-white') }} flex flex-col items-center justify-center font-bold shadow">
+                                            <span class="text-lg leading-none">{{ $carbonDate->format('d') }}</span>
+                                            <span class="text-[10px] uppercase">{{ $carbonDate->locale('fr')->shortMonthName }}</span>
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="font-bold {{ $isToday ? 'text-soboa-orange' : 'text-gray-800' }} capitalize">
+                                                {{ $isToday ? "Aujourd'hui" : $carbonDate->locale('fr')->dayName }}
+                                            </p>
+                                            <p class="text-sm text-gray-500">{{ $dayAnimations->count() }} animation(s)</p>
+                                        </div>
+                                        @if($isToday)
+                                            <span class="ml-2 bg-soboa-orange text-black text-xs font-bold px-2 py-1 rounded-full animate-pulse">EN COURS</span>
+                                        @endif
+                                    </div>
+                                    <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': openDate === '{{ $date }}' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Animations List -->
+                                <div x-show="openDate === '{{ $date }}'" x-collapse x-cloak>
+                                    <div class="divide-y divide-gray-100">
+                                        @foreach($dayAnimations as $animation)
+                                            <div class="p-4 hover:bg-gray-50 transition">
+                                                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                                    <!-- Heure -->
+                                                    <div class="flex items-center gap-2 md:w-24">
+                                                        <span class="text-xl">⏰</span>
+                                                        <span class="font-bold text-soboa-blue">{{ $animation->animation_time ? \Carbon\Carbon::parse($animation->animation_time)->format('H:i') : 'TBD' }}</span>
+                                                    </div>
+                                                    
+                                                    <!-- Match -->
+                                                    @if($animation->match)
+                                                    <div class="flex-1 flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                                                        @if($animation->match->homeTeam && !$animation->match->is_tbd)
+                                                            <img src="{{ $animation->match->homeTeam->flag_url }}" class="w-8 h-6 object-contain rounded shadow-sm" alt="">
+                                                        @else
+                                                            <span class="w-8 h-6 bg-gray-200 rounded flex items-center justify-center text-xs">?</span>
+                                                        @endif
+                                                        <span class="font-semibold text-gray-800 flex-1 text-center">
+                                                            {{ $animation->match->display_label }}
+                                                        </span>
+                                                        @if($animation->match->awayTeam && !$animation->match->is_tbd)
+                                                            <img src="{{ $animation->match->awayTeam->flag_url }}" class="w-8 h-6 object-contain rounded shadow-sm" alt="">
+                                                        @else
+                                                            <span class="w-8 h-6 bg-gray-200 rounded flex items-center justify-center text-xs">?</span>
+                                                        @endif
+                                                        
+                                                        @if($animation->match->status === 'finished')
+                                                            <span class="ml-2 bg-soboa-orange/20 text-soboa-orange font-bold px-2 py-1 rounded text-sm">
+                                                                {{ $animation->match->score_a }} - {{ $animation->match->score_b }}
+                                                            </span>
+                                                        @elseif($animation->match->status === 'live')
+                                                            <span class="ml-2 bg-red-500 text-white font-bold px-2 py-1 rounded text-sm animate-pulse">LIVE</span>
+                                                        @endif
+                                                    </div>
+                                                    @endif
+                                                    
+                                                    <!-- Lieu -->
+                                                    @if($animation->bar)
+                                                    <div class="flex items-center gap-2 md:w-auto">
+                                                        <span class="text-lg">📍</span>
+                                                        <div>
+                                                            <p class="font-semibold text-gray-800 text-sm">{{ $animation->bar->name }}</p>
+                                                            @if($animation->bar->zone)
+                                                                <p class="text-xs text-gray-500">{{ $animation->bar->zone }}</p>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                @else
+                <div class="p-8 text-center">
+                    <span class="text-4xl mb-4 block">📅</span>
+                    <h4 class="text-xl font-bold text-gray-700 mb-2">Aucune animation programmée</h4>
+                    <p class="text-gray-500">Les prochaines animations seront bientôt annoncées !</p>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Section Temps Forts des Animations -->
+        <div class="max-w-7xl mx-auto px-4 mt-12 pb-12">
+            <h2 class="text-3xl font-black text-soboa-blue text-center mb-8">
+                🎬 Temps forts des animations
+            </h2>
+
+            <!-- Highlights (Photos) Carousel -->
+            @if(isset($highlights) && $highlights->count() > 0)
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-2xl">📸</span>
+                    <h3 class="text-xl font-bold text-gray-800">Highlights</h3>
+                </div>
+                
+                <div class="swiper highlights-swiper">
+                    <div class="swiper-wrapper">
+                        @foreach($highlights as $highlight)
+                        <div class="swiper-slide">
+                            <div class="relative rounded-2xl overflow-hidden shadow-xl aspect-video group">
+                                <img src="{{ $highlight->file_url }}" 
+                                     alt="{{ $highlight->title }}"
+                                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-4">
+                                    <h4 class="text-white font-bold text-lg">{{ $highlight->title }}</h4>
+                                    @if($highlight->description)
+                                    <p class="text-white/80 text-sm mt-1">{{ $highlight->description }}</p>
+                                    @endif
+                                    @if($highlight->bar)
+                                    <span class="inline-block mt-2 bg-soboa-orange/90 text-black px-3 py-1 rounded-full text-xs font-bold">
+                                        📍 {{ $highlight->bar->name }}
+                                    </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="swiper-pagination mt-4"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
+                </div>
+            </div>
+            @else
+            <div class="mb-12 bg-gray-100 rounded-2xl p-8 text-center">
+                <span class="text-4xl mb-4 block">📸</span>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">Highlights</h3>
+                <p class="text-gray-500">Les photos des animations seront bientôt disponibles !</p>
+            </div>
+            @endif
+
+            <!-- Videos Carousel -->
+            @if(isset($videos) && $videos->count() > 0)
+            <div>
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-2xl">🎥</span>
+                    <h3 class="text-xl font-bold text-gray-800">Vidéos</h3>
+                </div>
+                
+                <div class="swiper videos-swiper">
+                    <div class="swiper-wrapper">
+                        @foreach($videos as $video)
+                        <div class="swiper-slide">
+                            <div class="relative rounded-2xl overflow-hidden shadow-xl aspect-video bg-black">
+                                @if($video->is_youtube)
+                                    <iframe 
+                                        src="https://www.youtube.com/embed/{{ $video->youtube_id }}"
+                                        class="w-full h-full"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen>
+                                    </iframe>
+                                @elseif($video->video_url)
+                                    <video controls class="w-full h-full object-cover" poster="{{ $video->thumbnail_url }}">
+                                        <source src="{{ $video->video_url }}" type="video/mp4">
+                                        Votre navigateur ne supporte pas la lecture de vidéos.
+                                    </video>
+                                @else
+                                    <video controls class="w-full h-full object-cover" poster="{{ $video->thumbnail_url }}">
+                                        <source src="{{ $video->file_url }}" type="video/mp4">
+                                        Votre navigateur ne supporte pas la lecture de vidéos.
+                                    </video>
+                                @endif
+                            </div>
+                            <div class="mt-3">
+                                <h4 class="font-bold text-gray-800">{{ $video->title }}</h4>
+                                @if($video->description)
+                                <p class="text-gray-600 text-sm mt-1">{{ $video->description }}</p>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="swiper-pagination mt-4"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
+                </div>
+            </div>
+            @else
+            <div class="bg-gray-100 rounded-2xl p-8 text-center">
+                <span class="text-4xl mb-4 block">🎥</span>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">Vidéos</h3>
+                <p class="text-gray-500">Les vidéos des animations seront bientôt disponibles !</p>
+            </div>
+            @endif
+        </div>
+
     </div>
+
+    <!-- Swiper JS for Carousels -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Highlights Swiper
+            new Swiper('.highlights-swiper', {
+                slidesPerView: 1,
+                spaceBetween: 20,
+                loop: true,
+                autoplay: {
+                    delay: 4000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: '.highlights-swiper .swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.highlights-swiper .swiper-button-next',
+                    prevEl: '.highlights-swiper .swiper-button-prev',
+                },
+                breakpoints: {
+                    640: { slidesPerView: 2 },
+                    1024: { slidesPerView: 3 },
+                }
+            });
+
+            // Videos Swiper
+            new Swiper('.videos-swiper', {
+                slidesPerView: 1,
+                spaceBetween: 20,
+                loop: true,
+                pagination: {
+                    el: '.videos-swiper .swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.videos-swiper .swiper-button-next',
+                    prevEl: '.videos-swiper .swiper-button-prev',
+                },
+                breakpoints: {
+                    640: { slidesPerView: 2 },
+                    1024: { slidesPerView: 2 },
+                }
+            });
+        });
+    </script>
 
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

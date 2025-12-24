@@ -2186,4 +2186,197 @@ class AdminController extends Controller
 
         return view('admin.match-venue-matrix', compact('matches', 'bars', 'matrix', 'zones', 'phases', 'phase', 'zone'));
     }
+
+    // ==========================================
+    // MÉDIAS ANIMATIONS (Highlights & Vidéos)
+    // ==========================================
+
+    public function media()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        // Vérifier si la table existe avant de faire la requête
+        if (!\Illuminate\Support\Facades\Schema::hasTable('animation_media')) {
+            return view('admin.media.index', [
+                'media' => collect(),
+                'photos' => collect(),
+                'videos' => collect(),
+                'tableNotExists' => true
+            ]);
+        }
+
+        $media = \App\Models\AnimationMedia::with('bar')
+            ->orderBy('type')
+            ->orderBy('sort_order')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $photos = $media->where('type', 'photo');
+        $videos = $media->where('type', 'video');
+
+        return view('admin.media.index', compact('media', 'photos', 'videos'));
+    }
+
+    public function createMedia()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $bars = Bar::where('is_active', true)->orderBy('name')->get();
+        return view('admin.media.create', compact('bars'));
+    }
+
+    public function storeMedia(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $request->validate([
+            'type' => 'required|in:photo,video',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'file' => 'required_without:video_url|file|max:51200', // 50MB max
+            'video_url' => 'nullable|url',
+            'thumbnail' => 'nullable|file|image|max:5120', // 5MB max
+            'bar_id' => 'nullable|exists:bars,id',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $data = [
+            'type' => $request->type,
+            'title' => $request->title,
+            'description' => $request->description,
+            'video_url' => $request->video_url,
+            'bar_id' => $request->bar_id,
+            'sort_order' => $request->sort_order ?? 0,
+            'is_active' => true,
+        ];
+
+        // Upload du fichier principal
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $folder = $request->type === 'photo' ? 'highlights' : 'videos';
+            $path = $file->store("media/{$folder}", 'public');
+            $data['file_path'] = $path;
+        }
+
+        // Upload de la miniature
+        if ($request->hasFile('thumbnail')) {
+            $thumbnail = $request->file('thumbnail');
+            $thumbnailPath = $thumbnail->store('media/thumbnails', 'public');
+            $data['thumbnail_path'] = $thumbnailPath;
+        }
+
+        \App\Models\AnimationMedia::create($data);
+
+        return redirect()->route('admin.media')->with('success', 'Média ajouté avec succès.');
+    }
+
+    public function editMedia($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $mediaItem = \App\Models\AnimationMedia::findOrFail($id);
+        $bars = Bar::where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.media.edit', compact('mediaItem', 'bars'));
+    }
+
+    public function updateMedia(Request $request, $id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $mediaItem = \App\Models\AnimationMedia::findOrFail($id);
+
+        $request->validate([
+            'type' => 'required|in:photo,video',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'file' => 'nullable|file|max:51200', // 50MB max
+            'video_url' => 'nullable|url',
+            'thumbnail' => 'nullable|file|image|max:5120', // 5MB max
+            'bar_id' => 'nullable|exists:bars,id',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $data = [
+            'type' => $request->type,
+            'title' => $request->title,
+            'description' => $request->description,
+            'video_url' => $request->video_url,
+            'bar_id' => $request->bar_id,
+            'sort_order' => $request->sort_order ?? 0,
+        ];
+
+        // Upload du nouveau fichier si fourni
+        if ($request->hasFile('file')) {
+            // Supprimer l'ancien fichier
+            if ($mediaItem->file_path && \Storage::disk('public')->exists($mediaItem->file_path)) {
+                \Storage::disk('public')->delete($mediaItem->file_path);
+            }
+
+            $file = $request->file('file');
+            $folder = $request->type === 'photo' ? 'highlights' : 'videos';
+            $path = $file->store("media/{$folder}", 'public');
+            $data['file_path'] = $path;
+        }
+
+        // Upload de la nouvelle miniature si fournie
+        if ($request->hasFile('thumbnail')) {
+            // Supprimer l'ancienne miniature
+            if ($mediaItem->thumbnail_path && \Storage::disk('public')->exists($mediaItem->thumbnail_path)) {
+                \Storage::disk('public')->delete($mediaItem->thumbnail_path);
+            }
+
+            $thumbnail = $request->file('thumbnail');
+            $thumbnailPath = $thumbnail->store('media/thumbnails', 'public');
+            $data['thumbnail_path'] = $thumbnailPath;
+        }
+
+        $mediaItem->update($data);
+
+        return redirect()->route('admin.media')->with('success', 'Média mis à jour avec succès.');
+    }
+
+    public function deleteMedia($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $mediaItem = \App\Models\AnimationMedia::findOrFail($id);
+
+        // Supprimer les fichiers
+        if ($mediaItem->file_path && \Storage::disk('public')->exists($mediaItem->file_path)) {
+            \Storage::disk('public')->delete($mediaItem->file_path);
+        }
+        if ($mediaItem->thumbnail_path && \Storage::disk('public')->exists($mediaItem->thumbnail_path)) {
+            \Storage::disk('public')->delete($mediaItem->thumbnail_path);
+        }
+
+        $mediaItem->delete();
+
+        return redirect()->route('admin.media')->with('success', 'Média supprimé avec succès.');
+    }
+
+    public function toggleMedia($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $mediaItem = \App\Models\AnimationMedia::findOrFail($id);
+        $mediaItem->update(['is_active' => !$mediaItem->is_active]);
+
+        $status = $mediaItem->is_active ? 'activé' : 'désactivé';
+        return redirect()->route('admin.media')->with('success', "Média {$status} avec succès.");
+    }
 }

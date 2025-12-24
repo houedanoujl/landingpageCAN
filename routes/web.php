@@ -16,9 +16,6 @@ Route::get('/leaderboard', [HomeController::class, 'leaderboard'])->name('leader
 Route::get('/map', [HomeController::class, 'map'])->name('map');
 Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 Route::get('/animations', [HomeController::class, 'animations'])->name('animations');
-Route::get('/direct', function () {
-    return view('direct');
-})->name('direct');
 Route::get('/conditions', function () {
     return view('terms');
 })->name('terms');
@@ -147,6 +144,15 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
 
     // Logs OTP
     Route::get('/otp-logs', [AdminController::class, 'otpLogs'])->name('otp-logs');
+
+    // Médias Animations (Highlights & Vidéos)
+    Route::get('/media', [AdminController::class, 'media'])->name('media');
+    Route::get('/media/create', [AdminController::class, 'createMedia'])->name('create-media');
+    Route::post('/media', [AdminController::class, 'storeMedia'])->name('store-media');
+    Route::get('/media/{id}/edit', [AdminController::class, 'editMedia'])->name('edit-media');
+    Route::put('/media/{id}', [AdminController::class, 'updateMedia'])->name('update-media');
+    Route::delete('/media/{id}', [AdminController::class, 'deleteMedia'])->name('delete-media');
+    Route::post('/media/{id}/toggle', [AdminController::class, 'toggleMedia'])->name('toggle-media');
 
     // Gestion du tournoi
     Route::get('/tournament', [AdminController::class, 'tournamentManagement'])->name('tournament');

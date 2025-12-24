@@ -174,7 +174,32 @@ class HomeController extends Controller
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-        return view('map', compact('venues'));
+        
+        // Récupérer les animations groupées par date pour le calendrier
+        $animations = \App\Models\Animation::with(['bar', 'match.homeTeam', 'match.awayTeam'])
+            ->where('is_active', true)
+            ->whereHas('match')
+            ->orderBy('animation_date')
+            ->orderBy('animation_time')
+            ->get()
+            ->groupBy(function($animation) {
+                return \Carbon\Carbon::parse($animation->animation_date)->format('Y-m-d');
+            });
+        
+        // Récupérer les médias pour les carousels (avec vérification si la table existe)
+        $highlights = collect();
+        $videos = collect();
+        
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('animation_media')) {
+                $highlights = \App\Models\AnimationMedia::photos()->get();
+                $videos = \App\Models\AnimationMedia::videos()->get();
+            }
+        } catch (\Exception $e) {
+            // Table n'existe pas encore, on garde les collections vides
+        }
+        
+        return view('map', compact('venues', 'highlights', 'videos', 'animations'));
     }
 
     public function dashboard()

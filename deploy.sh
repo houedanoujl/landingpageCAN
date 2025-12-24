@@ -26,6 +26,8 @@ npm run build
   # NOUVELLES MIGRATIONS (24/12/2025):
   # - 2025_01_24_000001_create_weekly_rankings_table.php
   #   → Table pour les classements hebdomadaires CAN
+  # - 2025_01_24_000002_create_animation_media_table.php
+  #   → Table pour les médias animations (photos/vidéos)
   # - 2025_12_23_150000_ensure_admin_otp_logs_table_exists.php
   #   → Table pour les logs OTP admin
   #

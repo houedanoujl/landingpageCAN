@@ -84,6 +84,10 @@
                     <span class="text-3xl">🎬</span>
                     <span class="font-bold text-sm text-center">Animations</span>
                 </a>
+                <a href="{{ route('admin.media') }}" class="bg-rose-600 hover:bg-rose-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
+                    <span class="text-3xl">📸</span>
+                    <span class="font-bold text-sm text-center">Médias CAN</span>
+                </a>
                 <a href="{{ route('admin.calendar') }}" class="bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
                     <span class="text-3xl">📅</span>
                     <span class="font-bold text-sm text-center">Calendrier</span>

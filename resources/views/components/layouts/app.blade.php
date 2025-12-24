@@ -370,20 +370,13 @@
                         class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Accueil</a>
                     <a href="/matches"
                         class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Pronostics</a>
-                    <a href="/direct"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-red-500/10 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5">
-                        <span class="relative flex h-2.5 w-2.5">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-                        </span>
-                        <span class="text-red-600 font-bold">DIRECT</span>
+                    <a href="/map"
+                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-orange/20 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5">
+                        <span>🎉</span>
+                        <span class="text-soboa-blue font-bold">Animations</span>
                     </a>
-                    <a href="/animations"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Animations</a>
                     <a href="/leaderboard"
                         class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Classement</a>
-                    <a href="/map"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Lieux</a>
                 </div>
 
                 <!-- User Actions -->
@@ -451,23 +444,14 @@
                 <a href="/matches"
                     class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
                     Pronostics</a>
-                <a href="/direct"
-                    class="block px-4 py-3 text-black hover:bg-red-500/10 rounded-lg font-semibold transition-colors flex items-center gap-2">
-                    <span class="relative flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
-                    </span>
-                    <span class="text-red-600 font-bold">DIRECT</span>
+                <a href="/map"
+                    class="block px-4 py-3 text-black hover:bg-soboa-orange/20 rounded-lg font-semibold transition-colors flex items-center gap-2">
+                    <span>🎉</span>
+                    <span class="text-soboa-blue font-bold">Animations</span>
                 </a>
-                <a href="/animations"
-                    class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
-                    Calendrier Animations</a>
                 <a href="/leaderboard"
                     class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
                     Classement</a>
-                <a href="/map"
-                    class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
-                    Lieux partenaires</a>
 
                 @if(session('user_id'))
                     <div class="pt-4 border-t border-black/10">
