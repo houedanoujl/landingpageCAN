@@ -491,26 +491,29 @@
             <!-- Points Breakdown -->
             <div class="mt-16 bg-soboa-blue rounded-2xl p-8 text-white">
                 <h3 class="text-center font-black text-2xl mb-8">Système de points</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+1</span>
-                        <p class="text-sm text-white/80 mt-2">Participation</p>
+                        <p class="text-sm text-white/80 mt-2">🔑 Connexion/jour</p>
+                    </div>
+                    <div class="bg-white/10 rounded-xl p-4">
+                        <span class="text-3xl font-black text-soboa-orange">+1</span>
+                        <p class="text-sm text-white/80 mt-2">⚽ Participation</p>
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+3</span>
-                        <p class="text-sm text-white/80 mt-2">Bon vainqueur</p>
+                        <p class="text-sm text-white/80 mt-2">🎯 Bon vainqueur</p>
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+3</span>
-                        <p class="text-sm text-white/80 mt-2">Score exact</p>
+                        <p class="text-sm text-white/80 mt-2">🏆 Score exact</p>
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+4</span>
-                        <p class="text-sm text-white/80 mt-2">Visite lieu</p>
+                        <p class="text-sm text-white/80 mt-2">📍 Visite lieu</p>
                     </div>
                 </div>
-                <p class="text-center text-white/60 text-sm mt-4">Maximum 7 points par match + 4 points bonus par visite
-                </p>
+                <p class="text-center text-white/60 text-sm mt-4">Maximum 7 points par match + 4 points bonus par visite + 1 point par connexion quotidienne</p>
             </div>
 
             <!-- CTA -->
