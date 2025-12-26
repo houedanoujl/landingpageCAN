@@ -450,8 +450,14 @@ class AdminController extends Controller
         }
 
         $user = User::findOrFail($id);
+        
+        // Charger l'historique des points avec les relations
+        $pointLogs = PointLog::where('user_id', $id)
+            ->with(['match.homeTeam', 'match.awayTeam', 'bar'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('admin.edit-user', compact('user'));
+        return view('admin.edit-user', compact('user', 'pointLogs'));
     }
 
     /**
