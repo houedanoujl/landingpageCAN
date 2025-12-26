@@ -31,15 +31,9 @@ Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp'])
     ->name('auth.verify-otp');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Authentification administrateur (séparée)
-// Rate limiting plus strict pour l'admin: 3 tentatives par minute
+// Authentification administrateur (séparée) - Par mot de passe
 Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/auth/send-otp', [AdminAuthController::class, 'sendOtp'])
-    ->middleware('throttle:3,1')
-    ->name('admin.auth.send-otp');
-Route::post('/admin/auth/verify-otp', [AdminAuthController::class, 'verifyOtp'])
-    ->middleware('throttle:5,1')
-    ->name('admin.auth.verify-otp');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.auth.login');
 Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 // Pronostics (requiert authentification)

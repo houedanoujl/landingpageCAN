@@ -835,8 +835,10 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                 class="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                 style="z-index: 9999;"
                  @click.self="closeDayModal()"
+                 @keydown.escape.window="closeDayModal()"
                  x-cloak>
                 <div x-show="showModal"
                      x-transition:enter="transition ease-out duration-300"
@@ -845,49 +847,41 @@
                      x-transition:leave="transition ease-in duration-200"
                      x-transition:leave-start="opacity-100 transform scale-100"
                      x-transition:leave-end="opacity-0 transform scale-95"
-                     class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden">
+                     class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden relative"
+                     @click.stop>
+                    <!-- Bouton fermer en haut à droite -->
+                    <button @click="closeDayModal()" class="absolute top-3 right-3 z-10 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 p-2 rounded-full shadow-lg transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+
                     <!-- Header du modal -->
-                    <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-dark p-4 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-xl font-bold text-white capitalize" x-text="selectedDay"></h3>
-                            <p class="text-white/80 text-sm">
-                                <span x-text="selectedAnimations.length"></span> animation(s) prévue(s)
-                            </p>
-                        </div>
-                        <button @click="closeDayModal()" class="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
+                    <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-dark p-4 pr-14">
+                        <h3 class="text-xl font-bold text-white capitalize" x-text="selectedDay"></h3>
+                        <p class="text-white/80 text-sm">
+                            Points de vente avec animations
+                        </p>
                     </div>
 
-                    <!-- Liste des animations -->
-                    <div class="p-4 overflow-y-auto max-h-[60vh] space-y-4">
+                    <!-- Liste des PDV uniquement -->
+                    <div class="p-4 overflow-y-auto max-h-[55vh] space-y-3">
                         <template x-for="(anim, index) in selectedAnimations" :key="index">
-                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:shadow-md transition">
-                                <!-- Match avec drapeaux -->
-                                <div class="flex items-center gap-3 mb-3">
-                                    <div class="flex items-center gap-2 flex-1">
-                                        <template x-if="anim.home_flag">
-                                            <img :src="anim.home_flag" class="w-8 h-6 object-cover rounded shadow-sm" alt="">
-                                        </template>
-                                        <span class="text-lg font-bold text-gray-800" x-text="anim.match_label"></span>
-                                        <template x-if="anim.away_flag">
-                                            <img :src="anim.away_flag" class="w-8 h-6 object-cover rounded shadow-sm" alt="">
-                                        </template>
+                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:shadow-md hover:border-soboa-blue/30 transition">
+                                <div class="flex items-start gap-3">
+                                    <div class="bg-soboa-blue/10 rounded-full p-2 flex-shrink-0">
+                                        <svg class="w-5 h-5 text-soboa-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
                                     </div>
-                                    <div class="bg-soboa-orange text-black font-bold px-3 py-1 rounded-full text-sm" x-text="anim.time"></div>
-                                </div>
-
-                                <!-- Lieu -->
-                                <div class="flex items-start gap-2 text-gray-600">
-                                    <svg class="w-5 h-5 text-soboa-blue flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    <div>
-                                        <div class="font-semibold text-gray-800" x-text="anim.bar_name"></div>
-                                        <div class="text-sm text-gray-500" x-text="anim.bar_address"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-bold text-gray-800 text-lg" x-text="anim.bar_name"></div>
+                                        <div class="text-sm text-gray-500 mt-1" x-text="anim.bar_address"></div>
+                                        <div class="mt-2 flex items-center gap-2 text-xs text-soboa-blue font-medium">
+                                            <span class="bg-soboa-orange/20 text-soboa-orange px-2 py-1 rounded-full font-bold" x-text="anim.time"></span>
+                                            <span x-text="anim.match_label"></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -897,14 +891,17 @@
                         <template x-if="selectedAnimations.length === 0">
                             <div class="text-center text-gray-500 py-8">
                                 <span class="text-4xl mb-2 block">📅</span>
-                                <p>Aucune animation programmée ce jour.</p>
+                                <p>Aucun point de vente avec animation ce jour.</p>
                             </div>
                         </template>
                     </div>
 
                     <!-- Footer du modal -->
                     <div class="p-4 border-t border-gray-100 bg-gray-50">
-                        <button @click="closeDayModal()" class="w-full bg-soboa-blue text-white font-bold py-3 rounded-xl hover:bg-soboa-blue/90 transition">
+                        <button @click="closeDayModal()" class="w-full bg-soboa-blue text-white font-bold py-3 rounded-xl hover:bg-soboa-blue/90 transition flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
                             Fermer
                         </button>
                     </div>

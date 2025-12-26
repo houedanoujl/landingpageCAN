@@ -129,7 +129,7 @@
         <!-- TOP 20 National (positions 6-20) -->
         @if(count($top20) > 5)
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4">
+                <div class="bg-soboa-blue p-4">
                     <h2 class="text-xl font-bold text-white flex items-center gap-2">
                         <span>📊</span> TOP 20 National
                     </h2>
@@ -137,7 +137,7 @@
                 </div>
 
                 <div class="divide-y divide-gray-100">
-                    @foreach(array_slice($top20, 5) as $entry)
+                    @foreach(array_slice($top20, 0) as $entry)
                         <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition {{ auth()->check() && auth()->id() === ($entry['user_id'] ?? null) ? 'bg-soboa-orange/10 border-l-4 border-soboa-orange' : '' }}">
                             <div class="flex items-center gap-3">
                                 <span class="w-8 h-8 rounded-full {{ $entry['rank'] <= 10 ? 'bg-soboa-blue text-white' : 'bg-gray-200 text-gray-600' }} flex items-center justify-center font-bold text-sm">
