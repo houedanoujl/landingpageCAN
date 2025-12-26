@@ -118,8 +118,7 @@ class LeaderboardService
 
     /**
      * Calcule les classements pour une période donnée
-     * Pour les semaines: uniquement les points de pronostics (participation, winner, exact)
-     * Pour le classement général (semifinal): tous les points
+     * Tous les points comptent (pronostics, login, visite bar, etc.)
      */
     public function calculatePeriodRankings(string $period): array
     {
@@ -132,17 +131,10 @@ class LeaderboardService
         $startDate = $periodData['start'] . ' 00:00:00';
         $endDate = $periodData['end'] . ' 23:59:59';
 
-        // Pour les classements hebdomadaires: uniquement les points de pronostics
-        // Pour le classement général (semifinal): tous les points
-        $query = PointLog::select('user_id', DB::raw('SUM(points) as period_points'))
-            ->whereBetween('created_at', [$startDate, $endDate]);
-        
-        // Si c'est un classement hebdomadaire (week_X), filtrer uniquement les pronostics
-        if (str_starts_with($period, 'week_')) {
-            $query->whereIn('source', ['participation', 'winner', 'exact']);
-        }
-        
-        $pointsByUser = $query->groupBy('user_id')
+        // Tous les points gagnés pendant cette période
+        $pointsByUser = PointLog::select('user_id', DB::raw('SUM(points) as period_points'))
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('user_id')
             ->orderByDesc('period_points')
             ->get();
 

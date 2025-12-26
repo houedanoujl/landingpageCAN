@@ -65,7 +65,7 @@
                 </h2>
                 <p class="text-white/80 text-sm mt-1">
                     @if(str_starts_with($selected_period, 'week_'))
-                        Points des pronostics de cette semaine uniquement
+                        Points gagnés cette semaine
                     @else
                         Les meilleurs pronostiqueurs
                     @endif
