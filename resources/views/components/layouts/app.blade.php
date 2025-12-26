@@ -123,11 +123,19 @@
             nav .lg\:flex {
                 display: flex !important;
             }
+            /* Desktop: SHOW "Jouer maintenant" button */
+            nav a.lg\:inline-flex {
+                display: inline-flex !important;
+            }
         }
         
         @media (max-width: 1023px) {
             /* Mobile: HIDE desktop menu */
             nav .lg\:flex {
+                display: none !important;
+            }
+            /* Mobile: HIDE "Jouer maintenant" button */
+            nav a.lg\:inline-flex {
                 display: none !important;
             }
         }
