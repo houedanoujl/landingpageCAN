@@ -232,16 +232,9 @@
                 },
 
                 formatPhoneNumber(phone) {
-                    // Supprimer tout sauf les chiffres
-                    let digits = phone.replace(/\D/g, '');
-
-                    // Pour le Sénégal uniquement: retirer le 0 initial si présent
-                    // Pour la CI: garder le 0 (format +225 0X XX XX XX XX)
-                    if (this.countryCode === '+221' && digits.startsWith('0')) {
-                        digits = digits.substring(1);
-                    }
-
-                    return digits;
+                    // Supprimer tout sauf les chiffres - ne rien retirer d'autre
+                    // SMS: on garde le numéro tel quel (avec le 0 initial si présent)
+                    return phone.replace(/\D/g, '');
                 },
 
                 async sendOtp() {
