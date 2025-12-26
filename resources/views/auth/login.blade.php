@@ -247,9 +247,22 @@
                     return phone.replace(/\D/g, '');
                 },
 
+                // Valider le format du numéro sénégalais
+                isValidSenegalPhone() {
+                    const phoneDigits = this.formatPhoneNumber(this.phone);
+                    // Le numéro sénégalais doit avoir 9 chiffres et commencer par 7
+                    return phoneDigits.length === 9 && phoneDigits.startsWith('7');
+                },
+
                 async sendOtp() {
                     if (!this.name.trim() || !this.phone.trim()) {
                         this.error = 'Veuillez remplir tous les champs.';
+                        return;
+                    }
+
+                    // Valider le format du numéro sénégalais AVANT d'envoyer
+                    if (!this.isValidSenegalPhone()) {
+                        this.error = 'Format de numéro invalide. Le numéro sénégalais doit contenir 9 chiffres commençant par 7 (ex: 77 123 45 67).';
                         return;
                     }
 

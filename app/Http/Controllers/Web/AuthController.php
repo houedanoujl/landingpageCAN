@@ -60,36 +60,50 @@ class AuthController extends Controller
             $originalPhone = $request->phone;
             $phone = $this->formatPhone($request->phone);
 
-            // VALIDATION STRICTE: Vérifier que le numéro est autorisé
-            if (!$this->isPhoneAllowedForPublic($phone)) {
-                Log::warning('Tentative d\'inscription avec un numéro non autorisé', [
+            // VALIDATION STRICTE: Seuls les numéros sénégalais sont autorisés
+            if (!str_starts_with($phone, '+221')) {
+                Log::warning('Tentative d\'inscription avec un numéro non sénégalais', [
                     'phone' => $phone,
                 ]);
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ce numéro n\'est pas autorisé. Seuls les numéros ivoiriens (+225), sénégalais (+221) et français (+33) sont acceptés.',
+                    'message' => 'Seuls les numéros sénégalais (+221) sont autorisés.',
                 ], 403);
             }
 
-            // RATE LIMITING: 1 OTP par minute par numéro
+            // VALIDATION FORMAT SÉNÉGALAIS: +221 + 9 chiffres (commençant par 7)
+            $phoneWithoutPrefix = substr($phone, 4); // Retirer +221
+            if (strlen($phoneWithoutPrefix) !== 9 || !str_starts_with($phoneWithoutPrefix, '7')) {
+                Log::warning('Format numéro sénégalais invalide', [
+                    'phone' => $phone,
+                    'phone_without_prefix' => $phoneWithoutPrefix,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format de numéro invalide. Le numéro sénégalais doit contenir 9 chiffres commençant par 7 (ex: 77 XXX XX XX).',
+                ], 400);
+            }
+
+            // RATE LIMITING: 1 OTP par heure par numéro
             $rateLimitKey = 'otp_rate_limit_' . md5($phone);
             $lastOtpSent = Cache::get($rateLimitKey);
             
             if ($lastOtpSent) {
-                $secondsRemaining = now()->diffInSeconds($lastOtpSent->addMinute(), false);
+                $minutesRemaining = now()->diffInMinutes($lastOtpSent->addHour(), false);
                 
-                if ($secondsRemaining > 0) {
+                if ($minutesRemaining > 0) {
                     Log::warning('Rate limit OTP atteint', [
                         'phone' => $phone,
-                        'seconds_remaining' => $secondsRemaining,
+                        'minutes_remaining' => $minutesRemaining,
                     ]);
                     
                     return response()->json([
                         'success' => false,
-                        'message' => "Vous avez déjà demandé un code. Veuillez attendre {$secondsRemaining} seconde(s) avant de réessayer.",
+                        'message' => "Vous avez déjà demandé un code. Veuillez attendre {$minutesRemaining} minute(s) avant de réessayer.",
                         'rate_limited' => true,
-                        'seconds_remaining' => $secondsRemaining,
+                        'minutes_remaining' => $minutesRemaining,
                     ], 429);
                 }
             }
@@ -115,9 +129,9 @@ class AuthController extends Controller
 
             $result = $this->sendSMS($phone, $otpCode);
 
-            // Enregistrer le rate limit (1 minute)
+            // Enregistrer le rate limit (1 heure)
             if ($result['success']) {
-                Cache::put($rateLimitKey, now(), now()->addMinute());
+                Cache::put($rateLimitKey, now(), now()->addHour());
             }
 
             // Enregistrer le log OTP
