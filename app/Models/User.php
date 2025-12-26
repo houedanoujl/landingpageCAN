@@ -18,6 +18,7 @@ class User extends Authenticatable
         'role',
         'points_total',
         'last_login_at',
+        'last_daily_reward_at',
         'password',
         'otp_code',
         'otp_expires_at',
@@ -28,6 +29,7 @@ class User extends Authenticatable
     protected $casts = [
         'is_admin' => 'boolean',
         'last_login_at' => 'datetime',
+        'last_daily_reward_at' => 'date',
         'otp_expires_at' => 'datetime',
         'phone_verified' => 'boolean',
     ];

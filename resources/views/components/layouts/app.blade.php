@@ -738,6 +738,179 @@
             });
         }
     </script>
+
+    <!-- Daily Reward System - Heartbeat & Visibility Detection -->
+    @auth
+    <script>
+        (function() {
+            'use strict';
+            
+            const DailyReward = {
+                lastCheckDate: null,
+                checkInterval: null,
+                isChecking: false,
+                
+                init() {
+                    // Get today's date string
+                    this.lastCheckDate = localStorage.getItem('dailyReward_lastCheck');
+                    const today = this.getTodayString();
+                    
+                    // Check on page load if not checked today
+                    if (this.lastCheckDate !== today) {
+                        this.checkAndAward();
+                    }
+                    
+                    // Listen for visibility changes (user returns to tab after leaving overnight)
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') {
+                            this.onVisibilityChange();
+                        }
+                    });
+                    
+                    // Listen for focus events (backup for visibility)
+                    window.addEventListener('focus', () => {
+                        this.onVisibilityChange();
+                    });
+                    
+                    // Periodic check every 5 minutes for long sessions
+                    this.checkInterval = setInterval(() => {
+                        this.periodicCheck();
+                    }, 5 * 60 * 1000); // 5 minutes
+                    
+                    // Also check when user wakes from sleep (pageshow event)
+                    window.addEventListener('pageshow', (event) => {
+                        if (event.persisted) {
+                            // Page was restored from bfcache
+                            this.onVisibilityChange();
+                        }
+                    });
+                },
+                
+                getTodayString() {
+                    const now = new Date();
+                    return now.toISOString().split('T')[0]; // YYYY-MM-DD
+                },
+                
+                onVisibilityChange() {
+                    const today = this.getTodayString();
+                    if (this.lastCheckDate !== today) {
+                        this.checkAndAward();
+                    }
+                },
+                
+                periodicCheck() {
+                    const today = this.getTodayString();
+                    if (this.lastCheckDate !== today) {
+                        this.checkAndAward();
+                    }
+                },
+                
+                async checkAndAward() {
+                    if (this.isChecking) return;
+                    this.isChecking = true;
+                    
+                    try {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                        
+                        const response = await fetch('/api/daily-reward/heartbeat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            credentials: 'same-origin'
+                        });
+                        
+                        if (!response.ok) {
+                            console.log('Daily reward check failed:', response.status);
+                            return;
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Update last check date
+                            this.lastCheckDate = this.getTodayString();
+                            localStorage.setItem('dailyReward_lastCheck', this.lastCheckDate);
+                            
+                            // If points were awarded, show notification and update UI
+                            if (data.awarded && data.message) {
+                                this.showRewardNotification(data.message, data.total_points);
+                                this.updatePointsDisplay(data.total_points);
+                            }
+                        }
+                    } catch (error) {
+                        console.log('Daily reward check error:', error);
+                    } finally {
+                        this.isChecking = false;
+                    }
+                },
+                
+                showRewardNotification(message, totalPoints) {
+                    // Create toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce-in';
+                    toast.innerHTML = `
+                        <div class="text-3xl">🎁</div>
+                        <div>
+                            <div class="font-bold text-lg">${message}</div>
+                            <div class="text-sm text-white/80">Total: ${totalPoints} points</div>
+                        </div>
+                    `;
+                    
+                    // Add animation styles if not present
+                    if (!document.getElementById('daily-reward-styles')) {
+                        const style = document.createElement('style');
+                        style.id = 'daily-reward-styles';
+                        style.textContent = `
+                            @keyframes bounceIn {
+                                0% { opacity: 0; transform: translate(-50%, -20px) scale(0.9); }
+                                50% { transform: translate(-50%, 5px) scale(1.02); }
+                                100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+                            }
+                            .animate-bounce-in { animation: bounceIn 0.5s ease-out forwards; }
+                            @keyframes fadeOut {
+                                to { opacity: 0; transform: translate(-50%, -20px); }
+                            }
+                            .animate-fade-out { animation: fadeOut 0.3s ease-in forwards; }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                    
+                    document.body.appendChild(toast);
+                    
+                    // Remove after 5 seconds
+                    setTimeout(() => {
+                        toast.classList.remove('animate-bounce-in');
+                        toast.classList.add('animate-fade-out');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 5000);
+                },
+                
+                updatePointsDisplay(points) {
+                    // Update all points displays on the page
+                    const pointsElements = document.querySelectorAll('[data-user-points]');
+                    pointsElements.forEach(el => {
+                        el.textContent = points;
+                    });
+                    
+                    // Dispatch event for Alpine.js components
+                    window.dispatchEvent(new CustomEvent('update-points', {
+                        detail: { points: points }
+                    }));
+                }
+            };
+            
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => DailyReward.init());
+            } else {
+                DailyReward.init();
+            }
+        })();
+    </script>
+    @endauth
 </body>
 
 </html>

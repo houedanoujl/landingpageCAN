@@ -119,6 +119,69 @@ class PointsService
     }
 
     /**
+     * Award daily activity points.
+     * This is triggered by the DailyRewardMiddleware on the user's first activity
+     * of each calendar day. Works even for users who never log out.
+     * 
+     * Limit: 1 point per calendar day.
+     * 
+     * @param User $user
+     * @return array{awarded: bool, points: int, total: int}
+     */
+    public function awardDailyActivityPoints(User $user): array
+    {
+        $today = Carbon::today();
+
+        // Double-check to avoid race conditions
+        $alreadyAwarded = PointLog::where('user_id', $user->id)
+            ->where('source', 'daily_activity')
+            ->whereDate('created_at', $today)
+            ->exists();
+
+        if ($alreadyAwarded) {
+            return [
+                'awarded' => false,
+                'points' => 0,
+                'total' => $user->points_total,
+            ];
+        }
+
+        DB::transaction(function () use ($user, $today) {
+            $user->increment('points_total', 1);
+            $user->update(['last_daily_reward_at' => $today]);
+            
+            PointLog::create([
+                'user_id' => $user->id,
+                'source' => 'daily_activity',
+                'points' => 1,
+            ]);
+        });
+
+        // Refresh user to get updated points
+        $user->refresh();
+
+        return [
+            'awarded' => true,
+            'points' => 1,
+            'total' => $user->points_total,
+        ];
+    }
+
+    /**
+     * Check if user is eligible for daily reward (without awarding).
+     * Useful for frontend to show notifications.
+     * 
+     * @param User $user
+     * @return bool
+     */
+    public function isEligibleForDailyReward(User $user): bool
+    {
+        $today = Carbon::today();
+        
+        return is_null($user->last_daily_reward_at) || $user->last_daily_reward_at->lt($today);
+    }
+
+    /**
      * Calculate points for a finished match for all predictions.
      * Triggered when a Match is updated to "finished".
      * This method now delegates to the ProcessMatchPoints job for consistency.

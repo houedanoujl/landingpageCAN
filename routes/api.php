@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CheckInController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\GeolocationController;
 use App\Http\Controllers\Api\VenueController;
+use App\Http\Controllers\Api\DailyRewardController;
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 
@@ -32,4 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:web')->group(function () {
     Route::post('/check-in', [CheckInController::class, 'store']);
     Route::post('/check-in/status', [CheckInController::class, 'checkStatus']);
+    
+    // Daily reward heartbeat - triggered by frontend on activity/visibility change
+    Route::post('/daily-reward/heartbeat', [DailyRewardController::class, 'heartbeat']);
+    Route::get('/daily-reward/check', [DailyRewardController::class, 'checkEligibility']);
 });
