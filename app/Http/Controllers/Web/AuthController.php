@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\AdminOtpLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -67,6 +68,16 @@ class AuthController extends Controller
             Log::info('Code OTP genere', ['whatsapp_number' => $whatsappNumber]);
 
             $result = $this->sendWhatsAppMessage($whatsappNumber, $otpCode);
+
+            // Enregistrer le log OTP
+            $otpLog = AdminOtpLog::create([
+                'phone' => $phone,
+                'code' => $otpCode,
+                'whatsapp_number' => $whatsappNumber,
+                'status' => $result['success'] ? 'sent' : 'failed',
+                'otp_sent_at' => now(),
+                'error_message' => $result['success'] ? null : ($result['error'] ?? 'Erreur inconnue'),
+            ]);
 
             if ($result['success']) {
                 return response()->json([
@@ -182,7 +193,20 @@ class AuthController extends Controller
             $cacheKey = 'otp_' . $whatsappNumber;
             $otpData = Cache::get($cacheKey);
 
+            // Récupérer le log OTP pour mise à jour
+            $otpLog = AdminOtpLog::where('whatsapp_number', $whatsappNumber)
+                ->where('status', 'sent')
+                ->orderBy('created_at', 'desc')
+                ->first();
+
             if (!$otpData) {
+                // Mettre à jour le log si trouvé
+                if ($otpLog) {
+                    $otpLog->update([
+                        'status' => 'expired',
+                        'verification_attempts' => ($otpLog->verification_attempts ?? 0) + 1,
+                    ]);
+                }
                 return response()->json([
                     'success' => false,
                     'message' => 'Code expire. Veuillez renvoyer un nouveau code.',
@@ -191,6 +215,14 @@ class AuthController extends Controller
 
             if ($otpData['attempts'] >= 5) {
                 Cache::forget($cacheKey);
+                // Mettre à jour le log
+                if ($otpLog) {
+                    $otpLog->update([
+                        'status' => 'failed',
+                        'verification_attempts' => 5,
+                        'error_message' => 'Trop de tentatives',
+                    ]);
+                }
                 return response()->json([
                     'success' => false,
                     'message' => 'Trop de tentatives. Veuillez renvoyer un nouveau code.',
@@ -201,6 +233,12 @@ class AuthController extends Controller
             Cache::put($cacheKey, $otpData, now()->addMinutes(10));
 
             if ($otpData['code'] !== $request->code) {
+                // Mettre à jour le compteur de tentatives
+                if ($otpLog) {
+                    $otpLog->update([
+                        'verification_attempts' => $otpData['attempts'],
+                    ]);
+                }
                 return response()->json([
                     'success' => false,
                     'message' => 'Code incorrect. ' . (5 - $otpData['attempts']) . ' tentative(s) restante(s).',
@@ -208,6 +246,15 @@ class AuthController extends Controller
             }
 
             Cache::forget($cacheKey);
+
+            // Mettre à jour le log comme vérifié
+            if ($otpLog) {
+                $otpLog->update([
+                    'status' => 'verified',
+                    'otp_verified_at' => now(),
+                    'verification_attempts' => $otpData['attempts'],
+                ]);
+            }
 
             $user = User::where('phone', $phone)->first();
 
