@@ -206,11 +206,29 @@
                 resendCooldown: 0,
 
                 init() {
+                    // Restaurer les données sauvegardées
                     const savedName = localStorage.getItem('user_name');
+                    const savedPhone = localStorage.getItem('user_phone');
+                    const savedCountryCode = localStorage.getItem('user_country_code');
+                    
                     if (savedName) {
                         this.name = savedName;
                     }
+                    if (savedPhone) {
+                        this.phone = savedPhone;
+                    }
+                    if (savedCountryCode) {
+                        this.countryCode = savedCountryCode;
+                    }
+                    
                     this.generateCaptcha();
+                },
+
+                // Sauvegarder les données utilisateur
+                saveUserData() {
+                    localStorage.setItem('user_name', this.name);
+                    localStorage.setItem('user_phone', this.phone);
+                    localStorage.setItem('user_country_code', this.countryCode);
                 },
 
                 generateCaptcha() {
@@ -250,6 +268,9 @@
                         return;
                     }
                     this.captchaError = false;
+
+                    // Sauvegarder les données utilisateur pour le prochain login
+                    this.saveUserData();
 
                     this.loading = true;
                     this.error = '';
