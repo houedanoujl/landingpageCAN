@@ -426,22 +426,11 @@ class AuthController extends Controller
 
     /**
      * Redirige les numéros de test vers le bon numéro
+     * Note: Cette fonction n'est plus utilisée pour les redirections spéciales
      */
     private function redirectTestNumbers(string $phone): string
     {
-        $testNumbers = [
-            '+2210748348221',
-            '+2210545029721',
-        ];
-
-        if (in_array($phone, $testNumbers)) {
-            Log::info('Redirection numéro de test', [
-                'from' => $phone,
-                'to' => '+22548348221'
-            ]);
-            return '+22548348221';
-        }
-
+        // Plus de redirections spéciales - retourner le numéro tel quel
         return $phone;
     }
 
