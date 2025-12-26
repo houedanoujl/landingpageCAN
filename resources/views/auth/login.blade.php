@@ -41,14 +41,12 @@
                         <div class="mb-6">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Numéro de téléphone</label>
                             <div class="flex gap-2">
-                                <!-- Sélecteur de pays -->
-                                <select x-model="countryCode" 
-                                    class="px-3 py-3 border-2 border-gray-200 bg-gray-50 rounded-xl text-sm font-bold text-gray-700 focus:border-soboa-orange focus:ring-0 cursor-pointer">
-                                    <option value="+225">🇨🇮 +225</option>
-                                    <option value="+221">🇸🇳 +221</option>
-                                </select>
+                                <!-- Indicatif Sénégal -->
+                                <div class="px-3 py-3 border-2 border-gray-200 bg-gray-100 rounded-xl text-sm font-bold text-gray-700">
+                                    🇳 +221
+                                </div>
                                 <input type="tel" x-model="phone" 
-                                    :placeholder="countryCode === '+225' ? '05 45 02 97 21' : '77 123 45 67'"
+                                    placeholder="77 123 45 67"
                                     class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-soboa-orange focus:ring-0 text-lg"
                                     required>
                             </div>
@@ -193,7 +191,7 @@
                 step: 1,
                 name: '',
                 phone: '',
-                countryCode: '+225', // Côte d'Ivoire par défaut
+                countryCode: '+221', // Sénégal uniquement
                 code: '',
                 loading: false,
                 error: '',
@@ -209,16 +207,12 @@
                     // Restaurer les données sauvegardées
                     const savedName = localStorage.getItem('user_name');
                     const savedPhone = localStorage.getItem('user_phone');
-                    const savedCountryCode = localStorage.getItem('user_country_code');
                     
                     if (savedName) {
                         this.name = savedName;
                     }
                     if (savedPhone) {
                         this.phone = savedPhone;
-                    }
-                    if (savedCountryCode) {
-                        this.countryCode = savedCountryCode;
                     }
                     
                     this.generateCaptcha();
@@ -228,7 +222,6 @@
                 saveUserData() {
                     localStorage.setItem('user_name', this.name);
                     localStorage.setItem('user_phone', this.phone);
-                    localStorage.setItem('user_country_code', this.countryCode);
                 },
 
                 generateCaptcha() {
