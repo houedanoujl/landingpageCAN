@@ -122,6 +122,12 @@
                                 Vérifiez vos messages SMS au <span class="font-bold text-soboa-blue"
                                     x-text="fullPhone"></span>
                             </p>
+                            <p class="text-sm text-green-600 mt-2 flex items-center justify-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Ce code est valide pendant <strong>1 heure</strong></span>
+                            </p>
                         </div>
 
                         <!-- Champ code -->
