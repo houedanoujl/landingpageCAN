@@ -108,7 +108,7 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'phone' => $phone,
                 'attempts' => 0,
-            ], now()->addMinutes(10));
+            ], now()->addHour());
 
             // SÉCURITÉ: Ne jamais logger le code OTP en production
             Log::info('Code OTP genere', ['phone' => $phone]);
@@ -282,7 +282,7 @@ class AuthController extends Controller
             }
 
             $otpData['attempts']++;
-            Cache::put($cacheKey, $otpData, now()->addMinutes(10));
+            Cache::put($cacheKey, $otpData, now()->addHour());
 
             if ($otpData['code'] !== $request->code) {
                 // Mettre à jour le compteur de tentatives
