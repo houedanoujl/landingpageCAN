@@ -36,9 +36,9 @@ class AdminAuthController extends Controller
         $username = $request->input('username');
         $password = $request->input('password');
 
-        // Récupérer les identifiants depuis .env
-        $adminUsername = env('ADMIN_USERNAME');
-        $adminPassword = env('ADMIN_PASSWORD');
+        // Récupérer les identifiants depuis config (fonctionne avec config:cache)
+        $adminUsername = config('app.admin.username');
+        $adminPassword = config('app.admin.password');
 
         Log::info('Tentative de connexion admin', ['username' => $username]);
 
