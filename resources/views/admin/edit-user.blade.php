@@ -80,13 +80,11 @@
                         </div>
 
                         <div class="flex justify-between items-center pt-4 border-t">
-                            <form action="{{ route('admin.delete-user', $user->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:underline font-bold">
-                                    🗑️ Supprimer
-                                </button>
-                            </form>
+                            <button type="button" 
+                                    onclick="deleteUser({{ $user->id }})"
+                                    class="text-red-600 hover:underline font-bold">
+                                🗑️ Supprimer
+                            </button>
                             <div class="flex gap-4">
                                 <a href="{{ route('admin.users') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
                                     Annuler
@@ -98,12 +96,24 @@
                         </div>
                     </div>
                 </form>
+                
+                <!-- Formulaire de suppression SÉPARÉ (en dehors du formulaire principal) -->
+                <form id="delete-user-form" action="{{ route('admin.delete-user', $user->id) }}" method="POST" class="hidden">
+                    @csrf
+                    @method('DELETE')
+                </form>
             </div>
 
         </div>
     </div>
 
     <script>
+        function deleteUser(userId) {
+            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer cet utilisateur ?\n\nCette action est IRRÉVERSIBLE.')) {
+                document.getElementById('delete-user-form').submit();
+            }
+        }
+
         function resetUserPoints(userId) {
             if (!confirm('⚠️ ATTENTION!\n\nCette action va:\n• Mettre les points à zéro\n• Supprimer tout l\'historique des points\n• Cette action est IRRÉVERSIBLE\n\nÊtes-vous absolument sûr ?')) {
                 return;

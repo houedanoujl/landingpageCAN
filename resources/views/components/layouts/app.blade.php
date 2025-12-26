@@ -123,8 +123,8 @@
             nav .lg\:flex {
                 display: flex !important;
             }
-            /* Desktop: SHOW inline-flex elements */
-            nav .lg\:inline-flex {
+            /* Desktop: SHOW "Jouer maintenant" button */
+            nav a.lg\:inline-flex {
                 display: inline-flex !important;
             }
         }
@@ -134,8 +134,8 @@
             nav .lg\:flex {
                 display: none !important;
             }
-            /* Mobile: HIDE inline-flex elements */
-            nav .lg\:inline-flex {
+            /* Mobile: HIDE "Jouer maintenant" button */
+            nav a.lg\:inline-flex {
                 display: none !important;
             }
         }

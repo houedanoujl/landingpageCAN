@@ -53,13 +53,11 @@
                         </div>
 
                         <div class="flex justify-between items-center pt-4 border-t">
-                            <form action="{{ route('admin.delete-team', $team->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:underline font-bold">
-                                    🗑️ Supprimer
-                                </button>
-                            </form>
+                            <button type="button" 
+                                    onclick="deleteTeam()"
+                                    class="text-red-600 hover:underline font-bold">
+                                🗑️ Supprimer
+                            </button>
                             <div class="flex gap-4">
                                 <a href="{{ route('admin.teams') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
                                     Annuler
@@ -71,8 +69,22 @@
                         </div>
                     </div>
                 </form>
+                
+                <!-- Formulaire de suppression SÉPARÉ -->
+                <form id="delete-team-form" action="{{ route('admin.delete-team', $team->id) }}" method="POST" class="hidden">
+                    @csrf
+                    @method('DELETE')
+                </form>
             </div>
 
         </div>
     </div>
+    
+    <script>
+        function deleteTeam() {
+            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette équipe ?\n\nCette action est IRRÉVERSIBLE.')) {
+                document.getElementById('delete-team-form').submit();
+            }
+        }
+    </script>
 </x-layouts.app>

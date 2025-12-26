@@ -35,7 +35,7 @@
                         <p><strong>2.3 Inscription :</strong> La participation nécessite une inscription préalable via un numéro 
                         de téléphone mobile valide. Un seul compte par numéro de téléphone est autorisé.</p>
                         
-                        <p><strong>2.4 Exclusions :</strong> Sont exclus de la participation les employés de SOBOA et leurs familles proches.</p>
+                        <p><strong>2.4 Exclusions :</strong> Les employés de SOBOA peuvent participer au Jeu, mais sont exclus de l'attribution du gros lot. Leurs familles proches ne sont pas concernées par cette exclusion et peuvent prétendre à l'ensemble des lots, y compris le gros lot.</p>
                     </div>
                 </section>
 

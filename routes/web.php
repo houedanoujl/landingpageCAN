@@ -32,9 +32,11 @@ Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp'])
     ->name('auth.verify-otp');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Authentification administrateur (séparée) - Par mot de passe
+// Authentification administrateur (par mot de passe)
 Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.auth.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('admin.auth.login');
 Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 // Pronostics (requiert authentification)
