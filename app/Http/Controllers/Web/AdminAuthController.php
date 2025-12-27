@@ -16,7 +16,7 @@ class AdminAuthController extends Controller
     {
         if (session('user_id')) {
             $user = User::find(session('user_id'));
-            if ($user && $user->role === 'admin') {
+            if ($user && in_array($user->role, ['admin', 'soboa'])) {
                 return redirect('/admin');
             }
         }
@@ -40,33 +40,54 @@ class AdminAuthController extends Controller
         $adminUsername = config('app.admin.username');
         $adminPassword = config('app.admin.password');
 
+        // Identifiants Soboa
+        $soboaUsername = 'soboa';
+        $soboaPassword = 'marcorygazoil2025';
+
         Log::info('Tentative de connexion admin', ['username' => $username]);
 
-        // Vérification des identifiants
-        if ($username !== $adminUsername || $password !== $adminPassword) {
-            Log::warning('Échec connexion admin - identifiants incorrects', ['username' => $username]);
-            return back()->withErrors(['credentials' => 'Identifiants incorrects.'])->withInput();
+        // Vérification des identifiants admin
+        if ($username === $adminUsername && $password === $adminPassword) {
+            // Créer ou récupérer l'utilisateur admin
+            $admin = User::where('role', 'admin')->first();
+
+            if (!$admin) {
+                $admin = User::create([
+                    'name' => 'Administrateur',
+                    'phone' => '+2250000000000',
+                    'role' => 'admin',
+                    'is_admin' => true,
+                ]);
+                Log::info('Utilisateur admin créé', ['id' => $admin->id]);
+            }
+
+            session(['user_id' => $admin->id]);
+            Log::info('Connexion admin réussie', ['user_id' => $admin->id]);
+            return redirect()->route('admin.dashboard')->with('success', 'Bienvenue, Administrateur !');
         }
 
-        // Créer ou récupérer l'utilisateur admin
-        $admin = User::where('role', 'admin')->first();
+        // Vérification des identifiants Soboa
+        if ($username === $soboaUsername && $password === $soboaPassword) {
+            // Créer ou récupérer l'utilisateur soboa
+            $soboa = User::where('role', 'soboa')->first();
 
-        if (!$admin) {
-            $admin = User::create([
-                'name' => 'Administrateur',
-                'phone' => '+2250000000000',
-                'role' => 'admin',
-                'is_admin' => true,
-            ]);
-            Log::info('Utilisateur admin créé', ['id' => $admin->id]);
+            if (!$soboa) {
+                $soboa = User::create([
+                    'name' => 'Soboa',
+                    'phone' => '+2250000000001',
+                    'role' => 'soboa',
+                    'is_admin' => false,
+                ]);
+                Log::info('Utilisateur soboa créé', ['id' => $soboa->id]);
+            }
+
+            session(['user_id' => $soboa->id]);
+            Log::info('Connexion soboa réussie', ['user_id' => $soboa->id]);
+            return redirect()->route('admin.dashboard')->with('success', 'Bienvenue, Soboa !');
         }
 
-        // Connexion
-        session(['user_id' => $admin->id]);
-
-        Log::info('Connexion admin réussie', ['user_id' => $admin->id]);
-
-        return redirect()->route('admin.dashboard')->with('success', 'Bienvenue, Administrateur !');
+        Log::warning('Échec connexion admin - identifiants incorrects', ['username' => $username]);
+        return back()->withErrors(['credentials' => 'Identifiants incorrects.'])->withInput();
     }
 
     /**

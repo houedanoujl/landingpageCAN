@@ -36,6 +36,22 @@ class User extends Authenticatable
     ];
 
     /**
+     * Relation avec les prédictions de l'utilisateur
+     */
+    public function predictions()
+    {
+        return $this->hasMany(Prediction::class);
+    }
+
+    /**
+     * Relation avec les logs de points de l'utilisateur
+     */
+    public function pointLogs()
+    {
+        return $this->hasMany(PointLog::class);
+    }
+
+    /**
      * Route notifications for the WhatsApp channel.
      */
     public function routeNotificationForWhatsapp(): string

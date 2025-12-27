@@ -25,7 +25,8 @@ class CheckAdmin
         
         $user = User::find($userId);
         
-        if (!$user || $user->role !== 'admin') {
+        // Autoriser les rôles admin et soboa
+        if (!$user || !in_array($user->role, ['admin', 'soboa'])) {
             session()->forget('user_id');
             return redirect('/admin/login')->with('error', 'Accès non autorisé. Vous devez être administrateur.');
         }

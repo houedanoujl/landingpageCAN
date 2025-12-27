@@ -77,15 +77,43 @@
                     @enderror
                 </div>
 
-                <!-- URL Vidéo (pour YouTube, etc.) -->
+                <!-- URL Vidéo (pour YouTube, Facebook, TikTok, etc.) -->
                 <div id="video-url-field" class="hidden">
                     <label for="video_url" class="block text-sm font-bold text-gray-700 mb-2">
-                        URL Vidéo (YouTube, etc.)
+                        URL Vidéo (YouTube, Facebook, TikTok)
                     </label>
                     <input type="url" name="video_url" id="video_url" value="{{ old('video_url') }}"
                            class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-soboa-orange focus:border-soboa-orange text-lg p-3"
-                           placeholder="https://www.youtube.com/watch?v=...">
-                    <p class="text-gray-500 text-xs mt-2">💡 Si vous utilisez une URL YouTube, vous n'avez pas besoin d'uploader un fichier.</p>
+                           placeholder="Collez l'URL de la vidéo ici...">
+                    
+                    <!-- Plateformes supportées -->
+                    <div class="mt-3 p-4 bg-gray-50 rounded-xl space-y-3">
+                        <p class="text-sm font-semibold text-gray-700">📺 Plateformes supportées :</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                            <div class="flex items-start gap-2 p-2 bg-red-50 rounded-lg">
+                                <span class="text-red-600 font-bold">YouTube</span>
+                                <div class="text-gray-600">
+                                    <p>youtube.com/watch?v=...</p>
+                                    <p>youtu.be/...</p>
+                                    <p>youtube.com/shorts/...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 p-2 bg-blue-50 rounded-lg">
+                                <span class="text-blue-600 font-bold">Facebook</span>
+                                <div class="text-gray-600">
+                                    <p>facebook.com/.../videos/...</p>
+                                    <p>fb.watch/...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 p-2 bg-gray-100 rounded-lg">
+                                <span class="text-black font-bold">TikTok</span>
+                                <div class="text-gray-600">
+                                    <p>tiktok.com/@.../video/...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-xs">💡 Si vous utilisez une URL externe, vous n'avez pas besoin d'uploader un fichier.</p>
+                    </div>
                     @error('video_url')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror

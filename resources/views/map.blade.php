@@ -310,6 +310,9 @@
             </div>
         </div>
 
+        <!-- Section Temps Forts des Animations (EN PREMIER) -->
+        @include('partials.temps-forts')
+
         <!-- Nearby Venues Section -->
         <div class="max-w-7xl mx-auto px-4 -mt-8">
             <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100">
@@ -953,32 +956,89 @@
                 🎬 Temps forts des animations
             </h2>
 
-            <!-- Highlights (Photos) Carousel -->
+            <!-- Highlights (Photos) Carousel with Lightbox -->
             @if(isset($highlights) && $highlights->count() > 0)
-            <div class="mb-12">
+            <div class="mb-12" x-data="{ 
+                lightboxOpen: false, 
+                currentImage: null,
+                currentTitle: '',
+                currentDescription: '',
+                currentBar: '',
+                currentIndex: 0,
+                images: {{ json_encode($highlights->map(fn($h) => [
+                    'url' => $h->file_url,
+                    'title' => $h->title,
+                    'description' => $h->description,
+                    'bar' => $h->bar?->name
+                ])->values()) }},
+                openLightbox(index) {
+                    this.currentIndex = index;
+                    this.currentImage = this.images[index].url;
+                    this.currentTitle = this.images[index].title;
+                    this.currentDescription = this.images[index].description;
+                    this.currentBar = this.images[index].bar;
+                    this.lightboxOpen = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                closeLightbox() {
+                    this.lightboxOpen = false;
+                    document.body.style.overflow = '';
+                },
+                nextImage() {
+                    this.currentIndex = (this.currentIndex + 1) % this.images.length;
+                    this.currentImage = this.images[this.currentIndex].url;
+                    this.currentTitle = this.images[this.currentIndex].title;
+                    this.currentDescription = this.images[this.currentIndex].description;
+                    this.currentBar = this.images[this.currentIndex].bar;
+                },
+                prevImage() {
+                    this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+                    this.currentImage = this.images[this.currentIndex].url;
+                    this.currentTitle = this.images[this.currentIndex].title;
+                    this.currentDescription = this.images[this.currentIndex].description;
+                    this.currentBar = this.images[this.currentIndex].bar;
+                }
+            }" @keydown.escape.window="closeLightbox()" @keydown.arrow-right.window="lightboxOpen && nextImage()" @keydown.arrow-left.window="lightboxOpen && prevImage()">
                 <div class="flex items-center gap-3 mb-6">
                     <span class="text-2xl">📸</span>
                     <h3 class="text-xl font-bold text-gray-800">Highlights</h3>
+                    <span class="text-sm text-gray-500">(Cliquez pour agrandir)</span>
                 </div>
                 
                 <div class="swiper highlights-swiper">
                     <div class="swiper-wrapper">
-                        @foreach($highlights as $highlight)
+                        @foreach($highlights as $index => $highlight)
                         <div class="swiper-slide">
-                            <div class="relative rounded-2xl overflow-hidden shadow-xl aspect-video group">
+                            <div class="relative rounded-2xl overflow-hidden shadow-xl aspect-video group cursor-pointer"
+                                 @click="openLightbox({{ $index }})">
                                 <img src="{{ $highlight->file_url }}" 
                                      alt="{{ $highlight->title }}"
                                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                                <div class="absolute bottom-0 left-0 right-0 p-4">
-                                    <h4 class="text-white font-bold text-lg">{{ $highlight->title }}</h4>
+                                
+                                <!-- Overlay avec icône zoom -->
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3">
+                                        <svg class="w-8 h-8 text-soboa-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cartouche d'information amélioré -->
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-5">
+                                    <h4 class="text-white font-bold text-lg leading-tight drop-shadow-lg">{{ $highlight->title }}</h4>
                                     @if($highlight->description)
-                                    <p class="text-white/80 text-sm mt-1">{{ $highlight->description }}</p>
+                                    <p class="text-white/90 text-sm mt-2 line-clamp-2 drop-shadow">{{ $highlight->description }}</p>
                                     @endif
                                     @if($highlight->bar)
-                                    <span class="inline-block mt-2 bg-soboa-orange/90 text-black px-3 py-1 rounded-full text-xs font-bold">
-                                        📍 {{ $highlight->bar->name }}
-                                    </span>
+                                    <div class="flex items-center gap-2 mt-3">
+                                        <span class="inline-flex items-center gap-1 bg-soboa-orange text-black px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            {{ $highlight->bar->name }}
+                                        </span>
+                                    </div>
                                     @endif
                                 </div>
                             </div>
@@ -989,6 +1049,63 @@
                     <div class="swiper-button-prev"></div>
                     <div class="swiper-button-next"></div>
                 </div>
+
+                <!-- Lightbox Modal -->
+                <div x-show="lightboxOpen" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4"
+                     @click.self="closeLightbox()"
+                     style="display: none;">
+                    
+                    <!-- Close button -->
+                    <button @click="closeLightbox()" 
+                            class="absolute top-4 right-4 z-50 bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Navigation arrows -->
+                    <button @click="prevImage()" 
+                            class="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <button @click="nextImage()" 
+                            class="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Image container -->
+                    <div class="max-w-5xl max-h-[85vh] w-full flex flex-col">
+                        <img :src="currentImage" 
+                             :alt="currentTitle"
+                             class="max-h-[70vh] w-auto mx-auto object-contain rounded-lg shadow-2xl">
+                        
+                        <!-- Info panel -->
+                        <div class="mt-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                            <h3 class="text-white text-xl font-bold" x-text="currentTitle"></h3>
+                            <p class="text-white/80 mt-2 text-sm" x-show="currentDescription" x-text="currentDescription"></p>
+                            <div x-show="currentBar" class="mt-3">
+                                <span class="inline-flex items-center gap-1 bg-soboa-orange text-black px-4 py-2 rounded-full text-sm font-bold">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span x-text="currentBar"></span>
+                                </span>
+                            </div>
+                            <p class="text-white/50 text-xs mt-3" x-text="(currentIndex + 1) + ' / ' + images.length"></p>
+                        </div>
+                    </div>
+                </div>
             </div>
             @else
             <div class="mb-12 bg-gray-100 rounded-2xl p-8 text-center">
@@ -998,12 +1115,18 @@
             </div>
             @endif
 
-            <!-- Videos Carousel -->
+            <!-- Videos Carousel (YouTube, Facebook, TikTok) -->
             @if(isset($videos) && $videos->count() > 0)
             <div>
                 <div class="flex items-center gap-3 mb-6">
                     <span class="text-2xl">🎥</span>
                     <h3 class="text-xl font-bold text-gray-800">Vidéos</h3>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <span class="text-xs text-gray-400 hidden md:inline">Plateformes supportées:</span>
+                        <span class="text-lg" title="YouTube">📺</span>
+                        <span class="text-lg" title="Facebook">📘</span>
+                        <span class="text-lg" title="TikTok">🎵</span>
+                    </div>
                 </div>
                 
                 <div class="swiper videos-swiper">
@@ -1012,6 +1135,15 @@
                         <div class="swiper-slide">
                             <div class="relative rounded-2xl overflow-hidden shadow-xl aspect-video bg-black">
                                 @if($video->is_youtube)
+                                    {{-- YouTube Video --}}
+                                    <div class="absolute top-2 left-2 z-10">
+                                        <span class="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                            </svg>
+                                            YouTube
+                                        </span>
+                                    </div>
                                     <iframe 
                                         src="https://www.youtube.com/embed/{{ $video->youtube_id }}"
                                         class="w-full h-full"
@@ -1019,12 +1151,57 @@
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowfullscreen>
                                     </iframe>
+                                @elseif($video->is_facebook)
+                                    {{-- Facebook Video --}}
+                                    <div class="absolute top-2 left-2 z-10">
+                                        <span class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                            </svg>
+                                            Facebook
+                                        </span>
+                                    </div>
+                                    <iframe 
+                                        src="{{ $video->facebook_embed_url }}"
+                                        class="w-full h-full"
+                                        style="border:none;overflow:hidden" 
+                                        scrolling="no" 
+                                        frameborder="0" 
+                                        allowfullscreen="true" 
+                                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+                                    </iframe>
+                                @elseif($video->is_tiktok)
+                                    {{-- TikTok Video --}}
+                                    <div class="absolute top-2 left-2 z-10">
+                                        <span class="bg-black text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                                            </svg>
+                                            TikTok
+                                        </span>
+                                    </div>
+                                    <blockquote 
+                                        class="tiktok-embed w-full h-full" 
+                                        cite="{{ $video->video_url }}" 
+                                        data-video-id="{{ $video->tiktok_id }}"
+                                        style="max-width: 100%; min-width: 100%;">
+                                    </blockquote>
+                                    <script async src="https://www.tiktok.com/embed.js"></script>
                                 @elseif($video->video_url)
-                                    <video controls class="w-full h-full object-cover" poster="{{ $video->thumbnail_url }}">
-                                        <source src="{{ $video->video_url }}" type="video/mp4">
-                                        Votre navigateur ne supporte pas la lecture de vidéos.
-                                    </video>
+                                    {{-- Lien externe direct --}}
+                                    <div class="w-full h-full flex items-center justify-center bg-gray-900">
+                                        <a href="{{ $video->video_url }}" target="_blank" 
+                                           class="flex flex-col items-center gap-4 text-white hover:text-soboa-orange transition-colors">
+                                            <div class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center">
+                                                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M8 5v14l11-7z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-sm font-medium">Voir la vidéo</span>
+                                        </a>
+                                    </div>
                                 @else
+                                    {{-- Vidéo uploadée --}}
                                     <video controls class="w-full h-full object-cover" poster="{{ $video->thumbnail_url }}">
                                         <source src="{{ $video->file_url }}" type="video/mp4">
                                         Votre navigateur ne supporte pas la lecture de vidéos.
@@ -1035,6 +1212,14 @@
                                 <h4 class="font-bold text-gray-800">{{ $video->title }}</h4>
                                 @if($video->description)
                                 <p class="text-gray-600 text-sm mt-1">{{ $video->description }}</p>
+                                @endif
+                                @if($video->bar)
+                                <span class="inline-flex items-center gap-1 mt-2 text-xs text-gray-500">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {{ $video->bar->name }}
+                                </span>
                                 @endif
                             </div>
                         </div>

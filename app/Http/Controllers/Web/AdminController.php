@@ -33,11 +33,33 @@ class AdminController extends Controller
     }
 
     /**
+     * Check if current user is soboa (limited admin access)
+     */
+    private function checkSoboa()
+    {
+        $userId = session('user_id');
+        if (!$userId) {
+            return false;
+        }
+
+        $user = User::find($userId);
+        return $user && $user->role === 'soboa';
+    }
+
+    /**
+     * Check if current user has admin or soboa access
+     */
+    private function checkAdminOrSoboa()
+    {
+        return $this->checkAdmin() || $this->checkSoboa();
+    }
+
+    /**
      * Admin dashboard home
      */
     public function index()
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->checkAdminOrSoboa()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
@@ -636,7 +658,7 @@ class AdminController extends Controller
      */
     public function users()
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->checkAdminOrSoboa()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
@@ -646,11 +668,117 @@ class AdminController extends Controller
     }
 
     /**
+     * Export users to CSV
+     */
+    public function exportUsersCsv()
+    {
+        if (!$this->checkAdminOrSoboa()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $users = User::with(['predictions', 'pointLogs'])
+            ->orderBy('points_total', 'desc')
+            ->get();
+
+        $filename = 'users_export_' . date('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($users) {
+            $file = fopen('php://output', 'w');
+            
+            // BOM pour Excel UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // En-têtes CSV
+            fputcsv($file, [
+                'ID',
+                'Nom',
+                'Téléphone',
+                'Points Total',
+                'Nombre de Pronostics',
+                'Pronostics Gagnés',
+                'Rôle',
+                'Date Inscription',
+                'Dernière Connexion',
+            ], ';');
+
+            foreach ($users as $user) {
+                $predictionsCount = $user->predictions->count();
+                $wonPredictions = $user->predictions->where('points_earned', '>', 0)->count();
+                
+                fputcsv($file, [
+                    $user->id,
+                    $user->name,
+                    $user->phone,
+                    $user->points_total,
+                    $predictionsCount,
+                    $wonPredictions,
+                    $user->role ?? 'user',
+                    $user->created_at?->format('d/m/Y H:i'),
+                    $user->updated_at?->format('d/m/Y H:i'),
+                ], ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * View all point logs (activity history)
+     */
+    public function pointLogs(Request $request)
+    {
+        if (!$this->checkAdminOrSoboa()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $query = PointLog::with(['user', 'match.homeTeam', 'match.awayTeam', 'bar'])
+            ->orderBy('created_at', 'desc');
+
+        // Filtre par utilisateur
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Filtre par type
+        if ($request->filled('type')) {
+            $query->where('source', $request->type);
+        }
+
+        // Filtre par date
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $logs = $query->paginate(100)->withQueryString();
+        $users = User::orderBy('name')->get(['id', 'name', 'phone']);
+        
+        // Statistiques
+        $stats = [
+            'total' => PointLog::count(),
+            'today' => PointLog::whereDate('created_at', today())->count(),
+            'predictions' => PointLog::where('source', 'prediction')->count(),
+            'checkins' => PointLog::where('source', 'check_in')->count(),
+        ];
+
+        return view('admin.point-logs', compact('logs', 'users', 'stats'));
+    }
+
+    /**
      * Show edit form for a user
      */
     public function editUser($id)
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->checkAdminOrSoboa()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
@@ -761,7 +889,7 @@ class AdminController extends Controller
      */
     public function bars(Request $request)
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->checkAdminOrSoboa()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
@@ -1490,7 +1618,7 @@ class AdminController extends Controller
      */
     public function predictions(Request $request)
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->checkAdminOrSoboa()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
@@ -1907,7 +2035,7 @@ class AdminController extends Controller
      */
     public function animations(Request $request)
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->checkAdminOrSoboa()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 

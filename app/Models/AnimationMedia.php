@@ -97,6 +97,36 @@ class AnimationMedia extends Model
     }
 
     /**
+     * Vérifier si c'est une vidéo Facebook
+     */
+    public function getIsFacebookAttribute(): bool
+    {
+        return $this->video_url && (
+            str_contains($this->video_url, 'facebook.com') ||
+            str_contains($this->video_url, 'fb.watch')
+        );
+    }
+
+    /**
+     * Vérifier si c'est une vidéo TikTok
+     */
+    public function getIsTiktokAttribute(): bool
+    {
+        return $this->video_url && str_contains($this->video_url, 'tiktok.com');
+    }
+
+    /**
+     * Obtenir le type de plateforme vidéo
+     */
+    public function getVideoPlatformAttribute(): string
+    {
+        if ($this->is_youtube) return 'youtube';
+        if ($this->is_facebook) return 'facebook';
+        if ($this->is_tiktok) return 'tiktok';
+        return 'native';
+    }
+
+    /**
      * Obtenir l'ID YouTube de la vidéo
      */
     public function getYoutubeIdAttribute(): ?string
@@ -109,6 +139,7 @@ class AnimationMedia extends Model
             '/youtube\.com\/watch\?v=([^&]+)/',
             '/youtu\.be\/([^?]+)/',
             '/youtube\.com\/embed\/([^?]+)/',
+            '/youtube\.com\/shorts\/([^?]+)/',
         ];
 
         foreach ($patterns as $pattern) {
@@ -118,5 +149,34 @@ class AnimationMedia extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Obtenir l'ID TikTok de la vidéo
+     */
+    public function getTiktokIdAttribute(): ?string
+    {
+        if (!$this->is_tiktok) {
+            return null;
+        }
+
+        // Pattern pour extraire l'ID TikTok: tiktok.com/@user/video/1234567890
+        if (preg_match('/tiktok\.com\/@[^\/]+\/video\/(\d+)/', $this->video_url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Obtenir l'URL embed Facebook
+     */
+    public function getFacebookEmbedUrlAttribute(): ?string
+    {
+        if (!$this->is_facebook) {
+            return null;
+        }
+        
+        return 'https://www.facebook.com/plugins/video.php?href=' . urlencode($this->video_url) . '&show_text=false&width=560';
     }
 }
