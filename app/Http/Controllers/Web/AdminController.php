@@ -775,6 +775,204 @@ class AdminController extends Controller
     }
 
     /**
+     * Afficher tous les check-ins avec les détails des lieux et coordonnées GPS
+     */
+    public function checkins(Request $request)
+    {
+        if (!$this->checkAdminOrSoboa()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $query = PointLog::where('source', 'check_in')
+            ->with(['user', 'bar'])
+            ->orderBy('created_at', 'desc');
+
+        // Filtre par utilisateur
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Filtre par lieu (bar)
+        if ($request->filled('bar_id')) {
+            $query->where('bar_id', $request->bar_id);
+        }
+
+        // Filtre par zone
+        if ($request->filled('zone')) {
+            $query->whereHas('bar', function ($q) use ($request) {
+                $q->where('zone', $request->zone);
+            });
+        }
+
+        // Filtre par date
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Filtre par période de compétition
+        if ($request->filled('period')) {
+            $periods = WeeklyRanking::PERIODS;
+            if (isset($periods[$request->period])) {
+                $periodConfig = $periods[$request->period];
+                $query->whereBetween('created_at', [
+                    \Carbon\Carbon::parse($periodConfig['start'])->startOfDay(),
+                    \Carbon\Carbon::parse($periodConfig['end'])->endOfDay()
+                ]);
+            }
+        }
+
+        $checkins = $query->paginate(50)->withQueryString();
+        
+        // Listes pour les filtres
+        $users = User::orderBy('name')->get(['id', 'name', 'phone']);
+        $bars = Bar::where('is_active', true)->orderBy('zone')->orderBy('name')->get();
+        $zones = Bar::select('zone')->distinct()->orderBy('zone')->pluck('zone');
+        $availablePeriods = WeeklyRanking::getAvailablePeriods();
+
+        // Statistiques globales
+        $stats = [
+            'total_checkins' => PointLog::where('source', 'check_in')->count(),
+            'today' => PointLog::where('source', 'check_in')->whereDate('created_at', today())->count(),
+            'this_week' => PointLog::where('source', 'check_in')
+                ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
+                ->count(),
+            'unique_users' => PointLog::where('source', 'check_in')->distinct('user_id')->count('user_id'),
+            'unique_venues' => PointLog::where('source', 'check_in')->distinct('bar_id')->count('bar_id'),
+            'total_points' => PointLog::where('source', 'check_in')->sum('points'),
+        ];
+
+        // Top 5 des lieux les plus visités
+        $topVenues = PointLog::where('source', 'check_in')
+            ->select('bar_id', \DB::raw('COUNT(*) as visit_count'))
+            ->groupBy('bar_id')
+            ->orderByDesc('visit_count')
+            ->limit(5)
+            ->with('bar')
+            ->get();
+
+        // Top 5 des utilisateurs les plus actifs en check-ins
+        $topUsers = PointLog::where('source', 'check_in')
+            ->select('user_id', \DB::raw('COUNT(*) as checkin_count'))
+            ->groupBy('user_id')
+            ->orderByDesc('checkin_count')
+            ->limit(5)
+            ->with('user')
+            ->get();
+
+        return view('admin.checkins', compact(
+            'checkins',
+            'users',
+            'bars',
+            'zones',
+            'availablePeriods',
+            'stats',
+            'topVenues',
+            'topUsers'
+        ));
+    }
+
+    /**
+     * Exporter les check-ins en CSV
+     */
+    public function exportCheckins(Request $request)
+    {
+        if (!$this->checkAdminOrSoboa()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $query = PointLog::where('source', 'check_in')
+            ->with(['user', 'bar'])
+            ->orderBy('created_at', 'desc');
+
+        // Appliquer les mêmes filtres que la vue
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        if ($request->filled('bar_id')) {
+            $query->where('bar_id', $request->bar_id);
+        }
+        if ($request->filled('zone')) {
+            $query->whereHas('bar', function ($q) use ($request) {
+                $q->where('zone', $request->zone);
+            });
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('period')) {
+            $periods = WeeklyRanking::PERIODS;
+            if (isset($periods[$request->period])) {
+                $periodConfig = $periods[$request->period];
+                $query->whereBetween('created_at', [
+                    \Carbon\Carbon::parse($periodConfig['start'])->startOfDay(),
+                    \Carbon\Carbon::parse($periodConfig['end'])->endOfDay()
+                ]);
+            }
+        }
+
+        $checkins = $query->get();
+
+        $filename = 'checkins_' . now()->format('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($checkins) {
+            $file = fopen('php://output', 'w');
+            
+            // BOM pour UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // En-tête
+            fputcsv($file, [
+                'Date/Heure',
+                'Utilisateur',
+                'Téléphone',
+                'Lieu',
+                'Adresse',
+                'Zone',
+                'Latitude',
+                'Longitude',
+                'Points',
+                'OpenStreetMap'
+            ], ';');
+
+            foreach ($checkins as $checkin) {
+                $bar = $checkin->bar;
+                $mapsUrl = '';
+                if ($bar && $bar->latitude && $bar->longitude) {
+                    $mapsUrl = "https://www.openstreetmap.org/?mlat={$bar->latitude}&mlon={$bar->longitude}&zoom=17";
+                }
+                
+                fputcsv($file, [
+                    $checkin->created_at->format('d/m/Y H:i:s'),
+                    $checkin->user ? $checkin->user->name : 'N/A',
+                    $checkin->user ? $checkin->user->phone : 'N/A',
+                    $bar ? $bar->name : 'N/A',
+                    $bar ? $bar->address : 'N/A',
+                    $bar ? $bar->zone : 'N/A',
+                    $bar ? $bar->latitude : '',
+                    $bar ? $bar->longitude : '',
+                    $checkin->points,
+                    $mapsUrl
+                ], ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Weekly leaderboard for admin
      */
     public function weeklyLeaderboard(Request $request)

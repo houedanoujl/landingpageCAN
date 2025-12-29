@@ -105,6 +105,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     // Historique des points (logs)
     Route::get('/point-logs', [AdminController::class, 'pointLogs'])->name('point-logs');
     
+    // Check-ins (visites des lieux)
+    Route::get('/checkins', [AdminController::class, 'checkins'])->name('checkins');
+    Route::get('/checkins/export', [AdminController::class, 'exportCheckins'])->name('export-checkins');
+    
     // Classement hebdomadaire
     Route::get('/weekly-leaderboard', [AdminController::class, 'weeklyLeaderboard'])->name('weekly-leaderboard');
     Route::get('/weekly-leaderboard/user/{id}', [AdminController::class, 'weeklyLeaderboardUserDetails'])->name('weekly-leaderboard-user-details');
