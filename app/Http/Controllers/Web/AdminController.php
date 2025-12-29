@@ -83,7 +83,8 @@ class AdminController extends Controller
         $topUsers = User::orderBy('points_total', 'desc')->take(10)->get();
 
         // Déterminer le rôle de l'utilisateur connecté
-        $user = session('admin_user') ?? session('user');
+        $userId = session('user_id');
+        $user = $userId ? User::find($userId) : null;
         $isAdmin = $user && $user->role === 'admin';
         $isSoboa = $user && $user->role === 'soboa';
 

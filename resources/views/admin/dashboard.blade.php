@@ -65,11 +65,11 @@
                     <span class="font-bold text-sm text-center">Points de Vente</span>
                 </a>
                 <a href="{{ route('admin.teams') }}" class="bg-purple-600 hover:bg-purple-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
-                    <span class="text-3xl">�️</span>
+                    <span class="text-3xl">🛡️</span>
                     <span class="font-bold text-sm text-center">Équipes</span>
                 </a>
                 <a href="{{ route('admin.tournament') }}" class="bg-blue-800 hover:bg-blue-900 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
-                    <span class="text-3xl">�</span>
+                    <span class="text-3xl">🏟️</span>
                     <span class="font-bold text-sm text-center">Tournoi</span>
                 </a>
                 <a href="{{ route('admin.settings') }}" class="bg-gray-700 hover:bg-gray-800 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
@@ -95,7 +95,7 @@
                 <form action="{{ route('admin.clear-cache') }}" method="POST" onsubmit="return confirm('Vider le cache de l\'application ?')">
                     @csrf
                     <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
-                        <span class="text-3xl">�️</span>
+                        <span class="text-3xl">🗑️</span>
                         <span class="font-bold text-sm text-center">Vider Cache</span>
                     </button>
                 </form>
@@ -103,15 +103,15 @@
 
                 {{-- Boutons accessibles à Admin ET Soboa --}}
                 <a href="{{ route('admin.users') }}" class="bg-soboa-orange hover:bg-soboa-orange/90 text-black rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
-                    <span class="text-3xl">�</span>
+                    <span class="text-3xl">👥</span>
                     <span class="font-bold text-sm text-center">Utilisateurs</span>
                 </a>
                 <a href="{{ route('admin.predictions') }}" class="bg-pink-600 hover:bg-pink-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
-                    <span class="text-3xl">�</span>
+                    <span class="text-3xl">🎯</span>
                     <span class="font-bold text-sm text-center">Pronostics</span>
                 </a>
                 <a href="{{ route('admin.point-logs') }}" class="bg-amber-600 hover:bg-amber-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
-                    <span class="text-3xl">�</span>
+                    <span class="text-3xl">📜</span>
                     <span class="font-bold text-sm text-center">Historique Points</span>
                 </a>
                 <a href="{{ route('admin.weekly-leaderboard') }}" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
@@ -119,7 +119,7 @@
                     <span class="font-bold text-sm text-center">Classement Hebdo</span>
                 </a>
                 <a href="{{ route('admin.checkins') }}" class="bg-purple-600 hover:bg-purple-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
-                    <span class="text-3xl">�</span>
+                    <span class="text-3xl">📍</span>
                     <span class="font-bold text-sm text-center">Check-ins</span>
                 </a>
                 <a href="{{ route('admin.animations') }}" class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
