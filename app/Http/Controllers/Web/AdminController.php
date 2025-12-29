@@ -768,7 +768,7 @@ class AdminController extends Controller
             'total' => PointLog::count(),
             'today' => PointLog::whereDate('created_at', today())->count(),
             'predictions' => PointLog::where('source', 'prediction')->count(),
-            'checkins' => PointLog::where('source', 'check_in')->count(),
+            'checkins' => PointLog::whereIn('source', ['venue_visit', 'bar_visit', 'check_in'])->count(),
         ];
 
         return view('admin.point-logs', compact('logs', 'users', 'stats'));
@@ -783,7 +783,10 @@ class AdminController extends Controller
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
-        $query = PointLog::where('source', 'check_in')
+        // Les check-ins peuvent être enregistrés avec différentes sources
+        $checkinSources = ['venue_visit', 'bar_visit', 'check_in'];
+
+        $query = PointLog::whereIn('source', $checkinSources)
             ->with(['user', 'bar'])
             ->orderBy('created_at', 'desc');
 
@@ -832,20 +835,20 @@ class AdminController extends Controller
         $zones = Bar::select('zone')->distinct()->orderBy('zone')->pluck('zone');
         $availablePeriods = WeeklyRanking::getAvailablePeriods();
 
-        // Statistiques globales
+        // Statistiques globales (avec toutes les sources de check-in)
         $stats = [
-            'total_checkins' => PointLog::where('source', 'check_in')->count(),
-            'today' => PointLog::where('source', 'check_in')->whereDate('created_at', today())->count(),
-            'this_week' => PointLog::where('source', 'check_in')
+            'total_checkins' => PointLog::whereIn('source', $checkinSources)->count(),
+            'today' => PointLog::whereIn('source', $checkinSources)->whereDate('created_at', today())->count(),
+            'this_week' => PointLog::whereIn('source', $checkinSources)
                 ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
                 ->count(),
-            'unique_users' => PointLog::where('source', 'check_in')->distinct('user_id')->count('user_id'),
-            'unique_venues' => PointLog::where('source', 'check_in')->distinct('bar_id')->count('bar_id'),
-            'total_points' => PointLog::where('source', 'check_in')->sum('points'),
+            'unique_users' => PointLog::whereIn('source', $checkinSources)->distinct('user_id')->count('user_id'),
+            'unique_venues' => PointLog::whereIn('source', $checkinSources)->distinct('bar_id')->count('bar_id'),
+            'total_points' => PointLog::whereIn('source', $checkinSources)->sum('points'),
         ];
 
         // Top 5 des lieux les plus visités
-        $topVenues = PointLog::where('source', 'check_in')
+        $topVenues = PointLog::whereIn('source', $checkinSources)
             ->select('bar_id', \DB::raw('COUNT(*) as visit_count'))
             ->groupBy('bar_id')
             ->orderByDesc('visit_count')
@@ -854,7 +857,7 @@ class AdminController extends Controller
             ->get();
 
         // Top 5 des utilisateurs les plus actifs en check-ins
-        $topUsers = PointLog::where('source', 'check_in')
+        $topUsers = PointLog::whereIn('source', $checkinSources)
             ->select('user_id', \DB::raw('COUNT(*) as checkin_count'))
             ->groupBy('user_id')
             ->orderByDesc('checkin_count')
@@ -883,7 +886,10 @@ class AdminController extends Controller
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
-        $query = PointLog::where('source', 'check_in')
+        // Les check-ins peuvent être enregistrés avec différentes sources
+        $checkinSources = ['venue_visit', 'bar_visit', 'check_in'];
+
+        $query = PointLog::whereIn('source', $checkinSources)
             ->with(['user', 'bar'])
             ->orderBy('created_at', 'desc');
 
@@ -1020,8 +1026,9 @@ class AdminController extends Controller
                         ->whereBetween('created_at', [$weekStart, $weekEnd])
                         ->count();
                     
+                    // Les check-ins peuvent être enregistrés avec différentes sources
                     $user->weekly_checkins = PointLog::where('user_id', $user->id)
-                        ->where('source', 'check_in')
+                        ->whereIn('source', ['venue_visit', 'bar_visit', 'check_in'])
                         ->whereBetween('created_at', [$weekStart, $weekEnd])
                         ->count();
                     
@@ -1120,8 +1127,8 @@ class AdminController extends Controller
             'total_points' => $pointLogs->sum('points'),
             'predictions_count' => $predictions->count(),
             'correct_predictions' => $predictions->where('points_earned', '>', 0)->count(),
-            'checkins_count' => $pointLogs->where('source', 'check_in')->count(),
-            'daily_logins' => $pointLogs->where('source', 'daily_login')->count(),
+            'checkins_count' => $pointLogs->whereIn('source', ['venue_visit', 'bar_visit', 'check_in'])->count(),
+            'daily_logins' => $pointLogs->where('source', 'login')->count(),
         ];
 
         // Calculer le rang de l'utilisateur cette période
@@ -1192,8 +1199,9 @@ class AdminController extends Controller
                         ->whereBetween('created_at', [$weekStart, $weekEnd])
                         ->count();
                     
+                    // Les check-ins peuvent être enregistrés avec différentes sources
                     $user->weekly_checkins = PointLog::where('user_id', $user->id)
-                        ->where('source', 'check_in')
+                        ->whereIn('source', ['venue_visit', 'bar_visit', 'check_in'])
                         ->whereBetween('created_at', [$weekStart, $weekEnd])
                         ->count();
                     
