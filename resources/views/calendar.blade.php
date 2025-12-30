@@ -63,15 +63,15 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
     <div class="bg-white/10 backdrop-blur-sm rounded-xl p-1 flex">
         <a href="{{ route('calendar', ['tab' => 'calendar', 'year' => $year, 'month' => $month]) }}" 
            class="flex-1 py-3 px-4 text-center font-bold rounded-lg transition {{ $activeTab === 'calendar' ? 'bg-white text-soboa-blue' : 'text-white hover:bg-white/10' }}">
-            <span class="text-lg mr-1">📅</span> <span class="hidden sm:inline">Calendrier</span>
+            <span class="text-lg mr-1">📅</span><span class="text-xs sm:text-base">Calendrier</span>
         </a>
         <a href="{{ route('calendar', ['tab' => 'standings']) }}" 
            class="flex-1 py-3 px-4 text-center font-bold rounded-lg transition {{ $activeTab === 'standings' ? 'bg-white text-soboa-blue' : 'text-white hover:bg-white/10' }}">
-            <span class="text-lg mr-1">📊</span> <span class="hidden sm:inline">Classement</span>
+            <span class="text-lg mr-1">📊</span><span class="text-xs sm:text-base">Classement</span>
         </a>
         <a href="{{ route('calendar', ['tab' => 'bracket']) }}" 
            class="flex-1 py-3 px-4 text-center font-bold rounded-lg transition {{ $activeTab === 'bracket' ? 'bg-white text-soboa-blue' : 'text-white hover:bg-white/10' }}">
-            <span class="text-lg mr-1">🏆</span> <span class="hidden sm:inline">Phases Finales</span>
+            <span class="text-lg mr-1">🏆</span><span class="text-xs sm:text-base">Bracket</span>
         </a>
     </div>
 </div>

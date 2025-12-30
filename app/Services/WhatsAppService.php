@@ -78,7 +78,7 @@ class WhatsAppService
     /**
      * Envoie une confirmation de pronostic par WhatsApp
      */
-    public function sendPredictionConfirmation($user, $match, $prediction, $venue): array
+    public function sendPredictionConfirmation($user, $match, $prediction, $venue = null): array
     {
         $teamA = $match->homeTeam->name ?? 'Équipe A';
         $teamB = $match->awayTeam->name ?? 'Équipe B';
@@ -90,7 +90,12 @@ class WhatsAppService
         $message .= "📅 {$matchDate}\n";
         $message .= "📍 {$stadium}\n";
         $message .= "🏆 Points potentiels : 1 pt + jusqu'à 6 pts bonus\n\n";
-        $message .= "Validé depuis : {$venue->name}";
+        
+        if ($venue) {
+            $message .= "Validé depuis : {$venue->name}";
+        } else {
+            $message .= "Bonne chance ! 🍀";
+        }
 
         $phoneNumber = $this->formatWhatsAppNumber($user->phone);
 

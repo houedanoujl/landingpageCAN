@@ -91,34 +91,13 @@ class HomeController extends Controller
 
     public function matches(Request $request)
     {
-        // Récupérer tous les matchs futurs
-        $allFutureMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
+        // Récupérer tous les matchs futurs (sans filtrage par phase)
+        $allMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
             ->where('status', '!=', 'finished')
             ->where('match_date', '>=', now())
             ->orderBy('phase', 'asc')
             ->orderBy('match_date', 'asc')
             ->get();
-
-        // Filtrer pour ne garder que les phases dont le premier match est accessible
-        $allMatches = $allFutureMatches->filter(function ($match) use ($allFutureMatches) {
-            // Toujours afficher les matchs de phase de poule
-            if ($match->phase === 'group_stage') {
-                return true;
-            }
-
-            // Pour les phases finales, vérifier si on a atteint la date du premier match de cette phase
-            $firstMatchOfPhase = $allFutureMatches
-                ->where('phase', $match->phase)
-                ->sortBy('match_date')
-                ->first();
-
-            if ($firstMatchOfPhase) {
-                // Afficher la phase seulement si on est à J-1 du premier match de cette phase
-                return now() >= $firstMatchOfPhase->match_date->subDay();
-            }
-
-            return false;
-        });
 
         // Grouper les matchs par phase
         $matchesByPhase = $allMatches->groupBy('phase');

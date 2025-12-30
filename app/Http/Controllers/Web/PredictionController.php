@@ -34,7 +34,7 @@ class PredictionController extends Controller
             'score_a' => 'required|integer|min:0|max:20',
             'score_b' => 'required|integer|min:0|max:20',
             'venue_id' => 'nullable|exists:bars,id', // Venue is now optional
-            'predict_draw' => 'nullable|boolean',
+            'predict_draw' => 'nullable',
             'penalty_winner' => 'nullable|in:home,away',
         ]);
 
@@ -89,7 +89,8 @@ class PredictionController extends Controller
 
         // Déterminer le gagnant prédit
         $predictedWinner = 'draw';
-        $predictDraw = $request->predict_draw ?? false;
+        // Convertir predict_draw en boolean (peut être string '0'/'1' depuis le formulaire)
+        $predictDraw = filter_var($request->predict_draw, FILTER_VALIDATE_BOOLEAN);
         $penaltyWinner = $request->penalty_winner;
 
         if ($request->score_a > $request->score_b) {
@@ -130,15 +131,14 @@ class PredictionController extends Controller
             // Update session with new points
             session(['user_points' => $user->points_total]);
 
-            $successMessage = 'Pronostic modifié ! ✏️ ' . $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
+            $successMessage = 'Pronostic modifié avec succès ! ✏️';
 
-            // Envoyer confirmation WhatsApp
-            $whatsappResult = $this->whatsAppService->sendPredictionConfirmation($user, $match, $existingPrediction, $venue);
+            // Pas de WhatsApp pour les modifications (seulement pour les nouveaux pronostics)
 
             if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return response()->json([
                     'message' => $successMessage,
-                    'whatsapp_sent' => $whatsappResult['success'] ?? false,
+                    'success' => true,
                     'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
                     'venue' => $venue ? $venue->name : null,
                     'venue_bonus_points' => $venuePointsAwarded,
@@ -189,13 +189,12 @@ class PredictionController extends Controller
 
         $successMessage = 'Pronostic enregistré ! 🎯 ' . $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
 
-        // Envoyer confirmation WhatsApp
-        $whatsappResult = $this->whatsAppService->sendPredictionConfirmation($user, $match, $prediction, $venue);
+        // WhatsApp désactivé - plus de notifications pour les pronostics
 
         if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'message' => $successMessage,
-                'whatsapp_sent' => $whatsappResult['success'] ?? false,
+                'success' => true,
                 'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
                 'venue' => $venue ? $venue->name : null,
                 'venue_bonus_points' => $venuePointsAwarded,

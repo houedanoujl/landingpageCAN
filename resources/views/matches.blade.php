@@ -130,6 +130,25 @@
             </div>
         </div>
 
+        <!-- Bannière de notification succès (modification pronostic) -->
+        <div id="successBanner"
+            class="hidden bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 text-white shadow-lg animate-pulse-once">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">✅</span>
+                </div>
+                <div class="flex-1">
+                    <p class="font-black text-lg" id="successBannerTitle">Pronostic modifié !</p>
+                    <p class="text-sm text-white/90" id="successBannerMessage">Votre pronostic a été mis à jour avec succès.</p>
+                </div>
+                <button onclick="hideSuccessBanner()" class="text-white/80 hover:text-white p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
         <!-- Info système -->
         <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
             <div class="flex items-center gap-3">
@@ -213,6 +232,9 @@
                                             <div x-show="activeGroup === '{{ $groupName }}'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                                 @foreach($groupMatches as $match)
                                                             <div id="match-{{ $match->id }}"
+                                                                data-phase="{{ $match->phase }}"
+                                                                data-home-team="{{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}"
+                                                                data-away-team="{{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}"
                                                                 class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all border-2 border-gray-100
                                                     {{ isset($favoriteTeamId) && ($match->home_team_id == $favoriteTeamId || $match->away_team_id == $favoriteTeamId) ? 'ring-2 ring-soboa-orange ring-offset-2' : '' }}">
 
@@ -522,6 +544,9 @@
                                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         @foreach($matchesByPhase[$phaseKey] as $match)
                                             <div id="match-{{ $match->id }}"
+                                                data-phase="{{ $match->phase }}"
+                                                data-home-team="{{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}"
+                                                data-away-team="{{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}"
                                                 class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all border-2 border-gray-100
                                                                     {{ isset($favoriteTeamId) && ($match->home_team_id == $favoriteTeamId || $match->away_team_id == $favoriteTeamId) ? 'ring-2 ring-soboa-orange ring-offset-2' : '' }}">
 
@@ -887,6 +912,13 @@
                 input.addEventListener('input', checkDraw);
                 input.addEventListener('change', checkDraw);
             });
+            
+            // Vérifier si un message de succès est stocké (après rechargement)
+            const successMessage = sessionStorage.getItem('prediction_success_message');
+            if (successMessage) {
+                sessionStorage.removeItem('prediction_success_message');
+                showSuccessBanner(successMessage);
+            }
         });
 
         // Fonction pour calculer la distance Haversine
@@ -1112,7 +1144,8 @@
         }
 
         // Mettre à jour l'affichage du pronostic après soumission AJAX
-        function updatePredictionDisplay(matchId, predictionData) {
+        // isEdit = true si c'est une modification d'un pronostic existant
+        function updatePredictionDisplay(matchId, predictionData, isEdit = false) {
             const matchCard = document.getElementById('match-' + matchId);
             if (!matchCard) return;
 
@@ -1122,32 +1155,52 @@
 
             const formContainer = form.parentElement;
 
+            // Récupérer les noms des équipes depuis les data-attributes
+            const homeTeam = matchCard.dataset.homeTeam || 'Équipe A';
+            const awayTeam = matchCard.dataset.awayTeam || 'Équipe B';
+
+            // Déterminer le texte et les styles selon nouveau/modifié
+            const statusIcon = isEdit ? '✏️' : '✅';
+            const statusText = isEdit ? 'Pronostic modifié' : 'Votre pronostic';
+            const statusSubtext = isEdit ? 'Modifié à l\'instant' : 'Enregistré à l\'instant';
+            const bgClass = isEdit ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200';
+            const textClass = isEdit ? 'text-blue-800' : 'text-green-800';
+            const subTextClass = isEdit ? 'text-blue-600' : 'text-green-600';
+            const scoreTextClass = isEdit ? 'text-blue-800' : 'text-green-800';
+            const scoreDashClass = isEdit ? 'text-blue-600' : 'text-green-600';
+            const btnClass = isEdit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700';
+
             // Créer l'affichage du pronostic enregistré
             const predictionHTML = `
-                <div class="bg-green-50 border border-green-200 rounded-xl p-4 prediction-success-animation">
+                <div class="${bgClass} border rounded-xl p-4 prediction-success-animation ${isEdit ? 'ring-2 ring-blue-400 ring-offset-2' : ''}">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center gap-2">
-                            <span class="text-2xl">✅</span>
+                            <span class="text-2xl">${statusIcon}</span>
                             <div>
-                                <p class="font-bold text-green-800">Votre pronostic</p>
-                                <p class="text-xs text-green-600">Enregistré à l'instant</p>
+                                <p class="font-bold ${textClass}">${statusText}</p>
+                                <p class="text-xs ${subTextClass}">${statusSubtext}</p>
                             </div>
                         </div>
+                        ${isEdit ? `
+                            <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                                Modifié
+                            </span>
+                        ` : ''}
                     </div>
-                    <div class="flex items-center justify-center gap-4 text-lg font-black text-green-800">
+                    <div class="flex items-center justify-center gap-4 text-lg font-black ${scoreTextClass}">
                         <span>${predictionData.scoreA}</span>
-                        <span class="text-green-600">-</span>
+                        <span class="${scoreDashClass}">-</span>
                         <span>${predictionData.scoreB}</span>
                     </div>
-                    ${predictionData.predictDraw === '1' ? `
+                    ${predictionData.predictDraw === '1' && predictionData.penaltyWinner ? `
                         <div class="mt-2 text-center">
                             <span class="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded">
-                                🏆 Tirs au but: ${predictionData.penaltyWinner === 'home' ? 'Équipe domicile' : 'Équipe extérieure'}
+                                🏆 Tirs au but: ${predictionData.penaltyWinner === 'home' ? homeTeam : awayTeam}
                             </span>
                         </div>
                     ` : ''}
                     <button onclick="enableEdit(${matchId})" 
-                        class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                        class="mt-3 w-full ${btnClass} text-white font-bold py-2 px-4 rounded-lg transition">
                         Modifier mon pronostic
                     </button>
                 </div>
@@ -1188,9 +1241,292 @@
             }, 5000);
         }
 
+        // Phases à élimination (knockout)
+        const knockoutPhases = ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
+
         function enableEdit(matchId) {
-            // Recharger seulement le match concerné (ou toute la page si nécessaire)
-            window.location.reload();
+            const matchCard = document.getElementById('match-' + matchId);
+            if (!matchCard) return;
+
+            // If a form is already present, just focus the first input
+            const existingForm = matchCard.querySelector('.prediction-form');
+            if (existingForm) {
+                existingForm.querySelector('input[name="score_a"]')?.focus();
+                return;
+            }
+
+            // Récupérer les infos du match depuis les data-attributes
+            const matchPhase = matchCard.dataset.phase || '';
+            const homeTeam = matchCard.dataset.homeTeam || 'Équipe A';
+            const awayTeam = matchCard.dataset.awayTeam || 'Équipe B';
+            const isKnockout = knockoutPhases.includes(matchPhase);
+
+            // Try to extract previously displayed scores from the success block
+            const successDiv = matchCard.querySelector('.prediction-success-animation') || matchCard.querySelector('.bg-green-50');
+            let scoreA = '';
+            let scoreB = '';
+            let penaltyWinner = '';
+
+            if (successDiv) {
+                const text = successDiv.textContent || '';
+                const m = text.match(/(\d+)\s*[-–]\s*(\d+)/);
+                if (m) {
+                    scoreA = m[1];
+                    scoreB = m[2];
+                }
+                if (/Tirs au but|TAB|tirs au but/i.test(text)) {
+                    if (text.includes(homeTeam) && text.includes('Vainqueur')) penaltyWinner = 'home';
+                    else if (text.includes(awayTeam) && text.includes('Vainqueur')) penaltyWinner = 'away';
+                    else if (/domicile/i.test(text)) penaltyWinner = 'home';
+                    else if (/extérieur/i.test(text)) penaltyWinner = 'away';
+                }
+            }
+
+            // CSRF token and store URL from the server-rendered template
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const predictionsStoreUrl = "{{ route('predictions.store') }}";
+
+            // Section penalty (visible seulement si phase knockout)
+            const penaltySectionHtml = isKnockout ? `
+                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 penalty-section" id="penalty-section-edit-${matchId}" style="display: none;">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">⚠️</span>
+                        <p class="font-bold text-yellow-800">Égalité détectée - Phase à élimination</p>
+                    </div>
+                    <p class="text-sm text-yellow-700 mb-3">
+                        En phase à élimination, il ne peut pas y avoir de match nul. Qui gagnera aux tirs au but ?
+                    </p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="penalty_winner" value="home" class="hidden peer" ${penaltyWinner === 'home' ? 'checked' : ''}>
+                            <div class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
+                                <p class="font-bold text-gray-800">🏆 ${homeTeam}</p>
+                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="penalty_winner" value="away" class="hidden peer" ${penaltyWinner === 'away' ? 'checked' : ''}>
+                            <div class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
+                                <p class="font-bold text-gray-800">🏆 ${awayTeam}</p>
+                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <input type="hidden" name="predict_draw" id="predict_draw_edit_${matchId}" value="0">
+            ` : '';
+
+            const formHtml = `
+                <form action="${predictionsStoreUrl}" method="POST" class="space-y-4 prediction-form prediction-form-edit" data-match-id="${matchId}" data-is-knockout="${isKnockout}">
+                    <input type="hidden" name="_token" value="${csrf}">
+                    <input type="hidden" name="match_id" value="${matchId}">
+                    <input type="hidden" name="venue_id" id="venue_id_${matchId}" value="">
+                    <input type="hidden" name="match_info" value="${homeTeam} vs ${awayTeam}">
+
+                    <div class="flex items-center justify-center gap-4">
+                        <div class="text-center flex-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Score ${homeTeam}</label>
+                            <input type="number" name="score_a" min="0" max="20" required
+                                class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0 score-input-edit"
+                                value="${scoreA}"
+                                onchange="checkDrawEdit(${matchId})"
+                                oninput="checkDrawEdit(${matchId})">
+                        </div>
+                        <span class="text-2xl font-black text-gray-400 mt-6">-</span>
+                        <div class="text-center flex-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Score ${awayTeam}</label>
+                            <input type="number" name="score_b" min="0" max="20" required
+                                class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0 score-input-edit"
+                                value="${scoreB}"
+                                onchange="checkDrawEdit(${matchId})"
+                                oninput="checkDrawEdit(${matchId})">
+                        </div>
+                    </div>
+
+                    ${penaltySectionHtml}
+
+                    <button type="submit"
+                        class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
+                        🎯 Valider mon pronostic
+                    </button>
+                </form>
+            `;
+
+            // Replace the current prediction display (success block or the container) with the form
+            const container = successDiv ? successDiv.parentElement : matchCard.querySelector('.border-t.pt-6') || matchCard.querySelector('.p-6');
+            if (container) {
+                container.innerHTML = formHtml;
+                
+                // Attacher le gestionnaire AJAX au formulaire
+                const form = container.querySelector('.prediction-form-edit');
+                if (form) {
+                    form.addEventListener('submit', handleEditFormSubmit);
+                }
+
+                // Focus the first input for convenience
+                container.querySelector('input[name="score_a"]')?.focus();
+                
+                // Vérifier immédiatement si c'est une égalité (pour les scores pré-remplis)
+                if (isKnockout && scoreA !== '' && scoreB !== '') {
+                    checkDrawEdit(matchId);
+                }
+            } else {
+                // Fallback: reload the page if we cannot find where to inject the form
+                window.location.reload();
+            }
+        }
+
+        // Fonction pour vérifier l'égalité dans le formulaire d'édition (phases knockout)
+        function checkDrawEdit(matchId) {
+            const matchCard = document.getElementById('match-' + matchId);
+            if (!matchCard) return;
+
+            const form = matchCard.querySelector('.prediction-form-edit');
+            if (!form) return;
+
+            const isKnockout = form.dataset.isKnockout === 'true';
+            if (!isKnockout) return;
+
+            const scoreA = form.querySelector('input[name="score_a"]')?.value;
+            const scoreB = form.querySelector('input[name="score_b"]')?.value;
+            const penaltySection = document.getElementById('penalty-section-edit-' + matchId);
+            const predictDrawInput = document.getElementById('predict_draw_edit_' + matchId);
+
+            if (scoreA !== '' && scoreB !== '' && scoreA === scoreB) {
+                // Égalité détectée
+                if (penaltySection) {
+                    penaltySection.style.display = 'block';
+                    // Rendre le choix du vainqueur obligatoire
+                    penaltySection.querySelectorAll('input[name="penalty_winner"]').forEach(input => {
+                        input.required = true;
+                    });
+                }
+                if (predictDrawInput) predictDrawInput.value = '1';
+            } else {
+                // Pas d'égalité
+                if (penaltySection) {
+                    penaltySection.style.display = 'none';
+                    penaltySection.querySelectorAll('input[name="penalty_winner"]').forEach(input => {
+                        input.required = false;
+                    });
+                }
+                if (predictDrawInput) predictDrawInput.value = '0';
+            }
+        }
+
+        // Gestionnaire de soumission AJAX pour le formulaire d'édition
+        async function handleEditFormSubmit(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const matchId = form.dataset.matchId;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Désactiver le bouton pendant la soumission
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Envoi...';
+
+            const formData = new FormData(form);
+            
+            // Récupérer le venue_id depuis le formulaire original s'il existe
+            const venueIdInput = document.getElementById('venue_id_' + matchId);
+            if (venueIdInput && !formData.get('venue_id')) {
+                // Essayer de récupérer depuis localStorage ou autre source
+                const savedVenueId = localStorage.getItem('detected_venue_id');
+                if (savedVenueId) {
+                    formData.set('venue_id', savedVenueId);
+                }
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Le contrôleur renvoie un code 200 avec 'message' en cas de succès
+                // On vérifie que response.ok (status 200-299) et qu'il y a un message
+                if (response.ok && data.message) {
+                    // Stocker le message dans sessionStorage pour l'afficher après rechargement
+                    sessionStorage.setItem('prediction_success_message', data.message);
+                    
+                    // Recharger la page immédiatement
+                    window.location.reload();
+                } else {
+                    // Erreur côté serveur
+                    const errorMsg = data.message || data.error || 'Une erreur est survenue';
+                    showErrorNotification(errorMsg);
+                    
+                    // Réactiver le bouton
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Erreur lors de la soumission:', error);
+                showErrorNotification('Erreur de connexion. Veuillez réessayer.');
+                
+                // Réactiver le bouton
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        // Afficher la bannière de succès (style PDV)
+        function showSuccessBanner(message, title = 'Pronostic modifié !') {
+            const banner = document.getElementById('successBanner');
+            const bannerTitle = document.getElementById('successBannerTitle');
+            const bannerMessage = document.getElementById('successBannerMessage');
+            
+            if (banner && bannerTitle && bannerMessage) {
+                bannerTitle.textContent = title;
+                bannerMessage.textContent = message;
+                banner.classList.remove('hidden');
+                
+                // Scroll vers le haut pour voir la bannière
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Auto-hide après 5 secondes
+                setTimeout(() => {
+                    hideSuccessBanner();
+                }, 5000);
+            }
+        }
+
+        // Masquer la bannière de succès
+        function hideSuccessBanner() {
+            const banner = document.getElementById('successBanner');
+            if (banner) {
+                banner.classList.add('hidden');
+            }
+        }
+
+        // Notification de succès (toast en haut à droite - backup)
+        function showSuccessNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-slide-in';
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                        <p class="font-bold">Succès</p>
+                        <p class="text-sm">${message}</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('animate-slide-out');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
     </script>
 
