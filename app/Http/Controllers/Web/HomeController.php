@@ -30,14 +30,16 @@ class HomeController extends Controller
         // Sur la page d'accueil, afficher tous les prochains matchs (y compris phases finales)
         $senegalTeam = Team::where('iso_code', 'sn')->first();
 
-        // Afficher tous les matchs à venir sans filtrage par phase
+        // Afficher tous les matchs à venir dont les équipes sont définies
         $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
             ->where('status', '!=', 'finished')
             ->where('match_date', '>=', now())
+            ->whereNotNull('home_team_id')
+            ->whereNotNull('away_team_id')
             ->orderBy('match_date', 'asc')
             ->get();
 
-        // Récupérer le prochain match pour le hero (premier match à venir, quelle que soit la phase)
+        // Récupérer le prochain match pour le hero (premier match à venir avec équipes définies)
         $nextMatch = $upcomingMatches->first();
 
         // Limiter à 4 matchs pour la page d'accueil
@@ -68,10 +70,12 @@ class HomeController extends Controller
 
     public function matches(Request $request)
     {
-        // Récupérer tous les matchs futurs (sans filtrage par phase)
+        // Récupérer tous les matchs futurs dont les équipes sont définies
         $allMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
             ->where('status', '!=', 'finished')
             ->where('match_date', '>=', now())
+            ->whereNotNull('home_team_id')
+            ->whereNotNull('away_team_id')
             ->orderBy('phase', 'asc')
             ->orderBy('match_date', 'asc')
             ->get();

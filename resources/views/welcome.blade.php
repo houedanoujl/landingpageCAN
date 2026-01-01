@@ -225,7 +225,7 @@
 
             <!-- Countdown Timer -->
             <div class="mb-10">
-                @if($nextMatch)
+                @if($nextMatch && $nextMatch->homeTeam && $nextMatch->awayTeam)
                     @php
                         $timeUntilMatch = $nextMatch->match_date->diffInHours(now());
                         $isToday = $nextMatch->match_date->isToday();
