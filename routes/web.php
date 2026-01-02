@@ -93,6 +93,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     // Calendar & Matrix Views
     Route::get('/calendar', [AdminController::class, 'calendar'])->name('calendar');
     Route::get('/match-venue-matrix', [AdminController::class, 'matchVenueMatrix'])->name('match-venue-matrix');
+    Route::get('/match-venue-matrix/export-csv', [AdminController::class, 'exportMatchVenueMatrixCsv'])->name('match-venue-matrix-export-csv');
 
     // Utilisateurs
     Route::get('/users', [AdminController::class, 'users'])->name('users');

@@ -3080,6 +3080,8 @@ class AdminController extends Controller
         // Get filters
         $phase = $request->input('phase');
         $zone = $request->input('zone');
+        $onlyWithMatches = $request->boolean('only_with_matches');
+        $upcomingOnly = $request->boolean('upcoming_only');
 
         // Build matches query
         $matchesQuery = MatchGame::with(['homeTeam', 'awayTeam', 'animations'])
@@ -3089,6 +3091,12 @@ class AdminController extends Controller
             $matchesQuery->where('phase', $phase);
         }
 
+        // Filtrer pour les matchs à venir (phases finales : à partir des 8èmes)
+        if ($upcomingOnly) {
+            $matchesQuery->whereIn('phase', ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'])
+                ->where('status', '!=', 'finished');
+        }
+
         $matches = $matchesQuery->get();
 
         // Build bars query
@@ -3096,6 +3104,15 @@ class AdminController extends Controller
 
         if ($zone) {
             $barsQuery->where('zone', $zone);
+        }
+
+        // Filtrer pour n'afficher que les lieux avec des matchs assignés
+        if ($onlyWithMatches) {
+            // Récupérer les IDs des bars qui ont des animations pour les matchs sélectionnés
+            $barIdsWithMatches = \App\Models\Animation::whereIn('match_id', $matches->pluck('id'))
+                ->distinct()
+                ->pluck('bar_id');
+            $barsQuery->whereIn('id', $barIdsWithMatches);
         }
 
         $bars = $barsQuery->get();
@@ -3124,7 +3141,101 @@ class AdminController extends Controller
             'final' => 'Finale',
         ];
 
-        return view('admin.match-venue-matrix', compact('matches', 'bars', 'matrix', 'zones', 'phases', 'phase', 'zone'));
+        return view('admin.match-venue-matrix', compact('matches', 'bars', 'matrix', 'zones', 'phases', 'phase', 'zone', 'onlyWithMatches', 'upcomingOnly'));
+    }
+
+    /**
+     * Export match-venue matrix to CSV
+     */
+    public function exportMatchVenueMatrixCsv(Request $request)
+    {
+        // Get filters
+        $phase = $request->input('phase');
+        $zone = $request->input('zone');
+        $onlyWithMatches = $request->boolean('only_with_matches');
+        $upcomingOnly = $request->boolean('upcoming_only');
+
+        // Build matches query
+        $matchesQuery = MatchGame::with(['homeTeam', 'awayTeam', 'animations'])
+            ->orderBy('match_date');
+
+        if ($phase) {
+            $matchesQuery->where('phase', $phase);
+        }
+
+        // Filtrer pour les matchs à venir (phases finales : à partir des 8èmes)
+        if ($upcomingOnly) {
+            $matchesQuery->whereIn('phase', ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'])
+                ->where('status', '!=', 'finished');
+        }
+
+        $matches = $matchesQuery->get();
+
+        // Build bars query
+        $barsQuery = Bar::where('is_active', true)->orderBy('zone')->orderBy('name');
+
+        if ($zone) {
+            $barsQuery->where('zone', $zone);
+        }
+
+        if ($onlyWithMatches) {
+            $barIdsWithMatches = \App\Models\Animation::whereIn('match_id', $matches->pluck('id'))
+                ->distinct()
+                ->pluck('bar_id');
+            $barsQuery->whereIn('id', $barIdsWithMatches);
+        }
+
+        $bars = $barsQuery->get();
+
+        // Create matrix
+        $matrix = [];
+        foreach ($matches as $match) {
+            $matrix[$match->id] = [];
+            foreach ($match->animations as $animation) {
+                $matrix[$match->id][$animation->bar_id] = $animation;
+            }
+        }
+
+        // Generate CSV
+        $filename = 'matrice-matchs-pdv-' . now()->format('Y-m-d-His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($matches, $bars, $matrix) {
+            $file = fopen('php://output', 'w');
+            
+            // UTF-8 BOM for Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Header row
+            $headerRow = ['Date', 'Match', 'Phase'];
+            foreach ($bars as $bar) {
+                $headerRow[] = $bar->name . ($bar->zone ? ' (' . $bar->zone . ')' : '');
+            }
+            fputcsv($file, $headerRow, ';');
+
+            // Data rows
+            foreach ($matches as $match) {
+                $row = [
+                    $match->match_date->format('d/m/Y H:i'),
+                    $match->team_a . ' vs ' . $match->team_b,
+                    $match->phase,
+                ];
+                
+                foreach ($bars as $bar) {
+                    $row[] = isset($matrix[$match->id][$bar->id]) ? 'Oui' : 'Non';
+                }
+                
+                fputcsv($file, $row, ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     // ==========================================

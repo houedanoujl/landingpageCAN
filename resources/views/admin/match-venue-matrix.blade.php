@@ -10,15 +10,20 @@
                     </h1>
                     <p class="text-gray-600 mt-2">Vue croisée des matchs et des points de vente</p>
                 </div>
-                <a href="{{ route('admin.dashboard') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg transition">
-                    ← Retour
-                </a>
+                <div class="flex gap-3">
+                    <a href="{{ route('admin.match-venue-matrix-export-csv', request()->query()) }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
+                        📥 Exporter CSV
+                    </a>
+                    <a href="{{ route('admin.dashboard') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg transition">
+                        ← Retour
+                    </a>
+                </div>
             </div>
 
             <!-- Filtres -->
             <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <form method="GET" action="{{ route('admin.match-venue-matrix') }}" class="flex gap-4">
-                    <div class="flex-1">
+                <form method="GET" action="{{ route('admin.match-venue-matrix') }}" class="flex flex-wrap gap-4">
+                    <div class="flex-1 min-w-[200px]">
                         <label for="phase" class="block text-sm font-bold text-gray-700 mb-2">
                             Phase du tournoi
                         </label>
@@ -30,7 +35,7 @@
                         </select>
                     </div>
 
-                    <div class="flex-1">
+                    <div class="flex-1 min-w-[200px]">
                         <label for="zone" class="block text-sm font-bold text-gray-700 mb-2">
                             Zone
                         </label>
@@ -42,13 +47,29 @@
                         </select>
                     </div>
 
-                    <div class="flex items-end">
+                    <div class="flex-1 min-w-[250px]">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            Options de filtrage
+                        </label>
+                        <div class="flex flex-col gap-2">
+                            <label class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" name="only_with_matches" value="1" {{ $onlyWithMatches ? 'checked' : '' }} class="w-4 h-4 text-soboa-orange rounded">
+                                <span class="text-sm text-gray-700">PDV avec matchs assignés uniquement</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-4 py-2 border border-blue-300 rounded-lg bg-blue-50 cursor-pointer hover:bg-blue-100">
+                                <input type="checkbox" name="upcoming_only" value="1" {{ $upcomingOnly ? 'checked' : '' }} class="w-4 h-4 text-blue-600 rounded">
+                                <span class="text-sm text-blue-800 font-medium">🏆 Matchs à venir (à partir des 1/8)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-end gap-2">
                         <button type="submit" class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-6 py-2 rounded-lg transition">
                             Filtrer
                         </button>
                     </div>
 
-                    @if($phase || $zone)
+                    @if($phase || $zone || $onlyWithMatches || $upcomingOnly)
                     <div class="flex items-end">
                         <a href="{{ route('admin.match-venue-matrix') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold px-6 py-2 rounded-lg transition">
                             Réinitialiser
