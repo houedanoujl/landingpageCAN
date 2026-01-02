@@ -132,13 +132,29 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
+                                @php
+                                    $phaseLabels = [
+                                        'group_stage' => ['label' => 'Poules', 'color' => 'bg-gray-500'],
+                                        'round_of_16' => ['label' => '1/8', 'color' => 'bg-blue-500'],
+                                        'quarter_final' => ['label' => '1/4', 'color' => 'bg-purple-500'],
+                                        'semi_final' => ['label' => '1/2', 'color' => 'bg-orange-500'],
+                                        'third_place' => ['label' => '3e', 'color' => 'bg-amber-600'],
+                                        'final' => ['label' => 'Finale', 'color' => 'bg-yellow-500'],
+                                    ];
+                                @endphp
                                 @foreach($matches as $match)
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-4 border-r border-gray-300 bg-gray-50 sticky left-0 z-10">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-xs font-bold text-gray-500">
-                                                    {{ $match->match_date->format('d/m H:i') }}
-                                                </span>
+                                            <div class="flex flex-col gap-1">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-xs font-bold text-gray-500">
+                                                        {{ $match->match_date->format('d/m H:i') }}
+                                                    </span>
+                                                    @php $phaseInfo = $phaseLabels[$match->phase] ?? ['label' => $match->phase, 'color' => 'bg-gray-400']; @endphp
+                                                    <span class="px-2 py-0.5 text-xs font-bold text-white rounded {{ $phaseInfo['color'] }}">
+                                                        {{ $phaseInfo['label'] }}
+                                                    </span>
+                                                </div>
                                                 <div class="flex items-center gap-2">
                                                     @if($match->homeTeam)
                                                         <img src="https://flagcdn.com/w20/{{ $match->homeTeam->iso_code }}.png" class="w-5 h-4 rounded">

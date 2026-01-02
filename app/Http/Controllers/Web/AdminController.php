@@ -3210,8 +3210,18 @@ class AdminController extends Controller
             // UTF-8 BOM for Excel compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
+            // Phase labels
+            $phaseLabels = [
+                'group_stage' => 'Poules',
+                'round_of_16' => '1/8 de finale',
+                'quarter_final' => '1/4 de finale',
+                'semi_final' => '1/2 finale',
+                'third_place' => '3e place',
+                'final' => 'Finale',
+            ];
+
             // Header row
-            $headerRow = ['Date', 'Match', 'Phase'];
+            $headerRow = ['Date', 'Phase', 'Match'];
             foreach ($bars as $bar) {
                 $headerRow[] = $bar->name . ($bar->zone ? ' (' . $bar->zone . ')' : '');
             }
@@ -3221,8 +3231,8 @@ class AdminController extends Controller
             foreach ($matches as $match) {
                 $row = [
                     $match->match_date->format('d/m/Y H:i'),
+                    $phaseLabels[$match->phase] ?? $match->phase,
                     $match->team_a . ' vs ' . $match->team_b,
-                    $match->phase,
                 ];
                 
                 foreach ($bars as $bar) {
