@@ -45,8 +45,16 @@ class HomeController extends Controller
         // Limiter à 4 matchs pour la page d'accueil
         $upcomingMatches = $upcomingMatches->take(4);
 
-        // Fetch top 3 users for leaderboard (alphabétique en cas d'égalité)
-        $topUsers = User::orderBy('points_total', 'desc')
+        // Fetch top 3 users for leaderboard
+        // En cas d'égalité : celui qui a fait son premier pronostic en premier gagne
+        $topUsers = User::select('users.*')
+                       ->selectSub(function ($query) {
+                           $query->from('predictions')
+                               ->whereColumn('predictions.user_id', 'users.id')
+                               ->selectRaw('MIN(created_at)');
+                       }, 'first_prediction_at')
+                       ->orderBy('points_total', 'desc')
+                       ->orderBy('first_prediction_at', 'asc')
                        ->orderBy('name', 'asc')
                        ->take(3)
                        ->get();

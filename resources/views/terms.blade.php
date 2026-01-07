@@ -7,7 +7,7 @@
             
             <p class="text-gray-600 text-center mb-8">
                 Jeu de pronostics SOBOA FOOT TIME<br>
-                <span class="text-sm">Dernière mise à jour : Décembre 2025</span>
+                <span class="text-sm">Dernière mise à jour : Janvier 2026</span>
             </p>
 
             <div class="space-y-8 text-gray-700">
@@ -52,10 +52,23 @@
                             <li><strong>3 points bonus</strong> : si le vainqueur ou le match nul est correctement prédit</li>
                             <li><strong>3 points bonus supplémentaires</strong> : si le score exact est correctement prédit</li>
                         </ul>
+
+                        <p><strong>3.3 Matchs avec tirs au but :</strong> Pour les matchs des phases à élimination directe 
+                        se terminant aux tirs au but, seule la prédiction correcte du vainqueur donne droit aux points bonus. 
+                        Le bonus de score exact n'est pas attribué dans ce cas.</p>
                         
-                        <p><strong>3.3 Classement :</strong> Un classement général est établi en fonction du total des points accumulés.</p>
+                        <p><strong>3.4 Classement :</strong> Un classement général est établi en fonction du total des points accumulés.</p>
                         
-                        <p><strong>3.4 Modifications :</strong> Les pronostics ne peuvent plus être modifiés après le coup d'envoi du match.</p>
+                        <p><strong>3.5 Départage en cas d'égalité :</strong></p>
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded ml-4">
+                            <p class="text-blue-800">
+                                En cas d'égalité de points entre plusieurs participants, le départage s'effectue en faveur 
+                                du participant ayant soumis son <strong>premier pronostic le plus tôt</strong> (date et heure de soumission).
+                                Cette règle s'applique au classement général ainsi qu'aux classements par période.
+                            </p>
+                        </div>
+                        
+                        <p><strong>3.6 Modifications :</strong> Les pronostics ne peuvent plus être modifiés après le coup d'envoi du match.</p>
                     </div>
                 </section>
 

@@ -80,7 +80,18 @@ class AdminController extends Controller
             ->take(10)
             ->get();
 
-        $topUsers = User::orderBy('points_total', 'desc')->take(10)->get();
+        // Top 10 users avec départage par date du premier pronostic
+        $topUsers = User::select('users.*')
+            ->selectSub(function ($query) {
+                $query->from('predictions')
+                    ->whereColumn('predictions.user_id', 'users.id')
+                    ->selectRaw('MIN(created_at)');
+            }, 'first_prediction_at')
+            ->orderBy('points_total', 'desc')
+            ->orderBy('first_prediction_at', 'asc')
+            ->orderBy('name', 'asc')
+            ->take(10)
+            ->get();
 
         // Déterminer le rôle de l'utilisateur connecté
         $userId = session('user_id');
