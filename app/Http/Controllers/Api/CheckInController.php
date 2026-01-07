@@ -24,13 +24,13 @@ class CheckInController extends Controller
         $userLng = $request->longitude;
 
         // Simple geofencing check
-        // Find if user is within a certain radius (e.g., 50m) of any active bar
+        // Find if user is within a certain radius (e.g., 200m) of any active bar
         $bars = Bar::where('is_active', true)->get();
 
         $foundBar = null;
         foreach ($bars as $bar) {
             $distance = $this->calculateDistance($userLat, $userLng, $bar->latitude, $bar->longitude);
-            if ($distance <= 0.05) { // 50 meters in km
+            if ($distance <= 0.2) { // 200 meters in km
                 $foundBar = $bar;
                 break;
             }

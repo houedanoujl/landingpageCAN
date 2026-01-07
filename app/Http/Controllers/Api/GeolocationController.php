@@ -93,7 +93,7 @@ class GeolocationController extends Controller
                     'is_nearby' => $item['is_nearby'],
                 ];
             }, $venues),
-            'geofencing_radius_m' => 50,
+            'geofencing_radius_m' => 200,
         ]);
     }
 }

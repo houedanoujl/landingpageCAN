@@ -69,7 +69,7 @@ class HomeController extends Controller
     {
         $venues = Bar::where('is_active', true)->orderBy('name')->get();
         $settings = SiteSetting::firstOrCreate([], [
-            'geofencing_radius' => 50,
+            'geofencing_radius' => 200,
         ]);
         $geofencingRadius = $settings->geofencing_radius;
 
@@ -310,7 +310,7 @@ class HomeController extends Controller
 
         // Récupérer le rayon de géolocalisation depuis les paramètres (en mètres)
         $settings = SiteSetting::firstOrCreate([], [
-            'geofencing_radius' => 50,
+            'geofencing_radius' => 200,
         ]);
 
         $geofencingRadiusMeters = $settings->geofencing_radius;

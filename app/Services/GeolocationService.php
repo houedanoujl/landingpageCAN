@@ -69,7 +69,7 @@ class GeolocationService
      * @param float $userLat User's latitude
      * @param float $userLng User's longitude
      * @param Bar $venue The venue to check against
-     * @param float|null $radius Custom radius in km (default: 50m)
+     * @param float|null $radius Custom radius in km (default: 200m)
      * @return bool
      */
     public function isWithinRadius(float $userLat, float $userLng, Bar $venue, ?float $radius = null): bool
