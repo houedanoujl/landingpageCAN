@@ -674,15 +674,27 @@ class AdminController extends Controller
     /**
      * List all users
      */
-    public function users()
+    public function users(Request $request)
     {
         if (!$this->checkAdminOrSoboa()) {
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
-        $users = User::orderBy('points_total', 'desc')->paginate(50);
+        $search = $request->get('search');
 
-        return view('admin.users', compact('users'));
+        $query = User::orderBy('points_total', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->paginate(50)->appends(['search' => $search]);
+
+        return view('admin.users', compact('users', 'search'));
     }
 
     /**
@@ -1383,6 +1395,89 @@ class AdminController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', 'Utilisateur supprimé avec succès.');
+    }
+
+    /**
+     * Export user point history to CSV
+     */
+    public function exportUserPointsCsv($id)
+    {
+        if (!$this->checkAdminOrSoboa()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $user = User::findOrFail($id);
+        
+        $pointLogs = PointLog::where('user_id', $id)
+            ->with(['match.homeTeam', 'match.awayTeam', 'bar'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'historique_points_' . str_replace(' ', '_', $user->name) . '_' . date('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($user, $pointLogs) {
+            $file = fopen('php://output', 'w');
+            
+            // BOM pour Excel UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Info utilisateur en en-tête
+            fputcsv($file, ['Historique des points - ' . $user->name]);
+            fputcsv($file, ['Téléphone: ' . $user->phone]);
+            fputcsv($file, ['Points total: ' . $user->points_total]);
+            fputcsv($file, ['Export le: ' . date('d/m/Y H:i')]);
+            fputcsv($file, []); // Ligne vide
+            
+            // En-têtes CSV
+            fputcsv($file, [
+                'Date',
+                'Source',
+                'Match/Lieu',
+                'Points',
+                'Description'
+            ]);
+            
+            foreach ($pointLogs as $log) {
+                $source = match($log->source) {
+                    'prediction_participation' => 'Participation',
+                    'prediction_winner' => 'Bon vainqueur',
+                    'prediction_exact' => 'Score exact',
+                    'admin_bonus' => 'Bonus admin',
+                    'check_in' => 'Check-in',
+                    default => $log->source
+                };
+
+                $matchOrVenue = '-';
+                if ($log->match) {
+                    $home = $log->match->homeTeam->name ?? '?';
+                    $away = $log->match->awayTeam->name ?? '?';
+                    $matchOrVenue = "{$home} vs {$away}";
+                } elseif ($log->bar) {
+                    $matchOrVenue = $log->bar->name;
+                }
+
+                fputcsv($file, [
+                    $log->created_at->format('d/m/Y H:i'),
+                    $source,
+                    $matchOrVenue,
+                    ($log->points > 0 ? '+' : '') . $log->points,
+                    $log->description ?? ''
+                ]);
+            }
+            
+            // Ligne de total
+            fputcsv($file, []);
+            fputcsv($file, ['', '', 'TOTAL', $pointLogs->sum('points'), '']);
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**

@@ -7,7 +7,7 @@
                 <div>
                     <a href="{{ route('admin.dashboard') }}" class="text-soboa-orange hover:underline text-sm font-bold mb-2 inline-block">← Retour au dashboard</a>
                     <h1 class="text-3xl font-black text-soboa-blue">Utilisateurs</h1>
-                    <p class="text-gray-600 mt-2">{{ $users->total() }} utilisateurs inscrits</p>
+                    <p class="text-gray-600 mt-2">{{ $users->total() }} utilisateurs {{ $search ? 'trouvés' : 'inscrits' }}</p>
                 </div>
                 <div class="flex gap-2">
                     <a href="{{ route('admin.point-logs') }}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
@@ -23,6 +23,30 @@
                         Export CSV
                     </a>
                 </div>
+            </div>
+
+            <!-- Search Box -->
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+                <form action="{{ route('admin.users') }}" method="GET" class="flex gap-4">
+                    <div class="flex-1 relative">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ $search ?? '' }}" 
+                               placeholder="Rechercher par nom, téléphone ou email..." 
+                               class="w-full border border-gray-300 rounded-lg p-3 pl-10 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
+                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <button type="submit" class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold py-3 px-6 rounded-lg transition">
+                        Rechercher
+                    </button>
+                    @if($search)
+                    <a href="{{ route('admin.users') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
+                        Effacer
+                    </a>
+                    @endif
+                </form>
             </div>
 
             @if(session('success'))

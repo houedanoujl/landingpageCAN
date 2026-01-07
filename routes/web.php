@@ -99,6 +99,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/users', [AdminController::class, 'users'])->name('users');
     Route::get('/users/export-csv', [AdminController::class, 'exportUsersCsv'])->name('export-users-csv');
     Route::get('/users/{id}/edit', [AdminController::class, 'editUser'])->name('edit-user');
+    Route::get('/users/{id}/export-points-csv', [AdminController::class, 'exportUserPointsCsv'])->name('export-user-points-csv');
     Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('update-user');
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('delete-user');
     Route::post('/users/{id}/reset-points', [AdminController::class, 'resetUserPoints'])->name('reset-user-points');
