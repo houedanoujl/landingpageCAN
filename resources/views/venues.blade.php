@@ -123,7 +123,7 @@
                 </svg>
                 Points de vente les plus proches
             </h3>
-            <div id="nearest-list" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+            <div id="nearest-list" class="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1"></div>
         </div>
 
         <!-- Liste de tous les points de vente -->
@@ -482,7 +482,7 @@
                         : '<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
 
                     const item = document.createElement('div');
-                    item.className = `flex items-center justify-between p-3 ${bgClass} rounded-lg border cursor-pointer hover:shadow-md transition-all`;
+                    item.className = `snap-start shrink-0 w-64 flex items-center justify-between p-3 ${bgClass} rounded-lg border cursor-pointer hover:shadow-md transition-all`;
                     item.innerHTML = `
                     <div class="flex items-center gap-3">
                         <span class="flex items-center justify-center w-8 h-8 bg-white rounded-full text-sm font-bold ${textClass}">${index + 1}</span>

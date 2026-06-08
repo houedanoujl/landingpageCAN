@@ -66,15 +66,16 @@
                     </div>
                     <div class="flex-1">
                         <p class="font-bold text-sm mb-2">PDV les plus proches</p>
-                        <ul class="space-y-1 text-xs">
+                        <div class="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1 -mx-1 px-1">
                             <template x-for="v in closestVenues" :key="v.id">
-                                <li class="flex justify-between items-center py-1 border-b border-white/10 last:border-0">
-                                    <span class="font-medium" x-text="v.name"></span>
-                                    <span class="font-bold" x-text="v.distance_m < 1000 ? v.distance_m + 'm' : v.distance_km.toFixed(1) + 'km'"></span>
-                                </li>
+                                <div class="snap-start shrink-0 w-36 bg-white/10 rounded-xl px-3 py-2.5 ring-1 ring-white/15">
+                                    <p class="font-bold text-sm truncate" x-text="v.name"></p>
+                                    <p class="text-lg font-black leading-tight mt-0.5" x-text="v.distance_m < 1000 ? v.distance_m + ' m' : v.distance_km.toFixed(1) + ' km'"></p>
+                                    <p class="text-[10px] text-white/70 uppercase tracking-wide mt-0.5">+4 pts bonus</p>
+                                </div>
                             </template>
-                        </ul>
-                        <p class="text-xs text-white/80 mt-2">Rendez-vous dans un PDV pour gagner <strong>+4 pts bonus</strong></p>
+                        </div>
+                        <p class="text-xs text-white/80 mt-2">Rendez-vous dans un PDV pour gagner <strong>+4 pts bonus</strong> · glissez pour voir plus</p>
                     </div>
                 </div>
             </div>
