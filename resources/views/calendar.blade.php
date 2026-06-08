@@ -123,7 +123,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                                 @if($match->homeTeam && $match->homeTeam->iso_code)
                                     <img src="{{ $match->homeTeam->flag_url }}" class="w-8 h-5 object-cover rounded shadow-sm" alt="" loading="lazy">
                                 @endif
-                                <span class="font-semibold text-gray-800 text-sm truncate">{{ $match->homeTeam->name ?? $match->team_a ?? '?' }}</span>
+                                <span class="font-semibold text-gray-800 text-sm truncate">{{ $match->home_name_fr ?? '?' }}</span>
                             </div>
                             
                             <div class="flex-shrink-0 mx-2">
@@ -143,7 +143,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                             </div>
                             
                             <div class="flex items-center gap-2 flex-1 justify-end">
-                                <span class="font-semibold text-gray-800 text-sm truncate text-right">{{ $match->awayTeam->name ?? $match->team_b ?? '?' }}</span>
+                                <span class="font-semibold text-gray-800 text-sm truncate text-right">{{ $match->away_name_fr ?? '?' }}</span>
                                 @if($match->awayTeam && $match->awayTeam->iso_code)
                                     <img src="{{ $match->awayTeam->flag_url }}" class="w-8 h-5 object-cover rounded shadow-sm" alt="" loading="lazy">
                                 @endif
@@ -197,7 +197,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                                             @if($match->homeTeam && $match->homeTeam->iso_code)
                                                 <img src="{{ $match->homeTeam->flag_url }}" class="w-4 h-3 object-cover rounded-sm flex-shrink-0" alt="" loading="lazy">
                                             @endif
-                                            <span class="font-medium truncate">{{ Str::limit($match->homeTeam->name ?? '?', 3, '') }}</span>
+                                            <span class="font-medium truncate">{{ Str::limit($match->home_name_fr ?? '?', 3, '') }}</span>
                                         </div>
                                         @if($match->status === 'finished')
                                             <span class="font-black text-green-700 flex-shrink-0">{{ $match->score_a }}-{{ $match->score_b }}</span>
@@ -205,7 +205,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                                             <span class="text-blue-500 flex-shrink-0 text-[10px]">vs</span>
                                         @endif
                                         <div class="flex items-center gap-1 min-w-0 flex-1 justify-end">
-                                            <span class="font-medium truncate">{{ Str::limit($match->awayTeam->name ?? '?', 3, '') }}</span>
+                                            <span class="font-medium truncate">{{ Str::limit($match->away_name_fr ?? '?', 3, '') }}</span>
                                             @if($match->awayTeam && $match->awayTeam->iso_code)
                                                 <img src="{{ $match->awayTeam->flag_url }}" class="w-4 h-3 object-cover rounded-sm flex-shrink-0" alt="" loading="lazy">
                                             @endif

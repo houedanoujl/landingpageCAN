@@ -19,12 +19,14 @@ class SiteSetting extends Model
         'hero_promo_text',
         'favorite_team_id',
         'geofencing_radius',
+        'test_mode',
         'tournament_ended',
         'tournament_winner_team_id',
     ];
 
     protected $casts = [
         'tournament_ended' => 'boolean',
+        'test_mode' => 'boolean',
     ];
 
     /**

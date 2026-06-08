@@ -47,7 +47,7 @@ class AuthController extends Controller
             }
         }
 
-        return view('auth.login');
+        return view('auth.login', ['testMode' => $this->isTestModeEnabled()]);
     }
 
     public function showRegisterForm()
@@ -57,7 +57,7 @@ class AuthController extends Controller
             return redirect('/matches');
         }
 
-        return view('auth.register');
+        return view('auth.register', ['testMode' => $this->isTestModeEnabled()]);
     }
 
     /**
@@ -74,26 +74,9 @@ class AuthController extends Controller
         try {
             $phone = $this->formatPhone($request->phone);
 
-            // Bypass secret : numéros de test (CI) autorisés malgré la restriction SN
-            $isTestPhone = in_array($phone, config('auth_phones.test_phones_ci', []), true);
-
-            if (!$isTestPhone) {
-                // Vérifier que le numéro est autorisé
-                if (!str_starts_with($phone, '+221')) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Seuls les numéros sénégalais (+221) sont autorisés.',
-                    ], 403);
-                }
-
-                // VALIDATION FORMAT sénégalais
-                $phoneWithoutPrefix = substr($phone, 4);
-                if (strlen($phoneWithoutPrefix) !== 9 || !str_starts_with($phoneWithoutPrefix, '7')) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Format de numéro invalide.',
-                    ], 400);
-                }
+            // Validation du pays autorisé (SN, ou CI si le mode test admin est actif)
+            if ($err = $this->phoneValidationError($phone)) {
+                return response()->json(['success' => false, 'message' => $err[0]], $err[1]);
             }
 
             // Trouver l'utilisateur
@@ -185,26 +168,9 @@ class AuthController extends Controller
         try {
             $phone = $this->formatPhone($request->phone);
 
-            // Bypass secret : numéros de test (CI) autorisés malgré la restriction SN
-            $isTestPhone = in_array($phone, config('auth_phones.test_phones_ci', []), true);
-
-            if (!$isTestPhone) {
-                // Vérifier que le numéro est autorisé
-                if (!str_starts_with($phone, '+221')) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Seuls les numéros sénégalais (+221) sont autorisés.',
-                    ], 403);
-                }
-
-                // VALIDATION FORMAT sénégalais
-                $phoneWithoutPrefix = substr($phone, 4);
-                if (strlen($phoneWithoutPrefix) !== 9 || !str_starts_with($phoneWithoutPrefix, '7')) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Format de numéro invalide. Le numéro doit contenir 9 chiffres commençant par 7.',
-                    ], 400);
-                }
+            // Validation du pays autorisé (SN, ou CI si le mode test admin est actif)
+            if ($err = $this->phoneValidationError($phone)) {
+                return response()->json(['success' => false, 'message' => $err[0]], $err[1]);
             }
 
             // Vérifier si l'utilisateur existe déjà
@@ -718,6 +684,43 @@ class AuthController extends Controller
      * - Autorise tous les numéros sénégalais (+221)
      * - Autorise tous les numéros français (+33)
      */
+    /**
+     * Indique si le mode test admin est actif (autorise les numéros de Côte d'Ivoire).
+     */
+    private function isTestModeEnabled(): bool
+    {
+        return (bool) optional(\App\Models\SiteSetting::first())->test_mode;
+    }
+
+    /**
+     * Valide le pays/format d'un numéro déjà au format E.164.
+     * - Mode test actif : autorise la Côte d'Ivoire (+225 + 10 chiffres commençant par 0).
+     * - Sinon : Sénégal uniquement (+221 + 9 chiffres commençant par 7).
+     *
+     * @return array{0:string,1:int}|null  [message, httpStatus] si erreur, sinon null.
+     */
+    private function phoneValidationError(string $phone): ?array
+    {
+        if ($this->isTestModeEnabled() && str_starts_with($phone, '+225')) {
+            $ci = substr($phone, 4);
+            if (strlen($ci) !== 10 || !str_starts_with($ci, '0')) {
+                return ['Format ivoirien invalide (10 chiffres commençant par 0).', 400];
+            }
+            return null;
+        }
+
+        if (!str_starts_with($phone, '+221')) {
+            return ['Seuls les numéros sénégalais (+221) sont autorisés.', 403];
+        }
+
+        $sn = substr($phone, 4);
+        if (strlen($sn) !== 9 || !str_starts_with($sn, '7')) {
+            return ['Format de numéro invalide. Le numéro doit contenir 9 chiffres commençant par 7.', 400];
+        }
+
+        return null;
+    }
+
     private function isPhoneAllowedForPublic(string $phone): bool
     {
         // Les numéros ivoiriens sont autorisés

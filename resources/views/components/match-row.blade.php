@@ -5,8 +5,8 @@
     $awayTeam = $match->awayTeam ?? null;
     $homeFlag = $homeTeam?->iso_code ? 'https://flagicons.lipis.dev/flags/4x3/' . strtolower($homeTeam->iso_code) . '.svg' : null;
     $awayFlag = $awayTeam?->iso_code ? 'https://flagicons.lipis.dev/flags/4x3/' . strtolower($awayTeam->iso_code) . '.svg' : null;
-    $homeName = $homeTeam?->name ?? $match->team_a;
-    $awayName = $awayTeam?->name ?? $match->team_b;
+    $homeName = \App\Models\Team::fr($homeTeam?->name ?? $match->team_a);
+    $awayName = \App\Models\Team::fr($awayTeam?->name ?? $match->team_b);
     $isFinished = $match->status === 'finished';
     $isLive = $match->status === 'live';
     $isLocked = \Carbon\Carbon::parse($match->match_date)->isPast();
@@ -176,4 +176,57 @@
             </button>
         @endif
     </footer>
+
+    {{-- Pronostics des autres + likes --}}
+    <div x-data="matchPredictions({{ $match->id }})" class="px-4 pb-4 -mt-1">
+        <button type="button" @click="open()"
+                class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold text-soboa-blue hover:text-soboa-blue-dark py-2 rounded-lg hover:bg-soboa-blue/5 transition-colors">
+            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+            Voir les pronostics
+        </button>
+
+        <div x-show="isOpen" x-cloak style="display:none;"
+             @keydown.escape.window="close()"
+             class="modal-backdrop">
+            <div class="modal-panel p-0 overflow-hidden" @click.outside="close()">
+                <header class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light text-white px-5 py-4 flex items-center justify-between">
+                    <div class="min-w-0">
+                        <h3 class="font-black text-lg leading-tight">Pronostics</h3>
+                        <p class="text-xs text-white/80 truncate" x-text="title"></p>
+                    </div>
+                    <button @click="close()" class="modal-close" aria-label="Fermer">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </header>
+                <div class="max-h-[60vh] overflow-y-auto p-4 space-y-2">
+                    <template x-if="loading">
+                        <p class="text-center text-gray-500 py-6">Chargement…</p>
+                    </template>
+                    <template x-if="!loading && items.length === 0">
+                        <p class="text-center text-gray-500 py-6">Aucun pronostic pour ce match.</p>
+                    </template>
+                    <template x-for="p in items" :key="p.id">
+                        <div class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
+                            <div class="min-w-0">
+                                <p class="font-bold text-sm text-soboa-text-dark truncate" x-text="p.user_name + (p.is_mine ? ' (vous)' : '')"></p>
+                                <p class="text-xs text-gray-500">
+                                    Pronostic : <span class="font-black text-soboa-blue" x-text="p.score_a + ' - ' + p.score_b"></span>
+                                    <span x-show="p.points_earned > 0" class="text-soboa-orange font-bold" x-text="'· +' + p.points_earned + ' pts'"></span>
+                                </p>
+                            </div>
+                            <button type="button" @click="toggleLike(p)" :disabled="!auth || p.is_mine"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    :class="p.liked ? 'bg-red-100 text-red-600' : 'bg-white text-gray-500 ring-1 ring-gray-200 hover:bg-gray-100'">
+                                <i data-lucide="heart" class="w-4 h-4" :class="p.liked ? 'fill-current' : ''"></i>
+                                <span x-text="p.likes_count"></span>
+                            </button>
+                        </div>
+                    </template>
+                    <p x-show="!auth && !loading" class="text-center text-xs text-gray-400 pt-2">
+                        <a href="/login" class="text-soboa-blue font-bold">Connectez-vous</a> pour liker.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </article>

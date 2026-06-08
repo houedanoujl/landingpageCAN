@@ -310,13 +310,13 @@
                     
                     <p class="text-soboa-orange font-bold text-sm uppercase tracking-widest mb-4">
                         @if($isToday)
-                            Match aujourd'hui - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
+                            Match aujourd'hui - {{ $nextMatch->home_name_fr }} vs {{ $nextMatch->away_name_fr }}
                         @elseif($isTomorrow)
-                            Match demain - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
+                            Match demain - {{ $nextMatch->home_name_fr }} vs {{ $nextMatch->away_name_fr }}
                         @elseif($timeUntilMatch <= 72)
-                            Prochain match - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
+                            Prochain match - {{ $nextMatch->home_name_fr }} vs {{ $nextMatch->away_name_fr }}
                         @else
-                            Prochain match - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
+                            Prochain match - {{ $nextMatch->home_name_fr }} vs {{ $nextMatch->away_name_fr }}
                         @endif
                     </p>
                     
@@ -325,10 +325,10 @@
                         <div class="text-center">
                             <div class="team-flag w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl mb-2 mx-auto">
                                 <img src="{{ $nextMatch->homeTeam->flag_url_80 }}" 
-                                     alt="{{ $nextMatch->homeTeam->name }}" 
+                                     alt="{{ $nextMatch->home_name_fr }}" 
                                      class="w-full h-full object-cover">
                             </div>
-                            <span class="text-white font-semibold text-xs md:text-sm">{{ $nextMatch->homeTeam->name }}</span>
+                            <span class="text-white font-semibold text-xs md:text-sm">{{ $nextMatch->home_name_fr }}</span>
                         </div>
                         
                         <div class="vs-text text-white font-bold text-2xl md:text-3xl">VS</div>
@@ -336,10 +336,10 @@
                         <div class="text-center">
                             <div class="team-flag w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl mb-2 mx-auto">
                                 <img src="{{ $nextMatch->awayTeam->flag_url_80 }}" 
-                                     alt="{{ $nextMatch->awayTeam->name }}" 
+                                     alt="{{ $nextMatch->away_name_fr }}" 
                                      class="w-full h-full object-cover">
                             </div>
-                            <span class="text-white font-semibold text-xs md:text-sm">{{ $nextMatch->awayTeam->name }}</span>
+                            <span class="text-white font-semibold text-xs md:text-sm">{{ $nextMatch->away_name_fr }}</span>
                         </div>
                     </div>
                     

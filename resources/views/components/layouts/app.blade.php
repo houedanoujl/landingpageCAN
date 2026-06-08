@@ -966,6 +966,60 @@
         })();
     </script>
     @endauth
+
+    {{-- Fenêtre modale : pronostics d'un match + likes (utilisée par x-match-row) --}}
+    <script>
+        function matchPredictions(matchId) {
+            return {
+                matchId: matchId,
+                isOpen: false,
+                loading: false,
+                items: [],
+                title: '',
+                auth: false,
+                open() {
+                    this.isOpen = true;
+                    document.body.style.overflow = 'hidden';
+                    this.load();
+                },
+                close() {
+                    this.isOpen = false;
+                    document.body.style.overflow = '';
+                },
+                async load() {
+                    this.loading = true;
+                    try {
+                        const r = await fetch(`/matches/${this.matchId}/predictions`, { headers: { 'Accept': 'application/json' } });
+                        const d = await r.json();
+                        this.items = d.predictions || [];
+                        this.title = d.match || '';
+                        this.auth = !!d.auth;
+                    } catch (e) {
+                        this.items = [];
+                    }
+                    this.loading = false;
+                    this.$nextTick(() => window.lucide && window.lucide.createIcons());
+                },
+                async toggleLike(p) {
+                    if (!this.auth || p.is_mine) return;
+                    try {
+                        const r = await fetch(`/predictions/${p.id}/like`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        if (r.status === 401) { window.location.href = '/login'; return; }
+                        const d = await r.json();
+                        p.liked = d.liked;
+                        p.likes_count = d.count;
+                        this.$nextTick(() => window.lucide && window.lucide.createIcons());
+                    } catch (e) {}
+                }
+            };
+        }
+    </script>
 </body>
 
 </html>

@@ -2501,6 +2501,29 @@ class AdminController extends Controller
     }
 
     /**
+     * Toggle test mode (autorise les numéros Côte d'Ivoire +225 pour tester les SMS)
+     */
+    public function toggleTestMode(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $settings = SiteSetting::firstOrCreate([]);
+        $newStatus = !$settings->test_mode;
+        $settings->update(['test_mode' => $newStatus]);
+
+        // Invalider le cache des réglages
+        SiteSetting::clearCache();
+
+        $message = $newStatus
+            ? 'Mode test activé : les numéros de Côte d\'Ivoire (+225) sont autorisés.'
+            : 'Mode test désactivé : seuls les numéros du Sénégal (+221) sont autorisés.';
+
+        return back()->with('success', $message);
+    }
+
+    /**
      * Set tournament winner team
      */
     public function setTournamentWinner(Request $request)

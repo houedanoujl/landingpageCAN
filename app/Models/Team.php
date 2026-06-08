@@ -14,6 +14,26 @@ class Team extends Model
     ];
 
     /**
+     * Traduit un nom d'équipe (anglais en base) vers le français.
+     * Retourne le nom d'origine si absent de la table de traduction.
+     */
+    public static function fr(?string $name): ?string
+    {
+        if ($name === null) {
+            return null;
+        }
+        return config('teams_fr.' . $name, $name);
+    }
+
+    /**
+     * Nom affiché en français (à utiliser dans les vues).
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return self::fr($this->name) ?? $this->name;
+    }
+
+    /**
      * Build flag URL. flagcdn.com only supports ISO 3166-1 (2 chars).
      * Subdivisions like gb-eng, gb-sct, gb-wls, gb-nir must use flagicons.lipis.dev.
      */

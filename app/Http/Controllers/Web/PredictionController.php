@@ -236,6 +236,40 @@ class PredictionController extends Controller
         ]));
     }
 
+    /**
+     * Liste publique des pronostics d'un match (pour la fenêtre modale + likes).
+     */
+    public function matchPredictions(MatchGame $match)
+    {
+        $userId = session('user_id');
+
+        $predictions = $match->predictions()
+            ->with('user:id,name')
+            ->withCount('likes')
+            ->get()
+            ->map(function ($p) use ($userId) {
+                return [
+                    'id'            => $p->id,
+                    'user_name'     => $p->user->name ?? 'Anonyme',
+                    'score_a'       => (int) $p->score_a,
+                    'score_b'       => (int) $p->score_b,
+                    'points_earned' => (int) $p->points_earned,
+                    'likes_count'   => (int) $p->likes_count,
+                    'liked'         => $userId ? $p->isLikedBy((int) $userId) : false,
+                    'is_mine'       => $userId ? ((int) $p->user_id === (int) $userId) : false,
+                ];
+            })
+            ->sortByDesc('likes_count')
+            ->values();
+
+        return response()->json([
+            'match'       => $match->display_label,
+            'count'       => $predictions->count(),
+            'auth'        => (bool) $userId,
+            'predictions' => $predictions,
+        ]);
+    }
+
     public function toggleLike(Request $request, Prediction $prediction)
     {
         if (!session('user_id')) {

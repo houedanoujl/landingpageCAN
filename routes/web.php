@@ -62,6 +62,7 @@ Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 // Pronostics (requiert authentification)
 Route::post('/predictions', [PredictionController::class, 'store'])->name('predictions.store');
 Route::get('/mes-pronostics', [PredictionController::class, 'myPredictions'])->name('predictions.index');
+Route::get('/matches/{match}/predictions', [PredictionController::class, 'matchPredictions'])->name('matches.predictions');
 Route::post('/predictions/{prediction}/like', [PredictionController::class, 'toggleLike'])->name('predictions.like');
 Route::post('/predictions/{prediction}/comments', [PredictionController::class, 'storeComment'])->name('predictions.comments.store');
 Route::delete('/predictions/{prediction}/comments/{comment}', [PredictionController::class, 'destroyComment'])->name('predictions.comments.destroy');
@@ -181,6 +182,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('/settings', [AdminController::class, 'updateSettings'])->name('update-settings');
     Route::post('/settings/toggle-tournament-ended', [AdminController::class, 'toggleTournamentEnded'])->name('toggle-tournament-ended');
+    Route::post('/settings/toggle-test-mode', [AdminController::class, 'toggleTestMode'])->name('toggle-test-mode');
     Route::post('/settings/set-tournament-winner', [AdminController::class, 'setTournamentWinner'])->name('set-tournament-winner');
 
     // Logs OTP

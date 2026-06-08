@@ -50,15 +50,18 @@
                     <div class="mb-5">
                         <label class="block text-sm font-bold text-gray-700 mb-2">Numéro de téléphone</label>
                         <div class="flex gap-2">
-                            <!-- Indicatif Sénégal uniquement -->
+                            <!-- Indicatif (Sénégal, ou Côte d'Ivoire en mode test) -->
                             <div class="px-4 py-3 border-2 border-gray-200 bg-gray-50 rounded-xl text-sm font-bold text-gray-700 flex items-center">
-                                +221
+                                {{ ($testMode ?? false) ? '+225' : '+221' }}
                             </div>
                             <input type="tel" x-model="phone"
-                                placeholder="77 123 45 67"
+                                placeholder="{{ ($testMode ?? false) ? '07 12 34 56 78' : '77 123 45 67' }}"
                                 class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-soboa-orange focus:ring-0 text-lg"
                                 required>
                         </div>
+                        @if($testMode ?? false)
+                        <p class="text-xs text-orange-600 font-semibold mt-2">🧪 Mode test activé — numéros Côte d'Ivoire (+225) autorisés.</p>
+                        @endif
                     </div>
 
                     <!-- Info : mot de passe généré automatiquement -->
@@ -117,7 +120,8 @@
                 loading: false,
                 error: '',
                 success: '',
-                countryCode: '+221', // Sénégal uniquement
+                countryCode: @js($testMode ?? false ? '+225' : '+221'),
+                testMode: @js((bool) ($testMode ?? false)),
 
                 get fullPhone() {
                     return this.countryCode + this.formatPhoneNumber(this.phone);
@@ -128,10 +132,14 @@
                     return phone.replace(/\D/g, '');
                 },
 
-                // Valider le format du numéro (Sénégal uniquement)
+                // Valider le format du numéro
+                // Mode test : Côte d'Ivoire (10 chiffres commençant par 0)
+                // Sinon : Sénégal (9 chiffres commençant par 7)
                 isValidPhone() {
                     const phoneDigits = this.formatPhoneNumber(this.phone);
-                    // Sénégal: 9 chiffres commençant par 7
+                    if (this.testMode) {
+                        return phoneDigits.length === 10 && phoneDigits.startsWith('0');
+                    }
                     return phoneDigits.length === 9 && phoneDigits.startsWith('7');
                 },
 
@@ -143,7 +151,9 @@
 
                     // Valider le format du numéro
                     if (!this.isValidPhone()) {
-                        this.error = 'Le numéro doit contenir 9 chiffres commençant par 7 (ex: 77 123 45 67).';
+                        this.error = this.testMode
+                            ? 'Le numéro doit contenir 10 chiffres commençant par 0 (ex: 07 12 34 56 78).'
+                            : 'Le numéro doit contenir 9 chiffres commençant par 7 (ex: 77 123 45 67).';
                         return;
                     }
 

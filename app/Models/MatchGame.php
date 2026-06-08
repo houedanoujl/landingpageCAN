@@ -165,9 +165,22 @@ class MatchGame extends Model
             return $this->phase_name;
         }
 
-        $homeTeam = $this->homeTeam ? $this->homeTeam->name : $this->team_a;
-        $awayTeam = $this->awayTeam ? $this->awayTeam->name : $this->team_b;
+        return $this->home_name_fr . ' vs ' . $this->away_name_fr;
+    }
 
-        return $homeTeam . ' vs ' . $awayTeam;
+    /**
+     * Nom français de l'équipe à domicile (relation ou libellé team_a).
+     */
+    public function getHomeNameFrAttribute(): ?string
+    {
+        return Team::fr($this->homeTeam ? $this->homeTeam->name : $this->team_a);
+    }
+
+    /**
+     * Nom français de l'équipe à l'extérieur (relation ou libellé team_b).
+     */
+    public function getAwayNameFrAttribute(): ?string
+    {
+        return Team::fr($this->awayTeam ? $this->awayTeam->name : $this->team_b);
     }
 }

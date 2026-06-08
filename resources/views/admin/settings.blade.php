@@ -249,6 +249,31 @@
                     </div>
                 </div>
 
+                <!-- Mode test (numéros Côte d'Ivoire) -->
+                <div class="mb-6 p-4 rounded-lg {{ $settings->test_mode ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 border border-gray-200' }}">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold {{ $settings->test_mode ? 'text-orange-800' : 'text-gray-700' }}">
+                                🧪 Mode test {{ $settings->test_mode ? '(activé)' : '(désactivé)' }}
+                            </h3>
+                            <p class="text-sm {{ $settings->test_mode ? 'text-orange-600' : 'text-gray-500' }} mt-1">
+                                {{ $settings->test_mode
+                                    ? 'Inscription/connexion autorisées avec des numéros de Côte d\'Ivoire (+225) pour tester les SMS.'
+                                    : 'Seuls les numéros du Sénégal (+221) sont autorisés. Activez pour tester les SMS avec un numéro ivoirien.' }}
+                            </p>
+                        </div>
+                        <form action="{{ route('admin.toggle-test-mode') }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                    class="px-6 py-3 rounded-lg font-bold transition shadow-lg hover:scale-105 whitespace-nowrap {{ $settings->test_mode
+                                        ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                                        : 'bg-orange-600 hover:bg-orange-700 text-white' }}">
+                                {{ $settings->test_mode ? 'Désactiver' : 'Activer le mode test' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Équipe gagnante -->
                 <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <h3 class="font-bold text-yellow-800 mb-3 flex items-center gap-2">

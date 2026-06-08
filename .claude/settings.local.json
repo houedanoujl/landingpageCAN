@@ -49,7 +49,16 @@
       "Bash(curl -s -o /dev/null -w \"Calendar: %{http_code}\\\\n\" http://localhost/calendar)",
       "Bash(curl -s http://localhost/calendar)",
       "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php -l app/Console/Commands/ResetSeason.php && echo \"---RUN---\" && php artisan season:reset --force 2>&1 | tail -25')",
-      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan season:reset --force 2>&1 | tail -22')"
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan season:reset --force 2>&1 | tail -22')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php -l app/Http/Controllers/Web/AuthController.php && php artisan view:cache 2>&1 | tail -2 && php artisan view:clear >/dev/null 2>&1 && php artisan config:clear >/dev/null 2>&1 && echo \"OK\"')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan migrate --force 2>&1 | tail -3 && echo \"---LINT---\" && php -l app/Http/Controllers/Web/AuthController.php && php -l app/Http/Controllers/Web/AdminController.php && echo \"---VIEWS---\" && php artisan view:cache 2>&1 | tail -1 && php artisan view:clear >/dev/null 2>&1 && echo \"---ROUTE---\" && php artisan route:list 2>&1 | grep \"toggle-test-mode\"')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan view:cache >/dev/null 2>&1 && php artisan view:clear >/dev/null 2>&1 *)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app *)",
+      "Bash(cd /c/Users/socialmedia/Documents/GitHub/landingpageCAN)",
+      "Bash(grep -n '{{ $team->name }}' resources/views/admin/matches.blade.php)",
+      "Bash(sed -i 's/{{ \\\\$team->name }}/{{ \\\\$team->display_name }}/g' resources/views/admin/matches.blade.php)",
+      "Bash(sed -i 's/\\\\$nextMatch->homeTeam->name/\\\\$nextMatch->home_name_fr/g; s/\\\\$nextMatch->awayTeam->name/\\\\$nextMatch->away_name_fr/g' resources/views/welcome.blade.php)",
+      "Bash(sed -i 's/\\\\$match->homeTeam->name ?? \\\\$match->team_a ?? '\\\\''?'\\\\''/\\\\$match->home_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->awayTeam->name ?? \\\\$match->team_b ?? '\\\\''?'\\\\''/\\\\$match->away_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->homeTeam->name ?? '\\\\''?'\\\\''/\\\\$match->home_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->awayTeam->name ?? '\\\\''?'\\\\''/\\\\$match->away_name_fr ?? '\\\\''?'\\\\''/g' resources/views/calendar.blade.php)"
     ]
   }
 }
