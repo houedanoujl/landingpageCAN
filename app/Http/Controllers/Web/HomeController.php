@@ -66,7 +66,11 @@ class HomeController extends Controller
         // Récupérer les settings pour l'équipe gagnante du tournoi
         $siteSettings = SiteSetting::with('tournamentWinner')->first();
 
-        return view('welcome', compact('upcomingMatches', 'nextMatch', 'topUsers', 'venueCount', 'selectedVenue', 'siteSettings'));
+        // Cible du décompte : début de la Coupe du Monde 2026 (config),
+        // indépendant des matchs test ajoutés avant le coup d'envoi.
+        $worldCupStart = \Carbon\Carbon::parse(config('game.world_cup_start', '2026-06-11 19:00:00'));
+
+        return view('welcome', compact('upcomingMatches', 'nextMatch', 'topUsers', 'venueCount', 'selectedVenue', 'siteSettings', 'worldCupStart'));
     }
 
     public function venues()

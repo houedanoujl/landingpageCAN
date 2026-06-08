@@ -157,7 +157,7 @@
     <!-- Hero Section - Grande Fête du Foot Africain Celebration -->
     <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden" x-data="{
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
-                 targetDate: @if($nextMatch) new Date('{{ $nextMatch->match_date->format('Y-m-d\TH:i:s') }}').getTime() @else new Date('2025-12-21T20:00:00').getTime() @endif,
+                 targetDate: new Date('{{ ($worldCupStart ?? \Carbon\Carbon::parse(config('game.world_cup_start', '2026-06-11 19:00:00')))->format('Y-m-d\TH:i:s') }}').getTime(),
                  scrollY: 0,
                  parallaxOffset: 0,
                  init() {
@@ -251,9 +251,9 @@
                 <!-- Branding Badge -->
                 <div class="inline-flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl px-8 py-4 border border-white/20 shadow-2xl">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center p-2 mb-2 shadow-inner overflow-hidden">
-                        <img src="/images/logoSOBOA.png.webp" alt="GAZELLE" class="w-full h-full object-cover rounded-full">
+                        <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-cover rounded-full">
                     </div>
-                    <span class="text-white font-black text-xl tracking-tighter uppercase leading-none">GAZELLE</span>
+                    <span class="text-white font-black text-xl tracking-tighter uppercase leading-none">SOBOA FOOT TIME</span>
                     <span class="text-soboa-orange font-bold text-xs tracking-[0.2em] uppercase mt-1 opacity-90">Le gout de notre victoire</span>
                 </div>
             </div>
@@ -263,9 +263,9 @@
                 <!-- Branding Badge -->
                 <div class="inline-flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl px-8 py-4 mb-8 border border-white/20 shadow-2xl">
                     <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center p-3 mb-3 shadow-inner overflow-hidden">
-                        <img src="/images/logoSOBOA.png.webp" alt="GAZELLE" class="w-full h-full object-cover rounded-full">
+                        <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-cover rounded-full">
                     </div>
-                    <span class="text-white font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none animate-glow hero-title">GAZELLE</span>
+                    <span class="text-white font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none animate-glow hero-title">SOBOA FOOT TIME</span>
                     <span class="text-soboa-orange font-bold text-sm md:text-base tracking-[0.3em] uppercase mt-2 opacity-90 animate-pulse-soft">Le gout de notre victoire</span>
                 </div>
 
@@ -300,10 +300,10 @@
             <div
                 class="inline-flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl px-8 py-4 mb-8 border border-white/20 shadow-2xl animate-fade-in-down">
                 <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center p-3 mb-3 shadow-inner overflow-hidden">
-                    <img src="/images/logoSOBOA.png.webp" alt="GAZELLE" class="w-full h-full object-cover rounded-full">
+                    <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-cover rounded-full">
                 </div>
                 <span
-                    class="text-white font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none animate-glow hero-title">GAZELLE</span>
+                    class="text-white font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none animate-glow hero-title">SOBOA FOOT TIME</span>
                 <span
                     class="text-soboa-orange font-bold text-sm md:text-base tracking-[0.3em] uppercase mt-2 opacity-90 animate-pulse-soft">Le
                     goût de notre victoire</span>
@@ -444,7 +444,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
-                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">GAZELLE | LE GOÛT DE
+                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">SOBOA FOOT TIME | LE GOÛT DE
                         NOTRE VICTOIRE</span>
                     <div class="flex items-center gap-2 mt-2">
                         <h2 class="text-3xl md:text-4xl font-black text-soboa-blue">Prochains matchs</h2>

@@ -2,7 +2,7 @@
 
 # ==========================================
 # SCRIPT DE DÉPLOIEMENT FORGE - PRODUCTION
-# GAZELLE - Le goût de notre victoire
+# SOBOA FOOT TIME - Le goût de notre victoire
 # ==========================================
 # MODE: CODE ONLY - Ne touche PAS à la base de données
 # ==========================================

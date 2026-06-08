@@ -20,3 +20,4 @@ Thumbs.db
 /storage/app/production_sync.json
 /storage/app/*_export_*.sql
 /storage/app/*_backup_*.sql
+nul

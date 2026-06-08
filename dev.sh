@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script de développement GAZELLE avec Hot Reload
+# Script de développement SOBOA FOOT TIME avec Hot Reload
 # Lance PHP artisan serve + Vite en parallèle
 
 echo "🚀 =============================================="
-echo "   GAZELLE - Mode Développement (Hot Reload)"
+echo "   SOBOA FOOT TIME - Mode Développement (Hot Reload)"
 echo "=============================================="
 echo ""
 

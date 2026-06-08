@@ -361,11 +361,11 @@
                 <a href="/" class="flex items-center gap-3 group">
                     <div
                         class="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden bg-white border-2 border-white">
-                        <img src="/images/logoSOBOA.png.webp" alt="GAZELLE" class="w-full h-full object-contain p-0.5">
+                        <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-contain p-0.5">
                     </div>
                     <div class="text-black">
                         <span
-                            class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none block">GAZELLE</span>
+                            class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none block">SOBOA FOOT TIME</span>
                         <span
                             class="text-black font-extrabold text-[10px] md:text-xs block tracking-[0.2em] uppercase opacity-90">Le
                             goût de notre victoire</span>
@@ -535,10 +535,10 @@
                     <div class="flex items-center gap-3 mb-4 justify-center md:justify-start">
                         <div
                             class="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-white border border-white/20">
-                            <img src="/images/logoSOBOA.png.webp" alt="GAZELLE" class="w-full h-full object-contain p-1">
+                            <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-contain p-1">
                         </div>
                         <div>
-                            <span class="font-black text-xl uppercase">GAZELLE</span>
+                            <span class="font-black text-xl uppercase">SOBOA FOOT TIME</span>
                             <span class="text-soboa-orange block text-sm font-bold uppercase tracking-wider">Le goût de
                                 notre victoire</span>
                         </div>
@@ -588,7 +588,7 @@
             </div>
             
             <div class="border-t border-white/10 pt-6 text-center">
-                <p class="text-white/50 text-xs">© {{ date('Y') }} GAZELLE. Tous droits réservés SOBOA Sénégal</p>
+                <p class="text-white/50 text-xs">© {{ date('Y') }} SOBOA FOOT TIME. Tous droits réservés SOBOA Sénégal</p>
             </div>
         </div>
     </footer>
@@ -643,7 +643,7 @@
             window.addEventListener('pageshow', (event) => {
                 if (event.persisted) {
                     // Page was restored from bfcache (User hit "Back" or "Forward")
-                    console.log('[GAZELLE] Page restored from bfcache - Instant load!');
+                    console.log('[SOBOA FOOT TIME] Page restored from bfcache - Instant load!');
                     hideLoader();
                     
                     // Restore dynamic content from sessionStorage
@@ -661,7 +661,7 @@
                             window.showGeoState(geoState);
                         }
                     } catch (e) {
-                        console.warn('[GAZELLE] Erreur restauration cache:', e);
+                        console.warn('[SOBOA FOOT TIME] Erreur restauration cache:', e);
                     }
                     
                     // Force scroll restoration
@@ -685,7 +685,7 @@
                         sessionStorage.setItem('geo_state', window.currentGeoState);
                     }
                 } catch (e) {
-                    console.warn('[GAZELLE] Erreur sauvegarde cache:', e);
+                    console.warn('[SOBOA FOOT TIME] Erreur sauvegarde cache:', e);
                 }
             });
             

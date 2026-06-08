@@ -135,6 +135,47 @@ class PointsService
     }
 
     /**
+     * Award the +1 participation point immediately when a prediction is made.
+     *
+     * Idempotent per match: a user can only earn the participation point once
+     * per match (source = prediction_participation + match_id). This is the same
+     * guard used by ProcessMatchPoints, so awarding here prevents the job from
+     * awarding it again when the match finishes.
+     *
+     * @param User $user
+     * @param int $matchId
+     * @return int Points awarded (1 the first time, 0 afterwards)
+     */
+    public function awardPredictionParticipationPoints(User $user, int $matchId): int
+    {
+        // Check if tournament has ended - no more points
+        if (!SiteSetting::isPointsEnabled()) {
+            return 0;
+        }
+
+        $alreadyAwarded = PointLog::where('user_id', $user->id)
+            ->where('source', 'prediction_participation')
+            ->where('match_id', $matchId)
+            ->exists();
+
+        if ($alreadyAwarded) {
+            return 0;
+        }
+
+        DB::transaction(function () use ($user, $matchId) {
+            $user->increment('points_total', 1);
+            PointLog::create([
+                'user_id' => $user->id,
+                'source' => 'prediction_participation',
+                'points' => 1,
+                'match_id' => $matchId,
+            ]);
+        });
+
+        return 1;
+    }
+
+    /**
      * Award daily activity points.
      * This is triggered by the DailyRewardMiddleware on the user's first activity
      * of each calendar day. Works even for users who never log out.

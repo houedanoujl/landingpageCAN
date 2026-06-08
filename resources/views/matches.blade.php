@@ -959,18 +959,18 @@
         // Détecter automatiquement la géolocalisation via l'API
         async function detectGeolocation() {
             if (!navigator.geolocation) {
-                console.log('[GAZELLE] Géolocalisation non supportée');
+                console.log('[SOBOA FOOT TIME] Géolocalisation non supportée');
                 return;
             }
 
-            console.log('[GAZELLE] Détection géolocalisation...');
+            console.log('[SOBOA FOOT TIME] Détection géolocalisation...');
 
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     userLatitude = position.coords.latitude;
                     userLongitude = position.coords.longitude;
 
-                    console.log('[GAZELLE] Position détectée:', userLatitude, userLongitude);
+                    console.log('[SOBOA FOOT TIME] Position détectée:', userLatitude, userLongitude);
 
                     try {
                         // Appeler l'API de géolocalisation pour obtenir les PDV proches
@@ -989,7 +989,7 @@
                         const data = await response.json();
 
                         if (!data.success) {
-                            console.log('[GAZELLE] Erreur API géolocalisation');
+                            console.log('[SOBOA FOOT TIME] Erreur API géolocalisation');
                             return;
                         }
 
@@ -998,7 +998,7 @@
 
                         if (nearbyV) {
                             nearbyVenue = nearbyV;
-                            console.log('[GAZELLE] PDV détecté:', nearbyVenue.name, '(', nearbyVenue.distance_m, 'm)');
+                            console.log('[SOBOA FOOT TIME] PDV détecté:', nearbyVenue.name, '(', nearbyVenue.distance_m, 'm)');
 
                             // Afficher le bandeau de bonus (Proche)
                             const nearbyInfo = document.getElementById('nearbyVenueInfo');
@@ -1017,7 +1017,7 @@
                                 el.innerHTML = '<strong class="text-green-600">+4 pts bonus PDV garantis ! 🎉</strong>';
                             });
                         } else {
-                            console.log('[GAZELLE] Pas de PDV à proximité immédiate (200m)');
+                            console.log('[SOBOA FOOT TIME] Pas de PDV à proximité immédiate (200m)');
 
                             // Cacher le bandeau "Proche"
                             document.getElementById('nearbyVenueInfo').classList.add('hidden');
@@ -1041,12 +1041,12 @@
                             }
                         }
                     } catch (error) {
-                        console.error('[GAZELLE] Erreur API Géolocalisation:', error);
+                        console.error('[SOBOA FOOT TIME] Erreur API Géolocalisation:', error);
                     }
                 },
                 (error) => {
                     // Gérer les erreurs de géolocalisation
-                    console.log('[GAZELLE] Géolocalisation refusée ou indisponible:', error.message);
+                    console.log('[SOBOA FOOT TIME] Géolocalisation refusée ou indisponible:', error.message);
                 },
                 {
                     enableHighAccuracy: false,
@@ -1115,7 +1115,7 @@
                             }
                         }
                     } catch (error) {
-                        console.error('[GAZELLE] Erreur soumission:', error);
+                        console.error('[SOBOA FOOT TIME] Erreur soumission:', error);
                         // Message d'erreur plus user-friendly
                         const errorMsg = error.message || 'Erreur lors de l\'enregistrement';
                         showErrorNotification(errorMsg);

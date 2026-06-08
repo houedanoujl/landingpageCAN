@@ -4,10 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Game Logic Configuration - GAZELLE
+    | Game Logic Configuration - SOBOA FOOT TIME
     |--------------------------------------------------------------------------
     |
-    | These settings control the game logic for the GAZELLE prediction app.
+    | These settings control the game logic for the SOBOA FOOT TIME prediction app.
     | Configure whether venue geofencing is required or optional.
     |
     */
@@ -17,6 +17,14 @@ return [
      * La marque/plateforme reste définie par APP_NAME.
      */
     'competition_name' => env('COMPETITION_NAME', 'Football Fest 2026'),
+
+    /**
+     * Date/heure de début de la Coupe du Monde 2026 (premier match).
+     * Sert de cible au décompte affiché sur la page d'accueil,
+     * indépendamment des matchs test ajoutés avant cette date.
+     * Heure stockée en UTC.
+     */
+    'world_cup_start' => env('WORLD_CUP_START', '2026-06-11 19:00:00'),
 
     /**
      * Require venue geofencing for predictions

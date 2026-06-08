@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             TeamSeeder::class,           // ✅ Équipes Football Fest 2026 (Coupe du Monde 2026)
             StadiumSeeder::class,        // ✅ Stades (USA / Canada / Mexique)
             MatchSeeder::class,          // ✅ Matchs (104 rencontres)
+            TestMatchSeeder::class,      // 🧪 Match test (commence dès demain) pour tester les pronostics
             BarSeeder::class,            // ✅ Points de vente (réseau SOBOA)
             // ⚠️ AnimationSeeder désactivé : ses données (match-bar) étaient propres
             //    à la CAN et ne correspondent plus aux matchs de la Coupe du Monde.

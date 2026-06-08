@@ -1,4 +1,4 @@
-<x-layouts.app title="Animations Gazelle">
+<x-layouts.app title="Animations SOBOA FOOT TIME">
 
     <style>
         /* Custom scrollbar styles for the modal */
@@ -303,7 +303,7 @@
             </div>
             <div class="relative z-10 max-w-7xl mx-auto text-center">
                 <span class="text-soboa-orange font-black text-sm uppercase tracking-widest drop-shadow-md">🎉 Le goût de notre victoire</span>
-                <h1 class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-2xl">Animations Gazelle</h1>
+                <h1 class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-2xl">Animations SOBOA FOOT TIME</h1>
                 <p class="text-white/80 mt-4 max-w-2xl mx-auto font-medium drop-shadow-lg">
                     Découvrez les lieux partenaires et vivez les matchs avec nous ! Gagnez 4 points bonus par visite.
                 </p>
@@ -1110,8 +1110,8 @@
             transform: rotate(-45deg) scale(1.1);
         }
 
-        /* Old style for Gazelle logo markers (kept for compatibility) */
-        .gazelle-marker {
+        /* Old style for SOBOA FOOT TIME logo markers (kept for compatibility) */
+        .soboa-marker {
             border-radius: 50%;
             border: 3px solid #E96611;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -1119,7 +1119,7 @@
             background: white;
         }
 
-        .gazelle-marker img {
+        .soboa-marker img {
             width: 100%;
             height: 100%;
             object-fit: cover;

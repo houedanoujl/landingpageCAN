@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script d'importation des nouveaux matchs GAZELLE
+# Script d'importation des nouveaux matchs SOBOA FOOT TIME
 # Ce script nettoie les données existantes et importe les nouveaux matchs depuis le CSV
 
 echo "🚀 =============================================="
-echo "   GAZELLE - Import des Nouveaux Matchs"
+echo "   SOBOA FOOT TIME - Import des Nouveaux Matchs"
 echo "=============================================="
 echo ""
 

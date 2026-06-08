@@ -15,6 +15,7 @@ services:
             WEB_DOCUMENT_ROOT: '/app/public'
         volumes:
             - '.:/app'
+            - './docker/entrypoint.d/20-composer-install.sh:/entrypoint.d/20-composer-install.sh:ro'
         networks:
             - sail
         depends_on:

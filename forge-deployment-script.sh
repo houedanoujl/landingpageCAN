@@ -2,7 +2,7 @@
 
 # ==========================================
 # SCRIPT DE DÉPLOIEMENT FORGE - PRODUCTION
-# GAZELLE - Le goût de notre victoire
+# SOBOA FOOT TIME - Le goût de notre victoire
 # ==========================================
 
 $CREATE_RELEASE()

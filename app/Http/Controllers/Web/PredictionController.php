@@ -131,6 +131,9 @@ class PredictionController extends Controller
 
             $user = User::find($userId);
 
+            // Award the +1 participation point immediately (idempotent per match)
+            $this->pointsService->awardPredictionParticipationPoints($user, $match->id);
+
             // Award bonus points if prediction made from a venue (optional)
             $venuePointsAwarded = 0;
             if ($venue) {
@@ -186,6 +189,9 @@ class PredictionController extends Controller
         ]);
 
         $user = User::find($userId);
+
+        // Award the +1 participation point immediately (idempotent per match)
+        $this->pointsService->awardPredictionParticipationPoints($user, $match->id);
 
         // Award bonus points ONLY if the match is being shown at this venue
         $venuePointsAwarded = 0;
