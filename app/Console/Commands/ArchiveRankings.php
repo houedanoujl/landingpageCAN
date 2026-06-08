@@ -70,10 +70,12 @@ class ArchiveRankings extends Command
             User::query()->update(['points_total' => 0]);
             Prediction::query()->update(['points_earned' => 0]);
 
+            // delete() et non truncate() : TRUNCATE fait un commit implicite en
+            // MySQL et casserait la transaction ("There is no active transaction").
             Schema::disableForeignKeyConstraints();
-            DB::table('point_logs')->truncate();
+            DB::table('point_logs')->delete();
             if (Schema::hasTable('weekly_rankings')) {
-                DB::table('weekly_rankings')->truncate();
+                DB::table('weekly_rankings')->delete();
             }
             Schema::enableForeignKeyConstraints();
         });
