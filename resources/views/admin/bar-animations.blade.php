@@ -6,7 +6,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-4xl">📅</span> Animations - {{ $bar->name }}
+                        <span class="text-4xl"></span> Animations - {{ $bar->name }}
                     </h1>
                     <p class="text-gray-600 mt-2">
                         @if($bar->zone)
@@ -71,7 +71,7 @@
                             <td class="p-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-soboa-blue/10 rounded-full flex items-center justify-center">
-                                        <span class="text-xl">⚽</span>
+                                        <span class="text-xl"></span>
                                     </div>
                                     <div>
                                         <div class="font-bold text-gray-800">
@@ -137,7 +137,7 @@
                         <tr>
                             <td colspan="5" class="p-8 text-center text-gray-500">
                                 <div class="flex flex-col items-center gap-4">
-                                    <span class="text-6xl">📅</span>
+                                    <span class="text-6xl"></span>
                                     <div>
                                         <p class="font-bold text-lg">Aucune animation pour ce point de vente</p>
                                         <p class="text-sm mt-2">Cliquez sur "Nouvelle Animation" pour en ajouter une.</p>

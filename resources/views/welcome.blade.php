@@ -75,39 +75,33 @@
     }">
 
         <!-- AGE VERIFICATION MODAL -->
-        <div x-show="showAgeModal" x-cloak x-transition:enter="transition ease-out duration-300"
+        <div x-show="showAgeModal" x-cloak
+            x-transition:enter="transition ease-out duration-base"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+            class="modal-backdrop"
+            role="dialog" aria-modal="true" aria-labelledby="age-modal-title">
 
-            <div x-show="showAgeModal" x-transition:enter="transition ease-out duration-300"
+            <div x-show="showAgeModal"
+                x-transition:enter="transition ease-out duration-base"
                 x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100"
-                class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center relative overflow-hidden">
+                class="modal-panel p-8 text-center relative">
 
-                <!-- Background Pattern -->
-                <div
-                    class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-soboa-orange via-soboa-blue to-soboa-orange">
-                </div>
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-soboa-orange via-soboa-blue to-soboa-orange"></div>
 
-                <div
-                    class="w-24 h-24 mx-auto mb-6 flex items-center justify-center bg-white rounded-full shadow-lg p-2">
+                <div class="w-24 h-24 mx-auto mb-6 flex items-center justify-center bg-white rounded-full shadow-elev-2 p-2">
                     <img src="/images/logoSOBOA.png.webp" alt="SOBOA" class="w-full h-full object-contain">
                 </div>
 
-                <h2 class="text-3xl font-black text-soboa-blue mb-2">Êtes-vous majeur ?</h2>
+                <h2 id="age-modal-title" class="text-3xl font-black text-soboa-blue mb-2">Êtes-vous majeur ?</h2>
                 <p class="text-gray-500 mb-8">L'accès à ce site est réservé aux personnes de 18 ans et plus.</p>
 
                 <div class="flex flex-col gap-3">
-                    <button @click="confirmAge()"
-                        class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-6 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <button @click="confirmAge()" class="btn btn-primary btn-lg btn-block">
                         <span>Oui, j'ai plus de 18 ans</span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
-                            </path>
-                        </svg>
+                        <i data-lucide="check" class="w-5 h-5"></i>
                     </button>
 
-                    <button @click="denyAge()"
-                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 px-6 rounded-xl transition">
+                    <button @click="denyAge()" class="btn btn-ghost btn-lg btn-block">
                         Non, je suis mineur
                     </button>
                 </div>
@@ -119,34 +113,27 @@
         </div>
 
         <!-- PWA INSTALL MODAL -->
-        <div x-show="showPwaModal" x-cloak x-transition:enter="transition ease-out duration-300 transform"
+        <div x-show="showPwaModal" x-cloak
+            x-transition:enter="transition ease-out duration-base transform"
             x-transition:enter-start="translate-y-full opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
-            class="fixed bottom-0 left-0 right-0 z-[90] p-4 flex justify-center pointer-events-none">
+            class="fixed bottom-0 left-0 right-0 z-modal-backdrop p-4 flex justify-center pointer-events-none"
+            role="dialog" aria-modal="false" aria-labelledby="pwa-modal-title">
 
-            <div
-                class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 pointer-events-auto border border-gray-100 flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden">
-                <!-- Close Button -->
-                <button @click="dismissPwa()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
+            <div class="bg-white rounded-2xl shadow-elev-modal max-w-md w-full p-5 pointer-events-auto border border-gray-100 flex flex-col sm:flex-row items-center gap-4 relative">
+                <button @click="dismissPwa()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-2 rounded-full" aria-label="Fermer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
 
-                <!-- Icon -->
                 <div class="flex-shrink-0 bg-soboa-blue/10 p-3 rounded-xl">
-                    <img src="/images/logoSOBOA.png.webp" alt="App Icon" class="w-12 h-12 object-contain">
+                    <img src="/images/logoSOBOA.png.webp" alt="" class="w-12 h-12 object-contain">
                 </div>
 
-                <!-- Text -->
                 <div class="flex-1 text-center sm:text-left">
-                    <h3 class="font-bold text-soboa-blue text-lg">Installez l'application</h3>
-                    <p class="text-sm text-gray-500">Accédez plus rapidement aux pronostics et résultats !</p>
+                    <h3 id="pwa-modal-title" class="font-bold text-soboa-blue text-lg">Installez l'application</h3>
+                    <p class="text-sm text-gray-500">Accédez plus rapidement aux pronostics et résultats.</p>
                 </div>
 
-                <!-- Button -->
-                <button @click="installPwa()"
-                    class="bg-soboa-blue hover:bg-soboa-blue-dark text-white text-sm font-bold py-3 px-6 rounded-xl shadow-lg transition whitespace-nowrap">
+                <button @click="installPwa()" class="btn btn-blue btn-md whitespace-nowrap">
                     Installer
                 </button>
             </div>
@@ -155,7 +142,7 @@
     </div>
 
     <!-- Hero Section - Grande Fête du Foot Africain Celebration -->
-    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden" x-data="{
+    <section class="relative min-h-[calc(100dvh-150px)] flex items-center justify-center overflow-hidden" x-data="{
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
                  targetDate: new Date('{{ ($worldCupStart ?? \Carbon\Carbon::parse(config('game.world_cup_start', '2026-06-11 19:00:00')))->format('Y-m-d\TH:i:s') }}').getTime(),
                  scrollY: 0,
@@ -163,10 +150,13 @@
                  init() {
                      this.updateCountdown();
                      setInterval(() => this.updateCountdown(), 1000);
-                     window.addEventListener('scroll', () => {
-                         this.scrollY = window.scrollY;
-                         this.parallaxOffset = this.scrollY * 0.5;
-                     });
+                     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                     if (!reduceMotion) {
+                         window.addEventListener('scroll', () => {
+                             this.scrollY = window.scrollY;
+                             this.parallaxOffset = this.scrollY * 0.5;
+                         }, { passive: true });
+                     }
                  },
                  updateCountdown() {
                      const now = new Date().getTime();
@@ -190,26 +180,19 @@
         <div class="absolute inset-0 overflow-hidden z-0">
             <img src="/images/sen.webp" alt="" class="absolute inset-0 w-full h-full object-cover"
                 :style="`transform: translateY(${parallaxOffset}px)`">
-            <div class="absolute inset-0 bg-black opacity-50"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-soboa-text-dark/75 via-soboa-blue/55 to-soboa-text-dark/85"></div>
         </div>
 
-        <!-- Animated Shapes -->
-        <div
-            class="absolute top-20 left-10 w-64 h-64 bg-soboa-orange/20 rounded-full blur-3xl animate-pulse-slow z-[5]">
-        </div>
-        <div class="absolute bottom-20 right-10 w-80 h-80 bg-soboa-orange/10 rounded-full blur-3xl animate-float z-[5]">
-        </div>
-        <div class="absolute top-1/2 left-1/3 w-40 h-40 bg-white/5 rounded-full blur-2xl animate-bounce-slow z-[5]">
-        </div>
+        <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-soboa-text-dark/80 to-transparent z-[5]" aria-hidden="true"></div>
 
         <!-- Content -->
-        <div class="relative z-[10] text-center px-6 md:px-8 py-12 md:py-16 max-w-5xl mx-auto">
+        <div class="relative z-[10] text-center px-5 md:px-8 py-8 md:py-14 max-w-5xl mx-auto">
             @if($siteSettings && $siteSettings->tournamentWinner)
             <!-- Tournament Winner Celebration -->
             <div class="animate-fade-in-down">
                 <!-- Trophy Animation -->
-                <div class="text-8xl md:text-9xl mb-6 animate-bounce-slow">
-                    🏆
+                <div class="flex justify-center mb-6 animate-bounce-slow">
+                    <i data-lucide="trophy" class="w-28 h-28 md:w-36 md:h-36 text-soboa-orange" stroke-width="1.5"></i>
                 </div>
 
                 <!-- Winner Flag -->
@@ -222,9 +205,9 @@
                 @endif
 
                 <!-- Congratulations Message -->
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight uppercase animate-fade-in-up" style="font-family: 'Montserrat', sans-serif; letter-spacing: -0.02em;">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight uppercase animate-fade-in-up [text-wrap:balance]" style="font-family: 'Montserrat', sans-serif;">
                     <span class="inline-block">Bravo</span><br>
-                    <span class="gradient-text inline-block text-5xl md:text-7xl lg:text-8xl" style="text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);">{{ $siteSettings->tournamentWinner->name }} !</span>
+                    <span class="gradient-text inline-block text-5xl md:text-7xl lg:text-8xl" style="text-shadow: 0 0 30px rgba(241, 134, 45, 0.55);">{{ $siteSettings->tournamentWinner->name }} !</span>
                 </h1>
 
                 <p class="text-2xl md:text-3xl text-soboa-orange font-black mb-6 animate-pulse">
@@ -239,11 +222,11 @@
                 <!-- CTA for Leaderboard -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                     <a href="/leaderboard"
-                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
+                        class="btn btn-primary btn-lg btn-pill orange-glow">
                         Voir le classement final
                     </a>
                     <a href="/mes-pronostics"
-                        class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
+                        class="btn btn-ghost-light btn-lg btn-pill">
                         Mes pronostics
                     </a>
                 </div>
@@ -254,7 +237,6 @@
                         <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-cover rounded-full">
                     </div>
                     <span class="text-white font-black text-xl tracking-tighter uppercase leading-none">SOBOA FOOT TIME</span>
-                    <span class="text-soboa-orange font-bold text-xs tracking-[0.2em] uppercase mt-1 opacity-90">Le gout de notre victoire</span>
                 </div>
             </div>
             @elseif($siteSettings && $siteSettings->tournament_ended)
@@ -266,13 +248,12 @@
                         <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-cover rounded-full">
                     </div>
                     <span class="text-white font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none animate-glow hero-title">SOBOA FOOT TIME</span>
-                    <span class="text-soboa-orange font-bold text-sm md:text-base tracking-[0.3em] uppercase mt-2 opacity-90 animate-pulse-soft">Le gout de notre victoire</span>
                 </div>
 
                 <!-- Tournament Ended Message -->
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight uppercase animate-fade-in-up" style="font-family: 'Montserrat', sans-serif; letter-spacing: -0.02em;">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight uppercase animate-fade-in-up [text-wrap:balance]" style="font-family: 'Montserrat', sans-serif;">
                     <span class="inline-block">Tournoi</span><br>
-                    <span class="gradient-text inline-block text-5xl md:text-7xl lg:text-8xl" style="text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);">Termine !</span>
+                    <span class="gradient-text inline-block text-5xl md:text-7xl lg:text-8xl" style="text-shadow: 0 0 30px rgba(241, 134, 45, 0.55);">Termine !</span>
                 </h1>
 
                 <p class="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -283,12 +264,12 @@
                 <!-- CTA for Leaderboard -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                     <a href="/leaderboard"
-                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
+                        class="btn btn-primary btn-lg btn-pill orange-glow">
                         Voir le classement final
                     </a>
                     @if(session('user_id'))
                     <a href="/mes-pronostics"
-                        class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
+                        class="btn btn-ghost-light btn-lg btn-pill">
                         Mes pronostics
                     </a>
                     @endif
@@ -303,22 +284,20 @@
                     <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-cover rounded-full">
                 </div>
                 <span
-                    class="text-white font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none animate-glow hero-title">SOBOA FOOT TIME</span>
-                <span
-                    class="text-soboa-orange font-bold text-sm md:text-base tracking-[0.3em] uppercase mt-2 opacity-90 animate-pulse-soft">Le
-                    goût de notre victoire</span>
+                    class="text-white font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none">SOBOA FOOT TIME</span>
             </div>
 
             <!-- Main Heading with Impact Typography -->
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-tight uppercase animate-fade-in-up" style="font-family: 'Montserrat', sans-serif; letter-spacing: -0.02em;">
-                <span class="inline-block animate-slide-right">Pronostiquez</span><br>
-                <span class="gradient-text inline-block animate-slide-left text-6xl md:text-8xl lg:text-9xl" style="text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);">& Gagnez!</span>
+            <h1 class="text-4xl xs:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight uppercase animate-fade-in-up [text-wrap:balance]" style="font-family: 'Montserrat', sans-serif;">
+                <span class="inline-block">Pronostiquez</span><br>
+                <span class="gradient-text inline-block text-5xl xs:text-6xl md:text-7xl lg:text-8xl" style="text-shadow: 0 0 30px rgba(241, 134, 45, 0.55);">et gagnez</span>
             </h1>
 
+            @if(!empty($siteSettings?->hero_promo_text))
             <p class="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
-                Tentez de gagner <span class="text-soboa-orange font-bold underline underline-offset-4">un billet
-                    d'avion pour la finale</span> et pleins d'autres lots !
+                {!! nl2br(e($siteSettings->hero_promo_text)) !!}
             </p>
+            @endif
 
             <!-- Countdown Timer -->
             <div class="mb-10">
@@ -331,11 +310,11 @@
                     
                     <p class="text-soboa-orange font-bold text-sm uppercase tracking-widest mb-4">
                         @if($isToday)
-                            🔥 Match aujourd'hui - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }} 🔥
+                            Match aujourd'hui - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
                         @elseif($isTomorrow)
-                            ⚡ Match demain - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }} ⚡
+                            Match demain - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
                         @elseif($timeUntilMatch <= 72)
-                            🚀 Prochain match - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }} 🚀
+                            Prochain match - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
                         @else
                             Prochain match - {{ $nextMatch->homeTeam->name }} vs {{ $nextMatch->awayTeam->name }}
                         @endif
@@ -365,11 +344,11 @@
                     </div>
                     
                     <div class="text-white/60 text-xs md:text-sm mb-4">
-                        {{ $nextMatch->match_date->format('d M Y à H:i') }}
-                        @if($nextMatch->phase === 'group_stage') 
-                            • Groupe {{ $nextMatch->group_name }}
+                        {{ $nextMatch->match_date->format('d M Y à H:i') }} <abbr title="Heure GMT (Temps Universel)" class="no-underline opacity-80">GMT</abbr>
+                        @if($nextMatch->phase === 'group_stage')
+                            <span aria-hidden="true">•</span> Groupe {{ $nextMatch->group_name }}
                         @else
-                            • {{ ucfirst(str_replace('_', ' ', $nextMatch->phase)) }}
+                            <span aria-hidden="true">•</span> {{ ucfirst(str_replace('_', ' ', $nextMatch->phase)) }}
                         @endif
                     </div>
                 @else
@@ -377,27 +356,27 @@
                         Prochain match - À définir
                     </p>
                 @endif
-                <div class="flex justify-center gap-3 md:gap-6">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 max-w-2xl mx-auto">
                     <div
-                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
-                        <span class="text-3xl md:text-5xl font-black text-white block" x-text="countdown.days">00</span>
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-white/20">
+                        <span class="text-3xl md:text-5xl font-black text-white block tabular-nums" x-text="countdown.days">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Jours</span>
                     </div>
                     <div
-                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
-                        <span class="text-3xl md:text-5xl font-black text-white block"
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-white/20">
+                        <span class="text-3xl md:text-5xl font-black text-white block tabular-nums"
                             x-text="countdown.hours">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Heures</span>
                     </div>
                     <div
-                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
-                        <span class="text-3xl md:text-5xl font-black text-white block"
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-white/20">
+                        <span class="text-3xl md:text-5xl font-black text-white block tabular-nums"
                             x-text="countdown.minutes">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Minutes</span>
                     </div>
                     <div
-                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] border border-white/20">
-                        <span class="text-3xl md:text-5xl font-black text-soboa-orange block"
+                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-white/20">
+                        <span class="text-3xl md:text-5xl font-black text-soboa-orange block tabular-nums"
                             x-text="countdown.seconds">00</span>
                         <span class="text-white/60 text-xs md:text-sm font-semibold uppercase">Secondes</span>
                     </div>
@@ -408,20 +387,20 @@
             <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 @if(session('user_id'))
                     <a href="/matches"
-                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
+                        class="btn btn-primary btn-lg btn-pill orange-glow">
                         Faire un pronostic
                     </a>
                     <a href="/dashboard"
-                        class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
+                        class="btn btn-ghost-light btn-lg btn-pill">
                         Mon tableau de bord
                     </a>
                 @else
                     <a href="/login"
-                        class="inline-flex items-center justify-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg orange-glow">
-                        Jouer & Gagner
+                        class="btn btn-primary btn-lg btn-pill orange-glow">
+                        Jouer et gagner
                     </a>
                     <a href="/map"
-                        class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border-2 border-white/30 transition-all">
+                        class="btn btn-ghost-light btn-lg btn-pill">
                         Trouver un lieu
                     </a>
                 @endif
@@ -430,11 +409,8 @@
         </div>
 
         <!-- Scroll Indicator -->
-        <div class="absolute bottom-12 md:bottom-16 left-1/2 -translate-x-1/2 animate-bounce">
-            <svg class="w-8 h-8 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3">
-                </path>
-            </svg>
+        <div class="absolute bottom-12 md:bottom-16 left-1/2 -translate-x-1/2 animate-bounce" aria-hidden="true">
+            <i data-lucide="chevron-down" class="w-8 h-8 text-white/60"></i>
         </div>
     </section>
 
@@ -444,20 +420,15 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
-                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">SOBOA FOOT TIME | LE GOÛT DE
-                        NOTRE VICTOIRE</span>
+                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">SOBOA FOOT TIME</span>
                     <div class="flex items-center gap-2 mt-2">
                         <h2 class="text-3xl md:text-4xl font-black text-soboa-blue">Prochains matchs</h2>
-                        <span class="text-3xl md:text-4xl">⚽</span>
                     </div>
                 </div>
                 <a href="/matches"
-                    class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
+                    class="text-soboa-orange font-bold hover:underline mt-4 md:mt-0 inline-flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-soboa-orange rounded-sm">
                     Voir tous les matchs
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </a>
             </div>
 
@@ -465,13 +436,12 @@
                 @forelse($upcomingMatches as $match)
                     <x-match-card :match="$match" />
                 @empty
-                    <div class="col-span-full text-center py-16 bg-white rounded-2xl shadow">
-                        <div
-                            class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-4xl">⚽</span>
+                    <div class="col-span-full text-center py-section-md bg-white rounded-2xl shadow-elev-1">
+                        <div class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="calendar-x" class="w-9 h-9 text-soboa-orange"></i>
                         </div>
-                        <p class="text-gray-500 font-medium">Aucun match programmé pour le moment.</p>
-                        <p class="text-gray-400 text-sm mt-2">Revenez bientôt pour voir le calendrier complet!</p>
+                        <p class="text-soboa-text-dark font-semibold">Aucun match programmé pour le moment.</p>
+                        <p class="text-gray-500 text-sm mt-2">Revenez bientôt pour voir le calendrier complet.</p>
                     </div>
                 @endforelse
             </div>
@@ -480,43 +450,38 @@
     @endif
 
     <!-- Leaderboard Section -->
-    <section class="py-16 bg-soboa-orange">
+    <section class="py-16 bg-soboa-text-dark text-white">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
                 <div>
-                    <span class="text-black font-bold text-sm uppercase tracking-widest">Qui sera le
-                        meilleur?</span>
-                    <h2 class="text-3xl md:text-4xl font-black text-black mt-2">Classement</h2>
+                    <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Qui sera le meilleur ?</span>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mt-2">Classement</h2>
                 </div>
                 <a href="/leaderboard"
-                    class="text-black font-bold hover:underline mt-4 md:mt-0 flex items-center gap-2">
+                    class="text-white font-bold hover:text-soboa-orange mt-4 md:mt-0 inline-flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-soboa-orange rounded-sm transition-colors">
                     Classement complet
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 @forelse($topUsers as $index => $user)
                     <div
-                        class="bg-black/5 backdrop-blur-sm rounded-2xl p-6 text-center border border-black/10 {{ $index === 0 ? 'ring-2 ring-black' : '' }}">
-                        <div class="text-3xl mb-2">
-                            @if($index == 0) 🥇 @elseif($index == 1) 🥈 @elseif($index == 2) 🥉 @else {{ $index + 1 }}
-                            @endif
+                        class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10 transition-transform duration-base hover:-translate-y-1 {{ $index === 0 ? 'ring-2 ring-soboa-orange bg-white/15' : '' }}">
+                        <div class="text-3xl mb-2 font-black text-soboa-orange tabular-nums">
+                            {{ $index + 1 }}
                         </div>
                         <div
-                            class="w-16 h-16 bg-soboa-orange/20 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-black">
+                            class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-white ring-1 ring-white/20">
                             {{ mb_substr($user->name, 0, 1) }}
                         </div>
-                        <h3 class="font-bold text-black text-lg truncate">{{ $user->name }}</h3>
-                        <p class="text-black/70 font-black text-xl">{{ $user->points_total }} pts</p>
+                        <h3 class="font-bold text-white text-lg truncate">{{ $user->name }}</h3>
+                        <p class="text-white/70 font-black text-xl tabular-nums">{{ $user->points_total }} pts</p>
                     </div>
                 @empty
                     <div class="col-span-5 text-center py-10">
                         <p class="text-white/60">Aucun joueur inscrit pour le moment.</p>
-                        <a href="/login" class="text-soboa-orange font-bold hover:underline">Soyez le premier !</a>
+                        <a href="/login" class="text-soboa-orange font-bold hover:underline">Soyez le premier.</a>
                     </div>
                 @endforelse
             </div>
@@ -528,62 +493,31 @@
     <section class="py-16 md:py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center mb-16">
-                <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Simple & Fun</span>
-                <h2 class="text-3xl md:text-5xl font-black text-soboa-blue mt-2">Comment ça marche?</h2>
+                <span class="text-soboa-orange font-bold text-sm uppercase tracking-widest">Simple et clair</span>
+                <h2 class="text-3xl md:text-5xl font-black text-soboa-blue mt-2">Comment ça marche ?</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Step 1 -->
+                @php
+                    $steps = [
+                        ['icon' => 'user-plus',  'title' => 'Inscrivez-vous',    'desc' => 'Créez votre compte avec votre numéro. C\'est gratuit.'],
+                        ['icon' => 'target',     'title' => 'Pronostiquez',      'desc' => 'Prédisez les scores des matchs.'],
+                        ['icon' => 'map-pin',    'title' => 'Visitez les lieux', 'desc' => '+4 points bonus en visitant nos lieux partenaires.'],
+                        ['icon' => 'trophy',     'title' => 'Gagnez',            'desc' => 'Accumulez des points et remportez des cadeaux.'],
+                    ];
+                @endphp
+                @foreach($steps as $i => $step)
                 <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
-                        <span class="text-4xl group-hover:scale-125 transition-transform">📱</span>
+                    <div class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors duration-base">
+                        <i data-lucide="{{ $step['icon'] }}" class="w-9 h-9 text-soboa-orange group-hover:text-white transition-colors duration-base" stroke-width="1.75"></i>
                     </div>
-                    <div
-                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
-                        1</div>
-                    <h3 class="font-bold text-soboa-blue text-xl mb-2">Inscrivez-vous</h3>
-                    <p class="text-gray-600">Créez votre compte avec votre numéro. C'est gratuit!</p>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
-                        <span class="text-4xl group-hover:scale-125 transition-transform">⚽</span>
+                    <div class="bg-soboa-orange text-white font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                        {{ $i + 1 }}
                     </div>
-                    <div
-                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
-                        2</div>
-                    <h3 class="font-bold text-soboa-blue text-xl mb-2">Pronostiquez</h3>
-                    <p class="text-gray-600">Prédisez les scores des matchs.</p>
+                    <h3 class="font-bold text-soboa-blue text-xl mb-2">{{ $step['title'] }}</h3>
+                    <p class="text-gray-600">{{ $step['desc'] }}</p>
                 </div>
-
-                <!-- Step 3 -->
-                <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
-                        <span class="text-4xl group-hover:scale-125 transition-transform">📍</span>
-                    </div>
-                    <div
-                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
-                        3</div>
-                    <h3 class="font-bold text-soboa-blue text-xl mb-2">Visitez les lieux</h3>
-                    <p class="text-gray-600">+4 points bonus en visitant nos lieux partenaires.</p>
-                </div>
-
-                <!-- Step 4 -->
-                <div class="text-center group">
-                    <div
-                        class="w-20 h-20 bg-soboa-orange/10 group-hover:bg-soboa-orange rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors">
-                        <span class="text-4xl group-hover:scale-125 transition-transform">🏆</span>
-                    </div>
-                    <div
-                        class="bg-soboa-orange text-black font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
-                        4</div>
-                    <h3 class="font-bold text-soboa-blue text-xl mb-2">Gagnez</h3>
-                    <p class="text-gray-600">Accumulez des points et remportez des cadeaux!</p>
-                </div>
+                @endforeach
             </div>
 
             <!-- Points Breakdown -->
@@ -592,23 +526,23 @@
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+1</span>
-                        <p class="text-sm text-white/80 mt-2">🔑 Connexion/jour</p>
+                        <p class="text-sm text-white/80 mt-2">Connexion/jour</p>
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+1</span>
-                        <p class="text-sm text-white/80 mt-2">⚽ Participation</p>
+                        <p class="text-sm text-white/80 mt-2">Participation</p>
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+3</span>
-                        <p class="text-sm text-white/80 mt-2">🎯 Bon vainqueur</p>
+                        <p class="text-sm text-white/80 mt-2">Bon vainqueur</p>
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+3</span>
-                        <p class="text-sm text-white/80 mt-2">🏆 Score exact</p>
+                        <p class="text-sm text-white/80 mt-2">Score exact</p>
                     </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <span class="text-3xl font-black text-soboa-orange">+4</span>
-                        <p class="text-sm text-white/80 mt-2">📍 Visite lieu</p>
+                        <p class="text-sm text-white/80 mt-2">Visite lieu</p>
                     </div>
                 </div>
                 <p class="text-center text-white/60 text-sm mt-4">Maximum 7 points par match + 4 points bonus par visite + 1 point par connexion quotidienne</p>
@@ -617,12 +551,9 @@
             <!-- CTA -->
             <div class="text-center mt-12">
                 <a href="/login"
-                    class="inline-flex items-center gap-2 bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 text-lg">
+                    class="inline-flex items-center gap-2 bg-soboa-orange hover:bg-soboa-orange-secondary text-white font-bold py-4 px-10 rounded-full shadow-elev-2 hover:shadow-elev-3 focus:outline-none focus:ring-2 focus:ring-soboa-orange focus:ring-offset-2 transition-all duration-base transform hover:scale-105 text-lg">
                     Commencer maintenant
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                    </svg>
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </a>
             </div>
         </div>
@@ -633,6 +564,7 @@
     <!-- Confetti Script for Winner Celebration -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const canvas = document.getElementById('confetti-canvas');
         if (!canvas) return;
 
@@ -640,7 +572,7 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const confettiColors = ['#FF6600', '#003399', '#FFD700', '#00A651', '#FFFFFF', '#FF4444'];
+        const confettiColors = ['#F1862D', '#0058A3', '#F4A05B', '#3478B5', '#FFFFFF', '#FEF7F1'];
         const confettiCount = 200;
         const confetti = [];
 

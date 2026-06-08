@@ -11,7 +11,7 @@
                     ← Retour aux points de vente
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">📍</span> Nouveau Point de Vente
+                    <span class="text-4xl"></span> Nouveau Point de Vente
                 </h1>
             </div>
 
@@ -45,22 +45,22 @@
                                     <select name="type_pdv" required
                                             class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                                         <option value="dakar" {{ old('type_pdv', 'dakar') === 'dakar' ? 'selected' : '' }}>
-                                            🏙️ Points de vente Dakar
+                                            Points de vente Dakar
                                         </option>
                                         <option value="regions" {{ old('type_pdv') === 'regions' ? 'selected' : '' }}>
-                                            🗺️ Points de vente Régions
+                                            Points de vente Régions
                                         </option>
                                         <option value="chr" {{ old('type_pdv') === 'chr' ? 'selected' : '' }}>
-                                            🍽️ Cafés-Hôtel-Restaurants (CHR)
+                                            Cafés-Hôtel-Restaurants (CHR)
                                         </option>
                                         <option value="fanzone" {{ old('type_pdv') === 'fanzone' ? 'selected' : '' }}>
-                                            🎉 Fanzones
+                                            Fanzones
                                         </option>
                                         <option value="fanzone_public" {{ old('type_pdv') === 'fanzone_public' ? 'selected' : '' }}>
-                                            🎪 Fanzone tout public
+                                            Fanzone tout public
                                         </option>
                                         <option value="fanzone_hotel" {{ old('type_pdv') === 'fanzone_hotel' ? 'selected' : '' }}>
-                                            🏨 Fanzone hôtel
+                                            Fanzone hôtel
                                         </option>
                                     </select>
                                 </div>
@@ -80,10 +80,10 @@
                                                class="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue"
                                                placeholder="Ex: Cocody, Rue des Jardins, Abidjan">
                                         <button type="button" onclick="searchAddress()" class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold py-3 px-4 rounded-lg transition">
-                                            🔍
+                                            
                                         </button>
                                     </div>
-                                    <p class="text-gray-500 text-xs mt-2">Cliquez sur 🔍 pour localiser automatiquement ou cliquez directement sur la carte</p>
+                                    <p class="text-gray-500 text-xs mt-2">Cliquez sur pour localiser automatiquement ou cliquez directement sur la carte</p>
                                 </div>
 
                                 <div>
@@ -104,7 +104,7 @@
 
                                 <div class="bg-green-50 border border-green-200 rounded-lg p-3">
                                     <p class="text-green-700 text-sm">
-                                        ✅ <strong>Cliquez sur la carte</strong> pour sélectionner les coordonnées GPS automatiquement!
+                                        <strong>Cliquez sur la carte</strong> pour sélectionner les coordonnées GPS automatiquement!
                                     </p>
                                 </div>
 

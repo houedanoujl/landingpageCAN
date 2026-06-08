@@ -51,7 +51,7 @@
             @else
                 <div class="text-3xl font-black text-gray-300">VS</div>
                 <div class="text-sm font-bold text-soboa-orange mt-1">
-                    🕐 {{ $match->match_date->format('H:i') }}
+                    {{ $match->match_date->format('H:i') }}
                 </div>
             @endif
         </div>
@@ -76,7 +76,7 @@
         </div>
         @if($match->status === 'finished' && $userPrediction->points_earned > 0)
         <div class="mt-2 flex items-center justify-center gap-2 text-green-600">
-            <span class="text-xl">🎉</span>
+            <span class="text-xl"></span>
             <span class="font-bold">+{{ $userPrediction->points_earned }} points gagnés!</span>
         </div>
         @endif
@@ -135,7 +135,7 @@
             <!-- Section Tirs au But (visible seulement si égalité ET phase éliminatoire) -->
             <div id="penaltiesSection{{ $match->id }}" class="mt-4 p-4 bg-yellow-50 border border-yellow-300 rounded-xl" style="display: none;">
                 <div class="text-center text-sm font-bold text-gray-700 mb-3">
-                    ⚽ En cas de tirs au but
+                    En cas de tirs au but
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <label class="flex items-center justify-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all hover:bg-yellow-100 has-[:checked]:border-yellow-600 has-[:checked]:bg-yellow-100">
@@ -156,7 +156,7 @@
                     </label>
                 </div>
                 <p class="text-xs text-gray-600 mt-2 text-center">
-                    💡 Sélectionnez le vainqueur si vous prédisez une égalité
+                    Sélectionnez le vainqueur si vous prédisez une égalité
                 </p>
             </div>
             

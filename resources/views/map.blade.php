@@ -260,7 +260,7 @@
 
                 <!-- Instructions -->
                 <div class="text-left bg-gray-50 rounded-xl p-4 mb-6">
-                    <p class="font-bold text-gray-700 mb-3">📱 Pour activer la localisation :</p>
+                    <p class="font-bold text-gray-700 mb-3">Pour activer la localisation :</p>
                     <ul class="text-sm text-gray-600 space-y-2">
                         <li class="flex items-start gap-2">
                             <span class="text-soboa-orange font-bold">•</span>
@@ -274,7 +274,7 @@
                         </li>
                         <li class="flex items-start gap-2">
                             <span class="text-soboa-orange font-bold">•</span>
-                            <span><strong>Navigateur :</strong> Cliquez sur l'icône 🔒 dans la barre d'adresse →
+                            <span><strong>Navigateur :</strong> Cliquez sur l'icône dans la barre d'adresse →
                                 Autorisations</span>
                         </li>
                     </ul>
@@ -302,7 +302,6 @@
                 <div class="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
             </div>
             <div class="relative z-10 max-w-7xl mx-auto text-center">
-                <span class="text-soboa-orange font-black text-sm uppercase tracking-widest drop-shadow-md">🎉 Le goût de notre victoire</span>
                 <h1 class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-2xl">Animations SOBOA FOOT TIME</h1>
                 <p class="text-white/80 mt-4 max-w-2xl mx-auto font-medium drop-shadow-lg">
                     Découvrez les lieux partenaires et vivez les matchs avec nous ! Gagnez 4 points bonus par visite.
@@ -319,7 +318,7 @@
                 <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 bg-soboa-orange/10 rounded-full flex items-center justify-center">
-                            <span class="text-3xl">📍</span>
+                            <span class="text-3xl"></span>
                         </div>
                         <div>
                             <h2 class="text-xl font-bold text-soboa-blue">Lieux partenaires à proximité</h2>
@@ -353,7 +352,7 @@
                     <div x-show="checkInResult?.success"
                         class="bg-green-50 border-2 border-green-200 text-green-700 px-6 py-4 rounded-xl">
                         <div class="flex items-center gap-3 mb-2">
-                            <span class="text-3xl">🎉</span>
+                            <span class="text-3xl"></span>
                             <div>
                                 <p class="font-bold text-lg" x-text="checkInResult?.message"></p>
                                 <p class="text-sm text-green-600 mt-1">
@@ -365,7 +364,7 @@
                     </div>
                     <div x-show="!checkInResult?.success"
                         class="bg-yellow-50 border-2 border-yellow-200 text-yellow-700 px-6 py-4 rounded-xl flex items-center gap-3">
-                        <span class="text-3xl">📍</span>
+                        <span class="text-3xl"></span>
                         <p x-text="checkInResult?.message" class="font-medium"></p>
                     </div>
                 </div>
@@ -383,12 +382,12 @@
                                         class="bg-gradient-to-br from-soboa-orange/5 to-soboa-blue/5 rounded-xl p-4 border border-soboa-orange/20 hover:border-soboa-orange/50 transition">
                                         <div class="flex items-start gap-3 mb-3">
                                             <span class="text-2xl" x-text="
-                                                venue.type_pdv === 'dakar' ? '🏙️' :
-                                                venue.type_pdv === 'regions' ? '🗺️' :
-                                                venue.type_pdv === 'chr' ? '🍽️' :
-                                                venue.type_pdv === 'fanzone' ? '🎉' :
-                                                venue.type_pdv === 'fanzone_public' ? '🎪' :
-                                                venue.type_pdv === 'fanzone_hotel' ? '🏨' : '📍'
+                                                venue.type_pdv === 'dakar' ? '' :
+                                                venue.type_pdv === 'regions' ? '' :
+                                                venue.type_pdv === 'chr' ? '' :
+                                                venue.type_pdv === 'fanzone' ? '' :
+                                                venue.type_pdv === 'fanzone_public' ? '' :
+                                                venue.type_pdv === 'fanzone_hotel' ? '' : ''
                                             "></span>
                                             <div class="flex-1">
                                                 <div class="flex items-center gap-2 flex-wrap mb-1">
@@ -422,7 +421,7 @@
                                                                             class="w-5 h-4 object-contain rounded-sm" />
                                                                     </template>
                                                                     <template x-if="!animation.home_flag">
-                                                                        <span>⚽</span>
+                                                                        <span></span>
                                                                     </template>
                                                                 </div>
                                                                 <div class="flex-1 min-w-0">
@@ -481,7 +480,7 @@
                     <template x-if="nearbyVenues.length === 0">
                         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
                             <p class="text-yellow-700 font-medium">
-                                <span class="text-2xl">📍</span> Aucun lieu partenaire à proximité (rayon: 10 km)
+                                <span class="text-2xl"></span> Aucun lieu partenaire à proximité (rayon: 10 km)
                             </p>
                             <p class="text-yellow-600 text-sm mt-2">Consultez la carte ou la liste complète ci-dessous
                                 pour voir tous les lieux partenaires.</p>
@@ -496,7 +495,7 @@
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 <div class="p-6 border-b border-gray-100">
                     <h3 class="text-xl font-bold text-soboa-blue flex items-center gap-2">
-                        <span>🗺️</span> Carte des points de vente
+                        <span></span> Carte des points de vente
                     </h3>
                 </div>
 
@@ -509,12 +508,12 @@
                     $typeCounts = $venues->groupBy('type_pdv')->map->count();
                     
                     $legendItems = [
-                        'dakar' => ['emoji' => '🏙️', 'color' => '#3b82f6', 'label' => 'Points de vente Dakar'],
-                        'regions' => ['emoji' => '🗺️', 'color' => '#22c55e', 'label' => 'Points de vente Régions'],
-                        'chr' => ['emoji' => '🍽️', 'color' => '#f97316', 'label' => 'Cafés-Hôtel-Restaurants'],
-                        'fanzone' => ['emoji' => '🎉', 'color' => '#a855f7', 'label' => 'Fanzones'],
-                        'fanzone_public' => ['emoji' => '🎪', 'color' => '#eab308', 'label' => 'Fanzone tout public'],
-                        'fanzone_hotel' => ['emoji' => '🏨', 'color' => '#ec4899', 'label' => 'Fanzone hôtel'],
+                        'dakar' => ['emoji' => '', 'color' => '#3b82f6', 'label' => 'Points de vente Dakar'],
+                        'regions' => ['emoji' => '', 'color' => '#22c55e', 'label' => 'Points de vente Régions'],
+                        'chr' => ['emoji' => '', 'color' => '#f97316', 'label' => 'Cafés-Hôtel-Restaurants'],
+                        'fanzone' => ['emoji' => '', 'color' => '#a855f7', 'label' => 'Fanzones'],
+                        'fanzone_public' => ['emoji' => '', 'color' => '#eab308', 'label' => 'Fanzone tout public'],
+                        'fanzone_hotel' => ['emoji' => '', 'color' => '#ec4899', 'label' => 'Fanzone hôtel'],
                     ];
                 @endphp
                 <div class="bg-white border-t-2 border-gray-200 rounded-b-lg p-4 shadow-lg">
@@ -557,7 +556,7 @@
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-soboa-blue to-soboa-blue-dark">
                     <h3 class="text-2xl font-black text-white flex items-center gap-3">
-                        <span>📅</span> Calendrier des animations
+                        <span></span> Calendrier des animations
                     </h3>
                     <p class="text-white/80 mt-1">Cliquez sur un jour pour voir toutes les animations</p>
                 </div>
@@ -841,7 +840,7 @@
                 </div>
                 @else
                 <div class="p-8 text-center">
-                    <span class="text-4xl mb-4 block">📅</span>
+                    <span class="text-4xl mb-4 block"></span>
                     <h4 class="text-xl font-bold text-gray-700 mb-2">Aucune animation programmée</h4>
                     <p class="text-gray-500">Les prochaines animations seront bientôt annoncées !</p>
                 </div>
@@ -930,7 +929,7 @@
                         <!-- Message si aucune animation -->
                         <template x-if="selectedAnimations.length === 0">
                             <div class="text-center text-gray-500 py-12 bg-white rounded-xl shadow">
-                                <span class="text-5xl mb-4 block">📅</span>
+                                <span class="text-5xl mb-4 block"></span>
                                 <p class="text-lg font-medium">Aucun point de vente avec animation ce jour.</p>
                                 <p class="text-sm text-gray-400 mt-2">Les animations seront bientôt annoncées !</p>
                             </div>
@@ -1017,12 +1016,12 @@
             // Function to create custom marker icon based on PDV type
             function getVenueIcon(type) {
                 const iconConfig = {
-                    'dakar': { emoji: '🏙️', color: '#3b82f6' },           // Blue
-                    'regions': { emoji: '🗺️', color: '#22c55e' },        // Green
-                    'chr': { emoji: '🍽️', color: '#f97316' },            // Orange
-                    'fanzone': { emoji: '🎉', color: '#a855f7' },         // Purple
-                    'fanzone_public': { emoji: '🎪', color: '#eab308' },  // Yellow
-                    'fanzone_hotel': { emoji: '🏨', color: '#ec4899' }    // Pink
+                    'dakar': { emoji: '', color: '#3b82f6' },           // Blue
+                    'regions': { emoji: '', color: '#22c55e' },        // Green
+                    'chr': { emoji: '', color: '#f97316' },            // Orange
+                    'fanzone': { emoji: '', color: '#a855f7' },         // Purple
+                    'fanzone_public': { emoji: '', color: '#eab308' },  // Yellow
+                    'fanzone_hotel': { emoji: '', color: '#ec4899' }    // Pink
                 };
 
                 const config = iconConfig[type] || iconConfig['dakar'];
@@ -1054,12 +1053,12 @@
                 @if($venue->latitude && $venue->longitude)
                 @php
                     $typeBadges = [
-                        'dakar' => ['bg' => '#dbeafe', 'text' => '#1e40af', 'icon' => '🏙️', 'label' => 'Dakar'],
-                        'regions' => ['bg' => '#dcfce7', 'text' => '#166534', 'icon' => '🗺️', 'label' => 'Régions'],
-                        'chr' => ['bg' => '#ffedd5', 'text' => '#9a3412', 'icon' => '🍽️', 'label' => 'CHR'],
-                        'fanzone' => ['bg' => '#f3e8ff', 'text' => '#6b21a8', 'icon' => '🎉', 'label' => 'Fanzone'],
-                        'fanzone_public' => ['bg' => '#fef9c3', 'text' => '#a16207', 'icon' => '🎪', 'label' => 'Fanzone tout public'],
-                        'fanzone_hotel' => ['bg' => '#fce7f3', 'text' => '#be185d', 'icon' => '🏨', 'label' => 'Fanzone hôtel'],
+                        'dakar' => ['bg' => '#dbeafe', 'text' => '#1e40af', 'icon' => '', 'label' => 'Dakar'],
+                        'regions' => ['bg' => '#dcfce7', 'text' => '#166534', 'icon' => '', 'label' => 'Régions'],
+                        'chr' => ['bg' => '#ffedd5', 'text' => '#9a3412', 'icon' => '', 'label' => 'CHR'],
+                        'fanzone' => ['bg' => '#f3e8ff', 'text' => '#6b21a8', 'icon' => '', 'label' => 'Fanzone'],
+                        'fanzone_public' => ['bg' => '#fef9c3', 'text' => '#a16207', 'icon' => '', 'label' => 'Fanzone tout public'],
+                        'fanzone_hotel' => ['bg' => '#fce7f3', 'text' => '#be185d', 'icon' => '', 'label' => 'Fanzone hôtel'],
                     ];
                     $badge = $typeBadges[$venue->type_pdv ?? 'dakar'] ?? $typeBadges['dakar'];
                 @endphp
@@ -1081,7 +1080,7 @@
                                 </span>
                             </div>
                             @if($venue->zone)
-                                <p style="color: #666; font-size: 13px; margin: 4px 0;">📍 {{ $venue->zone }}</p>
+                                <p style="color: #666; font-size: 13px; margin: 4px 0;">{{ $venue->zone }}</p>
                             @endif
                             <p style="color: #666; font-size: 13px; margin: 4px 0;">{{ $venue->address }}</p>
                         </div>

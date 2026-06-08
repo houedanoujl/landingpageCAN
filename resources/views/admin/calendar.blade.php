@@ -6,7 +6,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-4xl">📅</span> Calendrier & Classement
+                        <span class="text-4xl"></span> Calendrier & Classement
                     </h1>
                     <p class="text-gray-600 mt-2">Calendrier des matchs, classement des groupes et phases finales</p>
                 </div>
@@ -20,15 +20,15 @@
                 <div class="flex border-b">
                     <a href="{{ route('admin.calendar', ['tab' => 'calendar', 'month' => $date->month, 'year' => $date->year]) }}" 
                        class="flex-1 py-4 px-6 text-center font-bold transition {{ $tab === 'calendar' ? 'bg-soboa-blue text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                        <span class="text-xl mr-2">📅</span> Calendrier
+                        <span class="text-xl mr-2"></span> Calendrier
                     </a>
                     <a href="{{ route('admin.calendar', ['tab' => 'standings', 'month' => $date->month, 'year' => $date->year]) }}" 
                        class="flex-1 py-4 px-6 text-center font-bold transition {{ $tab === 'standings' ? 'bg-soboa-blue text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                        <span class="text-xl mr-2">📊</span> Classement
+                        <span class="text-xl mr-2"></span> Classement
                     </a>
                     <a href="{{ route('admin.calendar', ['tab' => 'bracket', 'month' => $date->month, 'year' => $date->year]) }}" 
                        class="flex-1 py-4 px-6 text-center font-bold transition {{ $tab === 'bracket' ? 'bg-soboa-blue text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                        <span class="text-xl mr-2">🏆</span> Phases Finales
+                        <span class="text-xl mr-2"></span> Phases Finales
                     </a>
                 </div>
             </div>
@@ -58,7 +58,7 @@
                 <!-- Liste des matchs par jour -->
                 @if($matches->isEmpty())
                     <div class="bg-white rounded-xl shadow-lg p-8 text-center">
-                        <span class="text-6xl mb-4 block">📭</span>
+                        <span class="text-6xl mb-4 block"></span>
                         <p class="text-xl font-bold text-gray-500">Aucun match prévu pour ce mois</p>
                     </div>
                 @else
@@ -90,7 +90,7 @@
 
                                                         <div class="flex items-center gap-3">
                                                             @if($match->homeTeam)
-                                                            <img src="https://flagcdn.com/w40/{{ $match->homeTeam->iso_code }}.png"
+                                                            <img src="{{ $match->homeTeam->flag_url }}" alt="" loading="lazy"
                                                                  class="w-8 h-6 rounded shadow">
                                                             @endif
                                                             <span class="font-bold text-lg">{{ $match->team_a }}</span>
@@ -103,7 +103,7 @@
                                                             
                                                             <span class="font-bold text-lg">{{ $match->team_b }}</span>
                                                             @if($match->awayTeam)
-                                                            <img src="https://flagcdn.com/w40/{{ $match->awayTeam->iso_code }}.png"
+                                                            <img src="{{ $match->awayTeam->flag_url }}" alt="" loading="lazy"
                                                                  class="w-8 h-6 rounded shadow">
                                                             @endif
                                                         </div>
@@ -129,7 +129,7 @@
                                                     @if($match->animations->count() > 0)
                                                         <div class="ml-0 md:ml-28">
                                                             <div class="text-sm font-bold text-gray-600 mb-2">
-                                                                📍 Points de vente ({{ $match->animations->count() }}) :
+                                                                Points de vente ({{ $match->animations->count() }}) :
                                                             </div>
                                                             <div class="flex flex-wrap gap-2">
                                                                 @foreach($match->animations->take(10) as $animation)
@@ -158,11 +158,11 @@
                                                 <div class="flex flex-col gap-2">
                                                     <a href="{{ route('admin.edit-match', $match->id) }}"
                                                        class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap">
-                                                        ✏️ Modifier
+                                                        Modifier
                                                     </a>
                                                     <a href="{{ route('admin.match-predictions', $match->id) }}"
                                                        class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap">
-                                                        📊 Pronostics
+                                                        Pronostics
                                                     </a>
                                                 </div>
                                             </div>
@@ -207,7 +207,7 @@
                                                 <td class="px-4 py-3 font-bold text-gray-600">{{ $index + 1 }}</td>
                                                 <td class="px-4 py-3">
                                                     <div class="flex items-center gap-2">
-                                                        <img src="https://flagcdn.com/w40/{{ $teamData['team']->iso_code }}.png" 
+                                                        <img src="{{ $teamData['team']->flag_url }}" alt="" loading="lazy"
                                                              class="w-6 h-4 rounded shadow">
                                                         <span class="font-bold text-gray-800">{{ $teamData['team']->name }}</span>
                                                     </div>
@@ -245,7 +245,7 @@
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                         <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-4">
                             <h3 class="text-xl font-black text-white flex items-center gap-2">
-                                <span>🏟️</span> Huitièmes de Finale
+                                <span></span> Huitièmes de Finale
                             </h3>
                         </div>
                         <div class="p-6">
@@ -263,7 +263,7 @@
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
                             <h3 class="text-xl font-black text-white flex items-center gap-2">
-                                <span>🏟️</span> Quarts de Finale
+                                <span></span> Quarts de Finale
                             </h3>
                         </div>
                         <div class="p-6">
@@ -281,7 +281,7 @@
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                         <div class="bg-gradient-to-r from-pink-600 to-pink-800 px-6 py-4">
                             <h3 class="text-xl font-black text-white flex items-center gap-2">
-                                <span>🏟️</span> Demi-Finales
+                                <span></span> Demi-Finales
                             </h3>
                         </div>
                         <div class="p-6">
@@ -301,7 +301,7 @@
                         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                             <div class="bg-gradient-to-r from-orange-500 to-orange-700 px-6 py-4">
                                 <h3 class="text-xl font-black text-white flex items-center gap-2">
-                                    <span>🥉</span> Match pour la 3ème Place
+                                    <span></span> Match pour la 3ème Place
                                 </h3>
                             </div>
                             <div class="p-6">
@@ -317,7 +317,7 @@
                         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                             <div class="bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 px-6 py-4">
                                 <h3 class="text-xl font-black text-white flex items-center gap-2">
-                                    <span>🏆</span> FINALE
+                                    <span></span> FINALE
                                 </h3>
                             </div>
                             <div class="p-6">
@@ -331,7 +331,7 @@
 
                     @if((!isset($knockoutMatches['round_of_16']) || $knockoutMatches['round_of_16']->count() == 0) && (!isset($knockoutMatches['quarter_final']) || $knockoutMatches['quarter_final']->count() == 0) && (!isset($knockoutMatches['semi_final']) || $knockoutMatches['semi_final']->count() == 0) && (!isset($knockoutMatches['final']) || $knockoutMatches['final']->count() == 0))
                         <div class="bg-white rounded-xl shadow-lg p-8 text-center">
-                            <span class="text-6xl mb-4 block">🏆</span>
+                            <span class="text-6xl mb-4 block"></span>
                             <p class="text-xl font-bold text-gray-500">Les phases finales n'ont pas encore commencé</p>
                             <p class="text-gray-400 mt-2">Les matchs à élimination directe apparaîtront ici une fois programmés</p>
                         </div>

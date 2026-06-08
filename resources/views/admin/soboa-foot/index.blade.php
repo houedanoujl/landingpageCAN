@@ -5,7 +5,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-4xl">🏟️</span> Animation SOBOA FOOT
+                        <span class="text-4xl"></span> Animation SOBOA FOOT
                     </h1>
                     <p class="text-gray-600 mt-1">Gérez les contenus du volet Animation SOBOA FOOT</p>
                 </div>
@@ -59,7 +59,7 @@
                                             @csrf
                                             <button type="submit" class="px-3 py-1 text-xs font-bold rounded-full transition
                                                 {{ $content->is_published ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-200 text-gray-500 hover:bg-gray-300' }}">
-                                                {{ $content->is_published ? '✓ Publié' : 'Brouillon' }}
+                                                {{ $content->is_published ? 'Publié' : 'Brouillon' }}
                                             </button>
                                         </form>
                                     </td>

@@ -17,7 +17,7 @@
                     EN DIRECT
                 </div>
                 <h1 class="text-4xl md:text-5xl font-black text-white mt-2 drop-shadow-2xl flex items-center justify-center gap-3">
-                    <span class="text-5xl">⚽</span> SCORES EN LIVE
+                    <span class="text-5xl"></span> SCORES EN LIVE
                 </h1>
                 <p class="text-white/80 mt-4 max-w-2xl mx-auto font-medium drop-shadow-lg">
                     Suivez tous les scores en direct et les résultats des matchs
@@ -33,7 +33,7 @@
                 <div class="bg-gradient-to-r from-red-600 to-red-800 px-6 py-4">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center relative">
-                            <span class="text-2xl">🏆</span>
+                            <span class="text-2xl"></span>
                             <span class="absolute -top-1 -right-1 flex h-4 w-4">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-4 w-4 bg-white"></span>
@@ -62,15 +62,15 @@
                 <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <div class="flex items-center gap-2 text-gray-600 text-sm">
-                            <span class="text-lg">📊</span>
+                            <span class="text-lg"></span>
                             <span>Données mises à jour en temps réel</span>
                         </div>
                         <div class="flex items-center gap-4">
                             <a href="/matches" class="text-soboa-blue hover:text-soboa-blue/80 font-bold text-sm transition-colors flex items-center gap-1">
-                                <span>🎯</span> Faire un pronostic
+                                <span></span> Faire un pronostic
                             </a>
                             <a href="/leaderboard" class="text-soboa-orange hover:text-soboa-orange/80 font-bold text-sm transition-colors flex items-center gap-1">
-                                <span>🏅</span> Voir le classement
+                                <span></span> Voir le classement
                             </a>
                         </div>
                     </div>
@@ -83,7 +83,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-14 h-14 bg-soboa-orange/10 rounded-full flex items-center justify-center">
-                            <span class="text-3xl">🎯</span>
+                            <span class="text-3xl"></span>
                         </div>
                         <div>
                             <h3 class="font-bold text-gray-800">Pronostiquez</h3>
@@ -102,7 +102,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-                            <span class="text-3xl">📍</span>
+                            <span class="text-3xl"></span>
                         </div>
                         <div>
                             <h3 class="font-bold text-gray-800">Points de Vente</h3>
@@ -121,7 +121,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
-                            <span class="text-3xl">🎉</span>
+                            <span class="text-3xl"></span>
                         </div>
                         <div>
                             <h3 class="font-bold text-gray-800">Animations</h3>

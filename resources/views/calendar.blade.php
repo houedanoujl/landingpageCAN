@@ -63,15 +63,15 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
     <div class="bg-white/10 backdrop-blur-sm rounded-xl p-1 flex">
         <a href="{{ route('calendar', ['tab' => 'calendar', 'year' => $year, 'month' => $month]) }}" 
            class="flex-1 py-3 px-4 text-center font-bold rounded-lg transition {{ $activeTab === 'calendar' ? 'bg-white text-soboa-blue' : 'text-white hover:bg-white/10' }}">
-            <span class="text-lg mr-1">📅</span><span class="text-xs sm:text-base">Calendrier</span>
+            <span class="text-lg mr-1"></span><span class="text-xs sm:text-base">Calendrier</span>
         </a>
         <a href="{{ route('calendar', ['tab' => 'standings']) }}" 
            class="flex-1 py-3 px-4 text-center font-bold rounded-lg transition {{ $activeTab === 'standings' ? 'bg-white text-soboa-blue' : 'text-white hover:bg-white/10' }}">
-            <span class="text-lg mr-1">📊</span><span class="text-xs sm:text-base">Classement</span>
+            <span class="text-lg mr-1"></span><span class="text-xs sm:text-base">Classement</span>
         </a>
         <a href="{{ route('calendar', ['tab' => 'bracket']) }}" 
            class="flex-1 py-3 px-4 text-center font-bold rounded-lg transition {{ $activeTab === 'bracket' ? 'bg-white text-soboa-blue' : 'text-white hover:bg-white/10' }}">
-            <span class="text-lg mr-1">🏆</span><span class="text-xs sm:text-base">Bracket</span>
+            <span class="text-lg mr-1"></span><span class="text-xs sm:text-base">Bracket</span>
         </a>
     </div>
 </div>
@@ -82,12 +82,16 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
 {{-- Navigation Mois --}}
 <div class="max-w-7xl mx-auto mb-4">
     <div class="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-xl p-2">
-        <a href="{{ $prevMonthLink }}" class="p-2 text-white hover:bg-white/20 rounded-lg">
-            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        <a href="{{ $prevMonthLink }}"
+           aria-label="Mois précédent"
+           class="inline-flex items-center justify-center w-11 h-11 text-white hover:bg-white/20 rounded-lg transition-colors duration-base">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
         </a>
-        <h2 class="text-lg md:text-xl font-bold text-white">{{ $monthNames[$month] }} {{ $year }}</h2>
-        <a href="{{ $nextMonthLink }}" class="p-2 text-white hover:bg-white/20 rounded-lg">
-            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        <h2 class="text-lg md:text-xl font-bold text-white capitalize">{{ $monthNames[$month] }} {{ $year }}</h2>
+        <a href="{{ $nextMonthLink }}"
+           aria-label="Mois suivant"
+           class="inline-flex items-center justify-center w-11 h-11 text-white hover:bg-white/20 rounded-lg transition-colors duration-base">
+            <i data-lucide="chevron-right" class="w-6 h-6"></i>
         </a>
     </div>
 </div>
@@ -117,7 +121,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2 flex-1">
                                 @if($match->homeTeam && $match->homeTeam->iso_code)
-                                    <img src="https://flagcdn.com/w40/{{ $match->homeTeam->iso_code }}.png" class="w-8 h-5 object-cover rounded shadow-sm" alt="">
+                                    <img src="{{ $match->homeTeam->flag_url }}" class="w-8 h-5 object-cover rounded shadow-sm" alt="" loading="lazy">
                                 @endif
                                 <span class="font-semibold text-gray-800 text-sm truncate">{{ $match->homeTeam->name ?? $match->team_a ?? '?' }}</span>
                             </div>
@@ -141,7 +145,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                             <div class="flex items-center gap-2 flex-1 justify-end">
                                 <span class="font-semibold text-gray-800 text-sm truncate text-right">{{ $match->awayTeam->name ?? $match->team_b ?? '?' }}</span>
                                 @if($match->awayTeam && $match->awayTeam->iso_code)
-                                    <img src="https://flagcdn.com/w40/{{ $match->awayTeam->iso_code }}.png" class="w-8 h-5 object-cover rounded shadow-sm" alt="">
+                                    <img src="{{ $match->awayTeam->flag_url }}" class="w-8 h-5 object-cover rounded shadow-sm" alt="" loading="lazy">
                                 @endif
                             </div>
                         </div>
@@ -150,8 +154,12 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
             </div>
         </div>
     @empty
-        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center">
-            <p class="text-white/80">Aucun match prévu ce mois</p>
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-section-md text-center">
+            <div class="w-16 h-16 mx-auto bg-white/15 rounded-full flex items-center justify-center mb-3">
+                <i data-lucide="calendar-x" class="w-8 h-8 text-white"></i>
+            </div>
+            <p class="text-white font-bold">Aucun match prévu ce mois</p>
+            <p class="text-white/70 text-sm mt-1">Naviguez vers un autre mois.</p>
         </div>
     @endforelse
 </div>
@@ -180,14 +188,14 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                         @endif
                     </div>
                     @if($dayMatches->count() > 0)
-                        <div class="space-y-1 overflow-y-auto" style="max-height: 80px;">
+                        <div class="space-y-1">
                             @foreach($dayMatches as $match)
                                 <a href="{{ route('matches') }}#match-{{ $match->id }}" class="block rounded p-1.5 text-[11px] hover:opacity-80 transition-opacity @if($match->status === 'finished') bg-green-100 border-l-2 border-green-500 @else bg-blue-50 border-l-2 border-blue-400 @endif">
                                     <div class="text-[9px] text-gray-500 mb-0.5">{{ Carbon::parse($match->match_date)->format('H:i') }}</div>
                                     <div class="flex items-center justify-between gap-1">
                                         <div class="flex items-center gap-1 min-w-0 flex-1">
                                             @if($match->homeTeam && $match->homeTeam->iso_code)
-                                                <img src="https://flagcdn.com/w20/{{ $match->homeTeam->iso_code }}.png" class="w-4 h-3 object-cover rounded-sm flex-shrink-0">
+                                                <img src="{{ $match->homeTeam->flag_url }}" class="w-4 h-3 object-cover rounded-sm flex-shrink-0" alt="" loading="lazy">
                                             @endif
                                             <span class="font-medium truncate">{{ Str::limit($match->homeTeam->name ?? '?', 3, '') }}</span>
                                         </div>
@@ -199,7 +207,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                                         <div class="flex items-center gap-1 min-w-0 flex-1 justify-end">
                                             <span class="font-medium truncate">{{ Str::limit($match->awayTeam->name ?? '?', 3, '') }}</span>
                                             @if($match->awayTeam && $match->awayTeam->iso_code)
-                                                <img src="https://flagcdn.com/w20/{{ $match->awayTeam->iso_code }}.png" class="w-4 h-3 object-cover rounded-sm flex-shrink-0">
+                                                <img src="{{ $match->awayTeam->flag_url }}" class="w-4 h-3 object-cover rounded-sm flex-shrink-0" alt="" loading="lazy">
                                             @endif
                                         </div>
                                     </div>
@@ -263,7 +271,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                                     <td class="px-2 py-2 font-bold text-gray-600">{{ $index + 1 }}</td>
                                     <td class="px-2 py-2">
                                         <div class="flex items-center gap-2">
-                                            <img src="https://flagcdn.com/w40/{{ $teamData['team']->iso_code }}.png" class="w-6 h-4 rounded shadow">
+                                            <img src="{{ $teamData['team']->flag_url }}" class="w-6 h-4 rounded shadow" alt="" loading="lazy">
                                             <span class="font-bold text-gray-800 text-xs sm:text-sm">{{ $teamData['team']->name }}</span>
                                         </div>
                                     </td>
@@ -301,7 +309,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-4 py-3">
             <h3 class="text-lg font-black text-white flex items-center gap-2">
-                <span>🏟️</span> Huitièmes de Finale
+                <span></span> Huitièmes de Finale
             </h3>
         </div>
         <div class="p-4">
@@ -319,7 +327,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-4 py-3">
             <h3 class="text-lg font-black text-white flex items-center gap-2">
-                <span>🏟️</span> Quarts de Finale
+                <span></span> Quarts de Finale
             </h3>
         </div>
         <div class="p-4">
@@ -337,7 +345,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="bg-gradient-to-r from-pink-600 to-pink-800 px-4 py-3">
             <h3 class="text-lg font-black text-white flex items-center gap-2">
-                <span>🏟️</span> Demi-Finales
+                <span></span> Demi-Finales
             </h3>
         </div>
         <div class="p-4">
@@ -357,7 +365,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="bg-gradient-to-r from-orange-500 to-orange-700 px-4 py-3">
                 <h3 class="text-lg font-black text-white flex items-center gap-2">
-                    <span>🥉</span> 3ème Place
+                    <span></span> 3ème Place
                 </h3>
             </div>
             <div class="p-4">
@@ -373,7 +381,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 px-4 py-3">
                 <h3 class="text-lg font-black text-white flex items-center gap-2">
-                    <span>🏆</span> FINALE
+                    <span></span> FINALE
                 </h3>
             </div>
             <div class="p-4">
@@ -387,7 +395,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
 
     @if((!isset($knockoutMatches['round_of_16']) || $knockoutMatches['round_of_16']->count() == 0) && (!isset($knockoutMatches['quarter_final']) || $knockoutMatches['quarter_final']->count() == 0) && (!isset($knockoutMatches['semi_final']) || $knockoutMatches['semi_final']->count() == 0) && (!isset($knockoutMatches['final']) || $knockoutMatches['final']->count() == 0))
         <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center">
-            <span class="text-6xl mb-4 block">🏆</span>
+            <span class="text-6xl mb-4 block"></span>
             <p class="text-xl font-bold text-white">Les phases finales n'ont pas encore commencé</p>
             <p class="text-white/70 mt-2">Les matchs à élimination directe apparaîtront ici</p>
         </div>

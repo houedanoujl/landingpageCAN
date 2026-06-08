@@ -8,7 +8,7 @@
                     ← Retour aux équipes
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <img src="https://flagcdn.com/w40/{{ $team->iso_code }}.png" class="w-10 h-7 rounded shadow">
+                    <img src="{{ $team->flag_url }}" class="w-10 h-7 rounded shadow" alt="" loading="lazy">
                     Modifier {{ $team->name }}
                 </h1>
             </div>
@@ -56,7 +56,7 @@
                             <button type="button" 
                                     onclick="deleteTeam()"
                                     class="text-red-600 hover:underline font-bold">
-                                🗑️ Supprimer
+                                Supprimer
                             </button>
                             <div class="flex gap-4">
                                 <a href="{{ route('admin.teams') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
@@ -82,7 +82,7 @@
     
     <script>
         function deleteTeam() {
-            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette équipe ?\n\nCette action est IRRÉVERSIBLE.')) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe ?\n\nCette action est IRRÉVERSIBLE.')) {
                 document.getElementById('delete-team-form').submit();
             }
         }

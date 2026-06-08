@@ -2,7 +2,7 @@
 
 # ==========================================
 # SCRIPT DE DÉPLOIEMENT FORGE - PRODUCTION
-# SOBOA FOOT TIME - Le goût de notre victoire
+# SOBOA FOOT TIME
 # ==========================================
 
 $CREATE_RELEASE()

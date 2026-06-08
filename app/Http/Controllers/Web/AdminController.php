@@ -257,6 +257,7 @@ class AdminController extends Controller
             'winner' => 'nullable|in:home,away',
             'venue_ids' => 'nullable|array',
             'venue_ids.*' => 'exists:bars,id',
+            'external_id' => 'nullable|string|max:50|unique:matches,external_id,' . $id,
         ]);
 
         $match = MatchGame::findOrFail($id);
@@ -286,6 +287,7 @@ class AdminController extends Controller
             'score_b' => $request->score_b,
             'status' => $request->status,
             'winner' => $winner, // NULL si pas de TAB, 'home' ou 'away' si TAB
+            'external_id' => $request->external_id ?: null,
         ]);
 
         // Synchroniser les animations (PDV assignés)
@@ -309,7 +311,8 @@ class AdminController extends Controller
 
         // Calcul automatique des points si le match vient d'être terminé
         if ($nowFinished && $request->score_a !== null && $request->score_b !== null && !$wasFinished) {
-            ProcessMatchPoints::dispatch($match->id);
+            // Exécuté après l'envoi de la réponse : l'admin n'attend pas le calcul.
+            ProcessMatchPoints::dispatch($match->id)->afterResponse();
             return redirect()->route('admin.matches')->with('success', "Match terminé ! Les points sont en cours de calcul...");
         }
 
@@ -635,7 +638,7 @@ class AdminController extends Controller
 
                 // Déclencher le calcul des points uniquement pour les matchs terminés
                 if ($hasScores) {
-                    ProcessMatchPoints::dispatch($match->id);
+                    ProcessMatchPoints::dispatch($match->id)->afterResponse();
                 }
             }
 
@@ -2437,6 +2440,7 @@ class AdminController extends Controller
             'secondary_color' => 'required|string|max:7',
             'favorite_team_id' => 'nullable|exists:teams,id',
             'geofencing_radius' => 'required|integer|min:50|max:1000',
+            'hero_promo_text' => 'nullable|string|max:500',
             'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
         ]);
 
@@ -2448,6 +2452,7 @@ class AdminController extends Controller
             'secondary_color' => $request->input('secondary_color'),
             'favorite_team_id' => $request->input('favorite_team_id'),
             'geofencing_radius' => $request->input('geofencing_radius'),
+            'hero_promo_text' => $request->input('hero_promo_text') ?: null,
         ];
 
         // Gérer l'upload du logo

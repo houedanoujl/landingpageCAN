@@ -6,7 +6,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-4xl">📸</span> Médias Animations
+                        <span class="text-4xl"></span> Médias Animations
                     </h1>
                     <p class="text-gray-600 mt-2">Gérez les highlights (photos) et vidéos des animations</p>
                 </div>
@@ -23,7 +23,7 @@
             <!-- Alert: Table doesn't exist -->
             <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-xl shadow">
                 <div class="flex items-center gap-4">
-                    <span class="text-4xl">⚠️</span>
+                    <span class="text-4xl"></span>
                     <div>
                         <h3 class="font-bold text-yellow-800 text-lg">Migration requise</h3>
                         <p class="text-yellow-700 mt-1">La table <code class="bg-yellow-100 px-2 py-1 rounded font-mono">animation_media</code> n'existe pas encore.</p>
@@ -39,7 +39,7 @@
                 <div class="bg-white rounded-xl p-6 shadow-lg border-l-4 border-blue-500">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span class="text-3xl">📸</span>
+                            <span class="text-3xl"></span>
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm">Photos (Highlights)</p>
@@ -50,7 +50,7 @@
                 <div class="bg-white rounded-xl p-6 shadow-lg border-l-4 border-purple-500">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
-                            <span class="text-3xl">🎥</span>
+                            <span class="text-3xl"></span>
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm">Vidéos</p>
@@ -61,7 +61,7 @@
                 <div class="bg-white rounded-xl p-6 shadow-lg border-l-4 border-green-500">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-                            <span class="text-3xl">✅</span>
+                            <span class="text-3xl"></span>
                         </div>
                         <div>
                             <p class="text-gray-500 text-sm">Médias actifs</p>
@@ -75,7 +75,7 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
                 <div class="px-6 py-4 bg-blue-50 border-b border-blue-100">
                     <h2 class="text-xl font-bold text-blue-800 flex items-center gap-2">
-                        <span>📸</span> Highlights (Photos)
+                        <span></span> Highlights (Photos)
                     </h2>
                 </div>
                 
@@ -95,7 +95,7 @@
                         <div class="p-4">
                             <h3 class="font-bold text-gray-800 truncate">{{ $photo->title }}</h3>
                             @if($photo->bar)
-                            <p class="text-xs text-gray-500 mt-1">📍 {{ $photo->bar->name }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ $photo->bar->name }}</p>
                             @endif
                             <div class="flex gap-2 mt-3">
                                 <a href="{{ route('admin.edit-media', $photo->id) }}" 
@@ -114,7 +114,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="bg-red-100 hover:bg-red-200 text-red-700 text-sm py-2 px-3 rounded-lg transition">
-                                        🗑️
+                                        
                                     </button>
                                 </form>
                             </div>
@@ -124,7 +124,7 @@
                 </div>
                 @else
                 <div class="p-8 text-center text-gray-500">
-                    <span class="text-5xl block mb-4">📸</span>
+                    <span class="text-5xl block mb-4"></span>
                     <p class="text-lg">Aucune photo pour le moment.</p>
                     <a href="{{ route('admin.create-media') }}" class="inline-block mt-4 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2 px-6 rounded-lg transition">
                         Ajouter une photo
@@ -137,7 +137,7 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div class="px-6 py-4 bg-purple-50 border-b border-purple-100">
                     <h2 class="text-xl font-bold text-purple-800 flex items-center gap-2">
-                        <span>🎥</span> Vidéos
+                        <span></span> Vidéos
                     </h2>
                 </div>
                 
@@ -161,7 +161,7 @@
                             <img src="{{ $video->thumbnail_url }}" alt="{{ $video->title }}" class="w-full h-full object-cover">
                             @else
                             <div class="w-full h-full flex items-center justify-center bg-gray-800">
-                                <span class="text-5xl">🎬</span>
+                                <span class="text-5xl"></span>
                             </div>
                             @endif
                             @if(!$video->is_active)
@@ -177,7 +177,7 @@
                             <p class="text-xs text-blue-500 mt-1 truncate">{{ $video->video_url }}</p>
                             @endif
                             @if($video->bar)
-                            <p class="text-xs text-gray-500 mt-1">📍 {{ $video->bar->name }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ $video->bar->name }}</p>
                             @endif
                             <div class="flex gap-2 mt-3">
                                 <a href="{{ route('admin.edit-media', $video->id) }}" 
@@ -196,7 +196,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="bg-red-100 hover:bg-red-200 text-red-700 text-sm py-2 px-3 rounded-lg transition">
-                                        🗑️
+                                        
                                     </button>
                                 </form>
                             </div>
@@ -206,7 +206,7 @@
                 </div>
                 @else
                 <div class="p-8 text-center text-gray-500">
-                    <span class="text-5xl block mb-4">🎥</span>
+                    <span class="text-5xl block mb-4"></span>
                     <p class="text-lg">Aucune vidéo pour le moment.</p>
                     <a href="{{ route('admin.create-media') }}" class="inline-block mt-4 bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-6 rounded-lg transition">
                         Ajouter une vidéo

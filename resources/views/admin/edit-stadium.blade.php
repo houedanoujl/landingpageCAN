@@ -8,7 +8,7 @@
                     ← Retour aux stades
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">🏟️</span> Modifier {{ $stadium->name }}
+                    <span class="text-4xl"></span> Modifier {{ $stadium->name }}
                 </h1>
             </div>
 
@@ -81,7 +81,7 @@
                             <button type="button" 
                                     onclick="deleteStadium()"
                                     class="text-red-600 hover:underline font-bold">
-                                🗑️ Supprimer
+                                Supprimer
                             </button>
                             <div class="flex gap-4">
                                 <a href="{{ route('admin.stadiums') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
@@ -107,7 +107,7 @@
     
     <script>
         function deleteStadium() {
-            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce stade ?\n\nCette action est IRRÉVERSIBLE.')) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce stade ?\n\nCette action est IRRÉVERSIBLE.')) {
                 document.getElementById('delete-stadium-form').submit();
             }
         }

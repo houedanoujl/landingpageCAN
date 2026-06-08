@@ -140,7 +140,7 @@
                                     @endif
                                     @if($log->bar)
                                         <div class="text-xs text-purple-600">
-                                            📍 {{ $log->bar->name }}
+                                            {{ $log->bar->name }}
                                         </div>
                                     @endif
                                 </td>

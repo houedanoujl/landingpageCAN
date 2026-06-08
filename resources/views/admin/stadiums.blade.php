@@ -6,7 +6,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-4xl">🏟️</span> Stades
+                        <span class="text-4xl"></span> Stades
                     </h1>
                     <p class="text-gray-600 mt-2">Gérez les stades</p>
                 </div>

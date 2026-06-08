@@ -43,7 +43,7 @@
                         <p class="text-3xl font-black text-soboa-blue mt-2">{{ $stats['by_type']['dakar'] }}</p>
                     </div>
                     <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span class="text-2xl">🏙️</span>
+                        <span class="text-2xl"></span>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                         <p class="text-3xl font-black text-green-600 mt-2">{{ $stats['by_type']['regions'] }}</p>
                     </div>
                     <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <span class="text-2xl">🗺️</span>
+                        <span class="text-2xl"></span>
                     </div>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                         <p class="text-3xl font-black text-orange-600 mt-2">{{ $stats['by_type']['chr'] + $stats['by_type']['fanzone'] }}</p>
                     </div>
                     <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                        <span class="text-2xl">🍽️</span>
+                        <span class="text-2xl"></span>
                     </div>
                 </div>
             </div>
@@ -196,12 +196,12 @@
                                 <td class="px-6 py-4">
                                     @php
                                         $typeBadges = [
-                                            'dakar' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'icon' => '🏙️'],
-                                            'regions' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => '🗺️'],
-                                            'chr' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'icon' => '🍽️'],
-                                            'fanzone' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-800', 'icon' => '🎉'],
+                                            'dakar' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'icon' => ''],
+                                            'regions' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => ''],
+                                            'chr' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'icon' => ''],
+                                            'fanzone' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-800', 'icon' => ''],
                                         ];
-                                        $badge = $typeBadges[$venue->type_pdv] ?? ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'icon' => '📍'];
+                                        $badge = $typeBadges[$venue->type_pdv] ?? ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'icon' => ''];
                                     @endphp
                                     <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold {{ $badge['bg'] }} {{ $badge['text'] }}">
                                         <span>{{ $badge['icon'] }}</span>

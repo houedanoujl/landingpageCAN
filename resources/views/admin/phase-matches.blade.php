@@ -21,13 +21,13 @@
             <!-- Messages -->
             @if (session('success'))
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded">
-                    ✅ {{ session('success') }}
+                    {{ session('success') }}
                 </div>
             @endif
 
             @if (session('error'))
                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-                    ❌ {{ session('error') }}
+                    {{ session('error') }}
                 </div>
             @endif
 
@@ -43,12 +43,12 @@
                                     </span>
                                     @if ($match->match_date)
                                         <span class="text-sm text-gray-600 ml-4">
-                                            📅 {{ $match->match_date->format('d/m/Y H:i') }}
+                                            {{ $match->match_date->format('d/m/Y H:i') }}
                                         </span>
                                     @endif
                                     @if ($match->stadium)
                                         <span class="text-sm text-gray-600 ml-4">
-                                            🏟️ {{ $match->stadium }}
+                                            {{ $match->stadium }}
                                         </span>
                                     @endif
                                 </div>
@@ -118,7 +118,7 @@
                                 <div class="border-t pt-4 text-right">
                                     <a href="{{ route('admin.edit-match', $match->id) }}"
                                         class="bg-soboa-blue hover:bg-soboa-blue/90 text-white px-6 py-2 rounded-lg font-bold inline-block transition-all">
-                                        ⚙️ Modifier le match
+                                        Modifier le match
                                     </a>
                                 </div>
                             </div>
@@ -127,7 +127,7 @@
                 </div>
             @else
                 <div class="bg-white p-12 rounded-xl shadow-lg text-center">
-                    <div class="text-6xl mb-4">🏟️</div>
+                    <div class="text-6xl mb-4"></div>
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Aucun match dans cette phase</h2>
                     <p class="text-gray-600 mb-6">
                         Les matchs de {{ $phaseName }} n'ont pas encore été créés.

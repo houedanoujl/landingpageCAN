@@ -17,7 +17,7 @@
     <div class="flex items-center justify-between px-3 py-2 {{ $homeWinner ? 'bg-green-100' : '' }} border-b border-gray-200">
         <div class="flex items-center gap-2 flex-1 min-w-0">
             @if($match->homeTeam)
-                <img src="https://flagcdn.com/w40/{{ $match->homeTeam->iso_code }}.png" class="w-6 h-4 rounded shadow flex-shrink-0">
+                <img src="{{ $match->homeTeam->flag_url }}" class="w-6 h-4 rounded shadow flex-shrink-0" alt="" loading="lazy">
             @else
                 <div class="w-6 h-4 bg-gray-300 rounded flex items-center justify-center text-[8px] flex-shrink-0">?</div>
             @endif
@@ -34,7 +34,7 @@
     <div class="flex items-center justify-between px-3 py-2 {{ $awayWinner ? 'bg-green-100' : '' }}">
         <div class="flex items-center gap-2 flex-1 min-w-0">
             @if($match->awayTeam)
-                <img src="https://flagcdn.com/w40/{{ $match->awayTeam->iso_code }}.png" class="w-6 h-4 rounded shadow flex-shrink-0">
+                <img src="{{ $match->awayTeam->flag_url }}" class="w-6 h-4 rounded shadow flex-shrink-0" alt="" loading="lazy">
             @else
                 <div class="w-6 h-4 bg-gray-300 rounded flex items-center justify-center text-[8px] flex-shrink-0">?</div>
             @endif

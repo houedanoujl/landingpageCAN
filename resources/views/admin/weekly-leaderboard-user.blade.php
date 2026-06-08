@@ -5,7 +5,7 @@
             <div class="container mx-auto px-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-bold">👤 {{ $user->name }}</h1>
+                        <h1 class="text-2xl md:text-3xl font-bold">{{ $user->name }}</h1>
                         <p class="text-blue-200 mt-1">
                             Période du {{ $weekStart->format('d/m/Y') }} au {{ $weekEnd->format('d/m/Y') }}
                         </p>
@@ -89,7 +89,7 @@
                     
                     <!-- Résumé activité -->
                     <div class="bg-white rounded-xl shadow-sm p-4 mt-4">
-                        <h3 class="font-bold text-gray-700 mb-3">📈 Résumé de l'activité</h3>
+                        <h3 class="font-bold text-gray-700 mb-3">Résumé de l'activité</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                             <div>
                                 <div class="text-lg font-bold text-green-600">{{ $userWeeklyStats['daily_logins'] }}</div>
@@ -117,7 +117,7 @@
                 <!-- Points gagnés -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="px-4 py-3 bg-gray-50 border-b">
-                        <h3 class="font-bold text-gray-700">🎯 Historique des points ({{ $pointLogs->count() }} entrées)</h3>
+                        <h3 class="font-bold text-gray-700">Historique des points ({{ $pointLogs->count() }} entrées)</h3>
                     </div>
                     <div class="max-h-96 overflow-y-auto">
                         <table class="w-full">
@@ -154,7 +154,7 @@
                                                 </div>
                                             @endif
                                             @if($log->bar)
-                                                <div class="text-xs text-gray-400">📍 {{ $log->bar->name }}</div>
+                                                <div class="text-xs text-gray-400">{{ $log->bar->name }}</div>
                                             @endif
                                         </td>
                                         <td class="px-4 py-2 text-right">
@@ -178,7 +178,7 @@
                 <!-- Pronostics -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="px-4 py-3 bg-gray-50 border-b">
-                        <h3 class="font-bold text-gray-700">⚽ Pronostics ({{ $predictions->count() }})</h3>
+                        <h3 class="font-bold text-gray-700">Pronostics ({{ $predictions->count() }})</h3>
                     </div>
                     <div class="max-h-96 overflow-y-auto">
                         <table class="w-full">

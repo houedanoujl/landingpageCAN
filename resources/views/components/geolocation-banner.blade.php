@@ -138,17 +138,12 @@
                     <!-- Icône & Message -->
                     <div class="flex items-center gap-4 flex-1">
                         <div class="bg-white/10 rounded-full p-3 flex-shrink-0">
-                            <svg class="w-6 h-6 text-soboa-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
+                            <i data-lucide="map-pin" class="w-6 h-6 text-soboa-orange"></i>
                         </div>
 
                         <div class="flex-1">
                             <p class="text-white font-bold text-sm md:text-base leading-tight">
-                                📍 <span x-text="nearbyVenue?.name"></span>
+                                <span x-text="nearbyVenue?.name"></span>
                                 <template x-if="distance && distance <= 0.05">
                                     <span class="text-soboa-orange"> - Vous y êtes !</span>
                                 </template>
@@ -158,10 +153,10 @@
                             </p>
                             <p class="text-white/80 text-xs md:text-sm mt-1">
                                 <template x-if="distance && distance <= 0.05">
-                                    <span>✨ Vous êtes au PDV ! Pronostiquez maintenant pour +4 points bonus !</span>
+                                    <span>Vous êtes au PDV ! Pronostiquez maintenant pour +4 points bonus !</span>
                                 </template>
                                 <template x-if="distance && distance > 0.05">
-                                    <span>🎉 Gagnez +4 points bonus en pronostiquant depuis ce PDV partenaire !</span>
+                                    <span>Gagnez +4 points bonus en pronostiquant depuis ce PDV partenaire !</span>
                                 </template>
                             </p>
                         </div>
@@ -169,21 +164,16 @@
 
                     <!-- Actions -->
                     <div class="flex items-center gap-2 flex-shrink-0">
-                        <button
-                            @click="goToVenue()"
-                            class="bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold px-4 py-2 rounded-lg text-xs md:text-sm transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
-                        >
+                        <button @click="goToVenue()" class="btn btn-primary btn-sm whitespace-nowrap">
                             Voir sur la carte
                         </button>
 
                         <button
                             @click="closeBanner()"
-                            class="text-white/60 hover:text-white transition-colors p-2"
+                            class="text-white/70 hover:text-white transition-colors p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-white"
                             aria-label="Fermer"
                         >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>

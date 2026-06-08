@@ -31,10 +31,13 @@ class MatchGame extends Model
         'score_a',
         'score_b',
         'winner',  // Ajouté pour gérer les tirs au but
+        'external_id',
+        'last_synced_at',
     ];
 
     protected $casts = [
         'match_date' => 'datetime',
+        'last_synced_at' => 'datetime',
     ];
 
     /**

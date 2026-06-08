@@ -4,7 +4,7 @@
         <!-- Header compact -->
         <div class="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
             <h1 class="text-xl font-bold text-soboa-blue flex items-center gap-2">
-                <span>📊</span> Rapport Google Analytics Intégré
+                <span></span> Rapport Google Analytics Intégré
             </h1>
             <a href="{{ route('admin.dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -17,7 +17,7 @@
 
             <!-- Prévisualisation actuelle -->
             <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
-                <h3 class="text-sm font-bold text-gray-500 mb-3">📎 Média actuel</h3>
+                <h3 class="text-sm font-bold text-gray-500 mb-3">Média actuel</h3>
                 @if($mediaItem->type === 'photo')
                 <img src="{{ $mediaItem->file_url }}" alt="{{ $mediaItem->title }}" class="w-full max-h-64 object-contain rounded-xl">
                 @else
@@ -47,7 +47,7 @@
                                    {{ $mediaItem->type === 'photo' ? 'checked' : '' }}
                                    class="w-5 h-5 text-blue-600" 
                                    onchange="toggleVideoFields(this.value)">
-                            <span class="text-2xl">📸</span>
+                            <span class="text-2xl"></span>
                             <span class="font-medium">Photo (Highlight)</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer p-3 border-2 rounded-xl hover:border-purple-300 transition has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
@@ -55,7 +55,7 @@
                                    {{ $mediaItem->type === 'video' ? 'checked' : '' }}
                                    class="w-5 h-5 text-purple-600"
                                    onchange="toggleVideoFields(this.value)">
-                            <span class="text-2xl">🎥</span>
+                            <span class="text-2xl"></span>
                             <span class="font-medium">Vidéo</span>
                         </label>
                     </div>
@@ -91,7 +91,7 @@
                     </label>
                     <input type="file" name="file" id="file" accept="image/*,video/*"
                            class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 focus:ring-soboa-orange focus:border-soboa-orange hover:border-gray-400 transition">
-                    <p class="text-gray-500 text-xs mt-2">📸 Photos: JPG, PNG, WebP (max 50MB) | 🎥 Vidéos: MP4, WebM (max 50MB)</p>
+                    <p class="text-gray-500 text-xs mt-2">Photos: JPG, PNG, WebP (max 50MB) | Vidéos: MP4, WebM (max 50MB)</p>
                     @error('file')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -108,7 +108,7 @@
                     
                     <!-- Plateformes supportées -->
                     <div class="mt-3 p-4 bg-gray-50 rounded-xl space-y-3">
-                        <p class="text-sm font-semibold text-gray-700">📺 Plateformes supportées :</p>
+                        <p class="text-sm font-semibold text-gray-700">Plateformes supportées :</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                             <div class="flex items-start gap-2 p-2 bg-red-50 rounded-lg">
                                 <span class="text-red-600 font-bold">YouTube</span>
@@ -153,7 +153,7 @@
 
                 <!-- Lieu associé -->
                 <div>
-                    <label for="bar_id" class="block text-sm font-bold text-gray-700 mb-2">📍 Lieu associé (optionnel)</label>
+                    <label for="bar_id" class="block text-sm font-bold text-gray-700 mb-2">Lieu associé (optionnel)</label>
                     <select name="bar_id" id="bar_id"
                             class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-soboa-orange focus:border-soboa-orange text-lg p-3">
                         <option value="">-- Aucun lieu --</option>
@@ -182,7 +182,7 @@
                 <div class="flex gap-4 pt-6 border-t">
                     <button type="submit" 
                             class="flex-1 bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold py-4 px-6 rounded-xl transition shadow-lg text-lg">
-                        ✅ Enregistrer les modifications
+                        Enregistrer les modifications
                     </button>
                     <a href="{{ route('admin.media') }}" 
                        class="flex-1 text-center bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-4 px-6 rounded-xl transition text-lg">
@@ -193,14 +193,14 @@
 
             <!-- Zone de suppression -->
             <div class="mt-8 bg-red-50 border-2 border-red-200 rounded-xl p-6">
-                <h3 class="text-red-800 font-bold text-lg mb-2">⚠️ Zone dangereuse</h3>
+                <h3 class="text-red-800 font-bold text-lg mb-2">Zone dangereuse</h3>
                 <p class="text-red-600 text-sm mb-4">La suppression est définitive et ne peut pas être annulée.</p>
                 <form action="{{ route('admin.delete-media', $mediaItem->id) }}" method="POST" 
                       onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce média ? Cette action est irréversible.')">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition">
-                        🗑️ Supprimer ce média
+                        Supprimer ce média
                     </button>
                 </form>
             </div>

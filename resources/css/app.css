@@ -2,9 +2,162 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ====================================
+   SOBOA DESIGN TOKENS
+   ==================================== */
+:root {
+    --soboa-blue: #0058A3;
+    --soboa-blue-dark: #0054A1;
+    --soboa-blue-light: #3478B5;
+    --soboa-orange: #F1862D;
+    --soboa-orange-secondary: #F18327;
+    --soboa-orange-light: #F4A05B;
+    --soboa-white: #FFFFFF;
+    --soboa-cream: #FEF7F1;
+    --soboa-text-dark: #0B1F33;
+
+    --soboa-orange-rgb: 241, 134, 45;
+    --soboa-blue-rgb: 0, 88, 163;
+    --soboa-text-dark-rgb: 11, 31, 51;
+}
+
+html {
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+}
+
 /* Styles personnalisés globaux */
 * {
     font-family: 'Montserrat', sans-serif;
+}
+
+/* ====================================
+   A11Y — GLOBAL FOCUS-VISIBLE
+   Default focus ring for ALL interactive elements that don't already declare one.
+   Uses :focus-visible so mouse clicks don't show outline, only keyboard nav.
+   ==================================== */
+*:focus { outline: none; }
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="link"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--soboa-orange);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+/* Inside dark/colored areas, keep contrast via box-shadow ring */
+.bg-soboa-blue a:focus-visible,
+.bg-soboa-blue button:focus-visible,
+.bg-soboa-blue-dark a:focus-visible,
+.bg-soboa-blue-dark button:focus-visible,
+.bg-soboa-text-dark a:focus-visible,
+.bg-soboa-text-dark button:focus-visible {
+    outline-color: #FFFFFF;
+}
+
+/* Minimum tap target 44px on mobile (WCAG 2.5.5 AAA). */
+@media (max-width: 640px) {
+    button:not([class*="p-0"]):not(.no-tap-min),
+    a[role="button"]:not(.no-tap-min),
+    [role="tab"]:not(.no-tap-min),
+    summary:not(.no-tap-min) {
+        min-height: 44px;
+    }
+}
+
+/* Skip link for keyboard users */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--soboa-blue);
+    color: #fff;
+    padding: 12px 20px;
+    z-index: 9999;
+    border-radius: 0 0 8px 0;
+    font-weight: 700;
+    transition: top 0.2s ease;
+}
+.skip-link:focus { top: 0; }
+
+/* Hide scrollbar utility (reusable) */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ====================================
+   BUTTON SYSTEM
+   Usage: <button class="btn btn-primary btn-md">Label</button>
+   Variants: btn-primary / btn-secondary / btn-ghost / btn-destructive / btn-success
+   Sizes:    btn-sm / btn-md (default) / btn-lg
+   Modifiers: btn-block (w-full), btn-pill (rounded-full)
+   ==================================== */
+@layer components {
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all duration-base focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:shadow-none;
+    }
+    .btn-sm { @apply px-3 py-2 text-xs; }
+    .btn-md { @apply px-5 py-2.5 text-sm; }
+    .btn-lg { @apply px-7 py-3.5 text-base; }
+    .btn-block { @apply w-full; }
+    .btn-pill { @apply rounded-full; }
+
+    .btn-primary {
+        @apply bg-soboa-orange hover:bg-soboa-orange-secondary text-white shadow-elev-1 hover:shadow-elev-2 focus:ring-soboa-orange;
+    }
+    .btn-secondary {
+        @apply bg-white text-soboa-blue ring-2 ring-soboa-blue hover:bg-soboa-blue/5 focus:ring-soboa-blue;
+    }
+    .btn-blue {
+        @apply bg-soboa-blue hover:bg-soboa-blue-dark text-white shadow-elev-1 hover:shadow-elev-2 focus:ring-soboa-blue;
+    }
+    .btn-ghost {
+        @apply bg-transparent text-soboa-text-dark hover:bg-soboa-text-dark/5 focus:ring-soboa-text-dark/30;
+    }
+    .btn-ghost-light {
+        @apply bg-white/10 hover:bg-white/20 text-white ring-1 ring-white/20 focus:ring-white;
+    }
+    .btn-destructive {
+        @apply bg-red-600 hover:bg-red-700 text-white shadow-elev-1 focus:ring-red-500;
+    }
+    .btn-success {
+        @apply bg-emerald-600 hover:bg-emerald-700 text-white shadow-elev-1 focus:ring-emerald-500;
+    }
+}
+
+/* ====================================
+   MODAL SYSTEM
+   Usage:
+     <div class="modal-backdrop"><div class="modal-panel">…</div></div>
+   Variants:
+     .modal-panel-sm / .modal-panel-md (default) / .modal-panel-lg
+     .modal-sheet (bottom-sheet mobile, modal desktop)
+   ==================================== */
+@layer components {
+    .modal-backdrop {
+        @apply fixed inset-0 z-modal bg-soboa-text-dark/80 backdrop-blur-sm flex items-center justify-center p-4;
+    }
+    .modal-backdrop-sheet {
+        @apply fixed inset-0 z-modal bg-soboa-text-dark/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4;
+    }
+    .modal-panel {
+        @apply bg-white rounded-2xl shadow-elev-modal w-full max-w-md max-h-[92vh] overflow-hidden flex flex-col;
+    }
+    .modal-panel-sm { @apply max-w-sm; }
+    .modal-panel-lg { @apply max-w-lg; }
+    .modal-sheet-panel {
+        @apply bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-elev-modal overflow-hidden max-h-[92vh] flex flex-col;
+    }
+    .modal-header {
+        @apply px-5 py-4 bg-gradient-to-r from-soboa-blue to-soboa-blue-light text-white flex items-start justify-between gap-3;
+    }
+    .modal-close {
+        @apply p-2 hover:bg-white/15 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white;
+    }
 }
 
 .bg-pattern {
@@ -24,22 +177,50 @@
 }
 
 .gradient-text {
-    background: linear-gradient(135deg, #FFD700 0%, #CCAC00 100%);
+    background: linear-gradient(135deg, var(--soboa-orange-light) 0%, var(--soboa-orange) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .hero-gradient {
-    background: linear-gradient(135deg, #121212 0%, #000000 50%, #121212 100%);
+    background: linear-gradient(135deg, var(--soboa-blue) 0%, var(--soboa-blue-dark) 50%, var(--soboa-text-dark) 100%);
 }
 
 .orange-glow {
-    box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 40px rgba(var(--soboa-orange-rgb), 0.35);
 }
 
 [x-cloak] {
     display: none !important;
+}
+
+/* ====================================
+   REDUCED MOTION (a11y)
+   ==================================== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .animate-glow,
+    .animate-fade-in-down,
+    .animate-fade-in-up,
+    .animate-slide-right,
+    .animate-slide-left,
+    .animate-pulse-soft,
+    .animate-pulse-slow,
+    .animate-float,
+    .animate-bounce-slow,
+    .animate-bounce,
+    .animate-pulse,
+    .team-flag,
+    .vs-text,
+    .hero-title::after {
+        animation: none !important;
+    }
 }
 
 /* ====================================
@@ -192,12 +373,12 @@ img, video, iframe {
     0%, 100% {
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
                      0 0 20px rgba(255, 255, 255, 0.3),
-                     0 0 30px rgba(255, 215, 0, 0.2);
+                     0 0 30px rgba(var(--soboa-orange-rgb), 0.25);
     }
     50% {
         text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
                      0 0 30px rgba(255, 255, 255, 0.5),
-                     0 0 40px rgba(255, 215, 0, 0.4);
+                     0 0 40px rgba(var(--soboa-orange-rgb), 0.5);
     }
 }
 
@@ -296,7 +477,7 @@ img, video, iframe {
     left: 0;
     width: 100%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #FFD700, transparent);
+    background: linear-gradient(90deg, transparent, var(--soboa-orange), transparent);
     animation: shimmer 2s ease-in-out infinite;
 }
 
@@ -343,11 +524,11 @@ img, video, iframe {
 @keyframes vsPulse {
     0%, 100% {
         transform: scale(1);
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        text-shadow: 0 0 10px rgba(var(--soboa-orange-rgb), 0.35);
     }
     50% {
         transform: scale(1.1);
-        text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        text-shadow: 0 0 20px rgba(var(--soboa-orange-rgb), 0.65);
     }
 }
 

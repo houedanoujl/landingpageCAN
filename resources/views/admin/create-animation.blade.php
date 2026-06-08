@@ -5,7 +5,7 @@
             <!-- Header -->
             <div class="mb-8">
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">➕</span> Nouvelle Animation
+                    <span class="text-4xl"></span> Nouvelle Animation
                 </h1>
                 <p class="text-gray-600 mt-2">Créez une nouvelle animation pour un point de vente</p>
             </div>
@@ -141,7 +141,7 @@
                     <div class="flex items-center gap-4 pt-6 border-t">
                         <button type="submit"
                                 class="bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-6 rounded-lg transition flex items-center gap-2">
-                            <span>💾</span> Créer l'animation
+                            <span></span> Créer l'animation
                         </button>
                         <a href="{{ route('admin.animations') }}"
                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">

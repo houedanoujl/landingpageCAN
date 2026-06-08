@@ -14,19 +14,30 @@ class Team extends Model
     ];
 
     /**
-     * Get the flag image URL for this team.
+     * Build flag URL. flagcdn.com only supports ISO 3166-1 (2 chars).
+     * Subdivisions like gb-eng, gb-sct, gb-wls, gb-nir must use flagicons.lipis.dev.
      */
-    public function getFlagUrlAttribute(): string
+    protected function flagUrl(string $size): string
     {
-        return "https://flagcdn.com/w40/{$this->iso_code}.png";
+        $iso = strtolower($this->iso_code ?? '');
+        if ($iso === '' ) {
+            return '';
+        }
+        if (str_contains($iso, '-')) {
+            // Subdivision flag (e.g. gb-eng): flagicons.lipis.dev serves SVG only.
+            return "https://flagicons.lipis.dev/flags/4x3/{$iso}.svg";
+        }
+        return "https://flagcdn.com/{$size}/{$iso}.png";
     }
 
-    /**
-     * Get the high-res flag image URL for this team.
-     */
+    public function getFlagUrlAttribute(): string
+    {
+        return $this->flagUrl('w40');
+    }
+
     public function getFlagUrl80Attribute(): string
     {
-        return "https://flagcdn.com/w80/{$this->iso_code}.png";
+        return $this->flagUrl('w80');
     }
 
     /**

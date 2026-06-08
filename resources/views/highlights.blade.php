@@ -8,7 +8,7 @@
             </div>
             <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-4xl font-black text-white drop-shadow-2xl">🎉 Temps Forts</h1>
+                    <h1 class="text-4xl font-black text-white drop-shadow-2xl">Temps Forts</h1>
                     <p class="text-white/80 font-bold uppercase tracking-widest text-xs mt-1 drop-shadow-lg">
                         Filtrez les animations par point de vente
                     </p>
@@ -23,7 +23,7 @@
         <!-- Filtres -->
         <div class="bg-white rounded-xl shadow-lg p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>🔍</span> Filtrer les animations
+                <span></span> Filtrer les animations
             </h2>
             
             <form method="GET" action="{{ route('highlights') }}" class="space-y-4">
@@ -66,11 +66,11 @@
 
                 <div class="flex gap-3">
                     <button type="submit" class="bg-soboa-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-xl shadow-lg transition">
-                        🔍 Filtrer
+                        Filtrer
                     </button>
                     @if($venueId || $zone || $type)
                         <a href="{{ route('highlights') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl transition">
-                            ✖️ Réinitialiser
+                            Réinitialiser
                         </a>
                     @endif
                 </div>
@@ -87,7 +87,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
-                <span id="locate-btn-text">📍 Trier par distance</span>
+                <span id="locate-btn-text">Trier par distance</span>
             </button>
         </div>
 
@@ -118,7 +118,7 @@
                         <div class="sticky top-20 z-10 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl px-6 py-4 shadow-lg mb-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <span class="text-3xl">📅</span>
+                                    <span class="text-3xl"></span>
                                     <div>
                                         <h2 class="text-xl font-black text-white">
                                             @if($isToday)
@@ -134,7 +134,7 @@
                                 </div>
                                 @if($isToday)
                                     <span class="bg-soboa-orange text-black font-bold px-3 py-1 rounded-full text-sm animate-pulse">
-                                        🔴 EN DIRECT
+                                        EN DIRECT
                                     </span>
                                 @endif
                             </div>
@@ -193,7 +193,7 @@
                                     <div class="p-4">
                                         <div class="flex items-center gap-2 mb-3">
                                             <div class="w-10 h-10 {{ $colors['bg'] }} rounded-full flex items-center justify-center">
-                                                <span class="text-lg">📍</span>
+                                                <span class="text-lg"></span>
                                             </div>
                                             <div>
                                                 <h3 class="font-bold text-gray-800">{{ $bar->name }}</h3>
@@ -210,7 +210,7 @@
                                         @endif
 
                                         <div class="distance-info hidden text-sm text-gray-600 mb-3">
-                                            <span class="font-medium">📏 Distance : </span>
+                                            <span class="font-medium">Distance : </span>
                                             <span class="distance-value font-bold text-purple-600">--</span>
                                         </div>
 
@@ -219,12 +219,12 @@
                                                 <a href="https://www.google.com/maps/dir/?api=1&destination={{ $bar->latitude }},{{ $bar->longitude }}"
                                                    target="_blank"
                                                    class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-center font-bold py-2 px-3 rounded-lg text-sm transition">
-                                                    🗺️ Itinéraire
+                                                    Itinéraire
                                                 </a>
                                             @endif
                                             <a href="{{ route('matches') }}#match-{{ $match->id }}"
                                                class="flex-1 bg-soboa-orange hover:bg-orange-600 text-black text-center font-bold py-2 px-3 rounded-lg text-sm transition">
-                                                🎯 Pronostiquer
+                                                Pronostiquer
                                             </a>
                                         </div>
                                     </div>
@@ -236,7 +236,7 @@
             </div>
         @else
             <div class="text-center py-12 bg-white rounded-xl shadow">
-                <span class="text-6xl">🔍</span>
+                <span class="text-6xl"></span>
                 <h3 class="text-xl font-bold text-gray-700 mt-4">Aucun résultat</h3>
                 <p class="text-gray-500 mt-2">Modifiez vos critères de recherche</p>
                 <a href="{{ route('highlights') }}" class="inline-block mt-4 bg-soboa-orange hover:bg-orange-600 text-black font-bold py-2 px-6 rounded-lg transition">
@@ -276,11 +276,11 @@
             const btn = this;
             const btnText = document.getElementById('locate-btn-text');
             
-            btnText.textContent = '⏳ Détection...';
+            btnText.textContent = 'Détection...';
             btn.disabled = true;
 
             if (!navigator.geolocation) {
-                btnText.textContent = '❌ Non supporté';
+                btnText.textContent = 'Non supporté';
                 btn.disabled = false;
                 return;
             }
@@ -306,12 +306,12 @@
                         }
                     });
 
-                    btnText.textContent = '✅ Distances affichées';
+                    btnText.textContent = 'Distances affichées';
                     btn.classList.add('bg-green-500');
                     btn.classList.remove('bg-soboa-blue');
                 },
                 (error) => {
-                    btnText.textContent = '❌ Position refusée';
+                    btnText.textContent = 'Position refusée';
                     btn.disabled = false;
                 },
                 { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }

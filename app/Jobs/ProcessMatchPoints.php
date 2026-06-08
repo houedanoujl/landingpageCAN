@@ -6,12 +6,14 @@ use App\Models\MatchGame;
 use App\Models\PointLog;
 use App\Models\Prediction;
 use App\Models\SiteSetting;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProcessMatchPoints implements ShouldQueue
@@ -68,105 +70,119 @@ class ProcessMatchPoints implements ShouldQueue
         }
 
         // Get all predictions for this match
-        $predictions = Prediction::with('user')
-            ->where('match_id', $this->matchId)
-            ->get();
+        $predictions = Prediction::where('match_id', $this->matchId)->get();
+
+        if ($predictions->isEmpty()) {
+            Log::info("ProcessMatchPoints: No predictions for match {$this->matchId}");
+            return;
+        }
 
         Log::info("ProcessMatchPoints: Processing {$predictions->count()} predictions for match {$this->matchId}");
 
-        foreach ($predictions as $prediction) {
-            $totalPoints = 0;
+        // Pré-charger en une seule requête tous les PointLogs déjà attribués
+        // pour ce match, indexés par utilisateur puis par source.
+        // Évite 3 requêtes "exists()" par pronostic (N+1).
+        $existingLogs = PointLog::where('match_id', $this->matchId)
+            ->whereIn('source', ['prediction_participation', 'prediction_winner', 'prediction_exact'])
+            ->get(['user_id', 'source'])
+            ->groupBy('user_id')
+            ->map(fn ($rows) => $rows->pluck('source')->flip());
 
-            // 1. Participation (+1 point, une seule fois par match/prédiction)
-            $alreadyParticipation = \App\Models\PointLog::where('user_id', $prediction->user_id)
-                ->where('source', 'prediction_participation')
-                ->where('match_id', $this->matchId)
-                ->exists();
-            if (!$alreadyParticipation) {
-                $totalPoints += 1;
-                \App\Models\PointLog::create([
-                    'user_id' => $prediction->user_id,
+        $now = now();
+        $newLogs = [];          // lignes PointLog à insérer en masse
+        $userDeltas = [];       // user_id => points à ajouter au total
+
+        foreach ($predictions as $prediction) {
+            $userId = $prediction->user_id;
+            $awarded = $existingLogs->get($userId) ?? collect();
+
+            // 1. Participation (+1 point, une seule fois par match)
+            if (!$awarded->has('prediction_participation')) {
+                $newLogs[] = [
+                    'user_id' => $userId,
                     'source' => 'prediction_participation',
                     'points' => 1,
                     'match_id' => $this->matchId,
-                ]);
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+                $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 1;
             }
 
             // Vérifier si l'utilisateur a prédit des tirs au but
             $userPredictedPenalties = $prediction->predict_draw && $prediction->penalty_winner;
 
             // 2. Correct Winner (+3 points)
-            // Si le match a eu des TAB: comparer avec penalty_winner de l'utilisateur
-            // Sinon: comparer avec le vainqueur des scores
             if ($matchHadPenalties && $userPredictedPenalties) {
-                // Match réel avec TAB + utilisateur a prédit TAB
                 $predictedWinner = $prediction->penalty_winner;
             } elseif ($matchHadPenalties && !$userPredictedPenalties) {
-                // Match réel avec TAB mais utilisateur n'a pas prédit TAB
-                // On prend le vainqueur de son score prédit
                 $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
             } elseif (!$matchHadPenalties && $userPredictedPenalties) {
-                // Match sans TAB mais utilisateur a prédit TAB
-                // On prend son penalty_winner comme vainqueur prédit
                 $predictedWinner = $prediction->penalty_winner;
             } else {
-                // Match sans TAB et utilisateur n'a pas prédit TAB
                 $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
             }
-            
-            if ($predictedWinner === $actualWinner) {
-                $alreadyWinner = \App\Models\PointLog::where('user_id', $prediction->user_id)
-                    ->where('source', 'prediction_winner')
-                    ->where('match_id', $this->matchId)
-                    ->exists();
-                if (!$alreadyWinner) {
-                    $totalPoints += 3;
-                    \App\Models\PointLog::create([
-                        'user_id' => $prediction->user_id,
-                        'source' => 'prediction_winner',
-                        'points' => 3,
-                        'match_id' => $this->matchId,
-                    ]);
 
-                    // WhatsApp désactivé - plus de notifications pour les points gagnés
-                }
+            if ($predictedWinner === $actualWinner && !$awarded->has('prediction_winner')) {
+                $newLogs[] = [
+                    'user_id' => $userId,
+                    'source' => 'prediction_winner',
+                    'points' => 3,
+                    'match_id' => $this->matchId,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+                $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 3;
             }
 
             // 3. Exact Score (+3 points extra)
-            // RÈGLE IMPORTANTE: Si le match a eu des TAB, PAS de points pour score exact
-            // Car un match avec TAB n'est pas considéré comme un "score exact" - c'est une égalité qui s'est décidée aux penalties
-            if (!$matchHadPenalties && $prediction->score_a == $match->score_a && $prediction->score_b == $match->score_b) {
-                $alreadyExact = \App\Models\PointLog::where('user_id', $prediction->user_id)
-                    ->where('source', 'prediction_exact')
-                    ->where('match_id', $this->matchId)
-                    ->exists();
-                if (!$alreadyExact) {
-                    $totalPoints += 3;
-                    \App\Models\PointLog::create([
-                        'user_id' => $prediction->user_id,
-                        'source' => 'prediction_exact',
-                        'points' => 3,
-                        'match_id' => $this->matchId,
-                    ]);
+            // RÈGLE: pas de score exact si le match s'est joué aux tirs au but.
+            if (!$matchHadPenalties
+                && $prediction->score_a == $match->score_a
+                && $prediction->score_b == $match->score_b
+                && !$awarded->has('prediction_exact')
+            ) {
+                $newLogs[] = [
+                    'user_id' => $userId,
+                    'source' => 'prediction_exact',
+                    'points' => 3,
+                    'match_id' => $this->matchId,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+                $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 3;
+            }
+        }
 
-                    // WhatsApp désactivé - plus de notifications pour les scores exacts
+        // Tout est écrit en une transaction, avec des opérations groupées.
+        DB::transaction(function () use ($newLogs, $userDeltas, $predictions) {
+            // Insertion en masse des nouveaux points (1 requête)
+            if (!empty($newLogs)) {
+                PointLog::insert($newLogs);
+            }
+
+            // Mise à jour des totaux utilisateurs (uniquement ceux qui ont gagné des points)
+            foreach ($userDeltas as $userId => $delta) {
+                if ($delta > 0) {
+                    User::where('id', $userId)->increment('points_total', $delta);
                 }
             }
 
-            // Update user's total points
-            if ($totalPoints > 0 && $prediction->user) {
-                $prediction->user->increment('points_total', $totalPoints);
+            // Recalcule points_earned par pronostic à partir des point_logs (1 requête agrégée)
+            $totalsByUser = PointLog::where('match_id', $this->matchId)
+                ->whereIn('user_id', $predictions->pluck('user_id'))
+                ->selectRaw('user_id, SUM(points) as total')
+                ->groupBy('user_id')
+                ->pluck('total', 'user_id');
+
+            foreach ($predictions as $prediction) {
+                $earned = (int) ($totalsByUser[$prediction->user_id] ?? 0);
+                if ((int) $prediction->points_earned !== $earned) {
+                    $prediction->points_earned = $earned;
+                    $prediction->save();
+                }
             }
-
-            // Update prediction with total points earned (calculate from actual point_logs)
-            $totalPointsEarned = \App\Models\PointLog::where('user_id', $prediction->user_id)
-                ->where('match_id', $this->matchId)
-                ->sum('points');
-            $prediction->points_earned = $totalPointsEarned;
-            $prediction->save();
-
-            Log::info("ProcessMatchPoints: User {$prediction->user_id} earned {$totalPoints} new points (total: {$totalPointsEarned}) for match {$this->matchId}");
-        }
+        });
 
         // Clear leaderboard cache since points changed
         Cache::forget('leaderboard_top_5');

@@ -204,6 +204,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
 
     // Envoi de SMS
     Route::get('/sms', [AdminSmsController::class, 'index'])->name('sms');
+    Route::get('/sms/logs', [AdminSmsController::class, 'logs'])->name('sms.logs');
     Route::post('/sms/send', [AdminSmsController::class, 'send'])->name('sms.send');
     Route::post('/sms/test', [AdminSmsController::class, 'sendTest'])->name('sms.test');
 

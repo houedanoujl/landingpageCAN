@@ -17,7 +17,7 @@
     <div class="flex items-center justify-between px-4 py-3 {{ $homeWinner ? 'bg-green-100' : '' }} border-b border-gray-200">
         <div class="flex items-center gap-3">
             @if($match->homeTeam)
-                <img src="https://flagcdn.com/w40/{{ $match->homeTeam->iso_code }}.png" 
+                <img src="{{ $match->homeTeam->flag_url }}" alt="" loading="lazy"
                      class="w-8 h-6 rounded shadow">
             @else
                 <div class="w-8 h-6 bg-gray-300 rounded flex items-center justify-center text-xs">?</div>
@@ -35,7 +35,7 @@
     <div class="flex items-center justify-between px-4 py-3 {{ $awayWinner ? 'bg-green-100' : '' }}">
         <div class="flex items-center gap-3">
             @if($match->awayTeam)
-                <img src="https://flagcdn.com/w40/{{ $match->awayTeam->iso_code }}.png" 
+                <img src="{{ $match->awayTeam->flag_url }}" alt="" loading="lazy"
                      class="w-8 h-6 rounded shadow">
             @else
                 <div class="w-8 h-6 bg-gray-300 rounded flex items-center justify-center text-xs">?</div>
@@ -62,7 +62,7 @@
     <div class="bg-gray-100 px-3 py-2 flex justify-center gap-2">
         <a href="{{ route('admin.edit-match', $match->id) }}" 
            class="text-xs bg-soboa-orange hover:bg-soboa-orange/80 text-black font-bold px-3 py-1 rounded transition">
-            ✏️ Modifier
+            Modifier
         </a>
     </div>
 </div>

@@ -34,7 +34,7 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">Numéro de téléphone</label>
                             <div class="flex gap-2">
                                 <div class="px-4 py-3 border-2 border-gray-200 bg-gray-50 rounded-xl text-sm font-bold text-gray-700 flex items-center">
-                                    🇸🇳 +221
+                                    +221
                                 </div>
                                 <input type="tel" x-model="phone"
                                     placeholder="77 123 45 67"
@@ -99,7 +99,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-gray-900 mb-2">SMS envoyé ! 📱</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">SMS envoyé ! </h2>
                         <p class="text-gray-600" x-text="successMessage"></p>
                     </div>
 

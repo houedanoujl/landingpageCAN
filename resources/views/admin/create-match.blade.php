@@ -8,7 +8,7 @@
                     ← Retour aux matchs
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">⚽</span> Nouveau Match
+                    <span class="text-4xl"></span> Nouveau Match
                 </h1>
             </div>
 
@@ -107,11 +107,11 @@
 
                         <!-- Points de Vente (Venues) -->
                         <div>
-                            <label class="block text-gray-700 font-bold mb-3">📍 Points de Vente pour la diffusion</label>
+                            <label class="block text-gray-700 font-bold mb-3">Points de Vente pour la diffusion</label>
                             <div class="border border-gray-300 rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
                                 <div class="mb-3">
                                     <input type="text" id="venueSearch" onkeyup="filterVenues()"
-                                           placeholder="🔍 Rechercher un point de vente..."
+                                           placeholder="Rechercher un point de vente..."
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                                 </div>
 

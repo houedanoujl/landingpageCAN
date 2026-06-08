@@ -92,11 +92,29 @@
                         </select>
                     </div>
 
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">
+                            ID externe (football-data.org)
+                            <span class="text-xs text-gray-500 font-normal">— optionnel, active la mise à jour automatique des scores</span>
+                        </label>
+                        <input type="text"
+                               name="external_id"
+                               value="{{ old('external_id', $match->external_id) }}"
+                               placeholder="ex. 525091"
+                               class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
+                        @if($match->last_synced_at)
+                            <p class="text-xs text-gray-500 mt-1">
+                                Dernière synchro :
+                                <span class="font-semibold">{{ $match->last_synced_at->translatedFormat('d M Y H:i') }} GMT</span>
+                            </p>
+                        @endif
+                    </div>
+
                     <!-- Points de vente (PDV) -->
                     <div class="border-2 border-indigo-200 rounded-xl p-6 bg-indigo-50">
                         <div class="flex items-center justify-between mb-4">
                             <label class="block text-gray-800 font-bold text-lg">
-                                📍 Points de Vente Assignés
+                                Points de Vente Assignés
                             </label>
                             <span class="text-sm text-indigo-600 font-medium">
                                 {{ count($assignedBarIds) }} PDV sélectionné(s)
@@ -108,7 +126,7 @@
 
                         <!-- Recherche de PDV -->
                         <div class="mb-4">
-                            <input type="text" id="venueSearch" placeholder="🔍 Rechercher un PDV..."
+                            <input type="text" id="venueSearch" placeholder="Rechercher un PDV..."
                                    onkeyup="filterVenues()"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         </div>
@@ -191,17 +209,17 @@
                                        {{ old('had_penalties', $match->winner ? 1 : 0) ? 'checked' : '' }}
                                        onchange="togglePenaltyWinner()"
                                        class="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500">
-                                <span class="font-bold text-gray-800">⚽ Ce match a eu des tirs au but</span>
+                                <span class="font-bold text-gray-800">Ce match a eu des tirs au but</span>
                             </label>
                             <p class="text-sm text-gray-600 ml-8 mt-1">
-                                ℹ️ Si coché, aucun point ne sera attribué pour le score exact (car c'est une égalité)<br>
-                                💡 Les TAB ne sont disponibles que pour les phases à élimination directe
+                                Si coché, aucun point ne sera attribué pour le score exact (car c'est une égalité)<br>
+                                Les TAB ne sont disponibles que pour les phases à élimination directe
                             </p>
                         </div>
 
                         <div id="penaltyWinnerSection" class="mt-4" style="display: none;">
                             <label class="block text-sm font-bold text-gray-700 mb-3">
-                                🏆 Vainqueur aux tirs au but *
+                                Vainqueur aux tirs au but *
                             </label>
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="flex items-center justify-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-yellow-100 has-[:checked]:border-yellow-600 has-[:checked]:bg-yellow-100">
@@ -210,7 +228,7 @@
                                            value="home"
                                            {{ old('winner', $match->winner) === 'home' ? 'checked' : '' }}
                                            class="w-5 h-5 text-yellow-600">
-                                    <span class="font-bold text-gray-800">🏠 Équipe Domicile</span>
+                                    <span class="font-bold text-gray-800">Équipe Domicile</span>
                                 </label>
                                 <label class="flex items-center justify-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-yellow-100 has-[:checked]:border-yellow-600 has-[:checked]:bg-yellow-100">
                                     <input type="radio" 
@@ -218,11 +236,11 @@
                                            value="away"
                                            {{ old('winner', $match->winner) === 'away' ? 'checked' : '' }}
                                            class="w-5 h-5 text-yellow-600">
-                                    <span class="font-bold text-gray-800">✈️ Équipe Extérieur</span>
+                                    <span class="font-bold text-gray-800">Équipe Extérieur</span>
                                 </label>
                             </div>
                             <p class="text-xs text-gray-600 mt-3">
-                                💡 Les utilisateurs qui ont prédit le bon vainqueur aux TAB recevront +3 pts
+                                Les utilisateurs qui ont prédit le bon vainqueur aux TAB recevront +3 pts
                             </p>
                         </div>
                     </div>
@@ -232,16 +250,16 @@
                         <label class="block text-sm font-bold text-gray-700 mb-2">Statut du match *</label>
                         <select name="status" required
                                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-soboa-orange focus:ring-soboa-orange font-medium">
-                            <option value="scheduled" {{ old('status', $match->status) === 'scheduled' ? 'selected' : '' }}>📅 À venir</option>
-                            <option value="live" {{ old('status', $match->status) === 'live' ? 'selected' : '' }}>🔴 En cours</option>
-                            <option value="finished" {{ old('status', $match->status) === 'finished' ? 'selected' : '' }}>✅ Terminé</option>
+                            <option value="scheduled" {{ old('status', $match->status) === 'scheduled' ? 'selected' : '' }}>À venir</option>
+                            <option value="live" {{ old('status', $match->status) === 'live' ? 'selected' : '' }}>En cours</option>
+                            <option value="finished" {{ old('status', $match->status) === 'finished' ? 'selected' : '' }}>Terminé</option>
                         </select>
                     </div>
 
                     <!-- Warning -->
                     <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
                         <p class="text-yellow-800 text-sm">
-                            ⚠️ <strong>Important :</strong> Lorsque vous passez un match en "Terminé" avec un score, le calcul des points sera automatiquement déclenché pour tous les pronostics.
+                            <strong>Important :</strong> Lorsque vous passez un match en "Terminé" avec un score, le calcul des points sera automatiquement déclenché pour tous les pronostics.
                         </p>
                     </div>
 
@@ -264,7 +282,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="text-red-600 hover:text-red-800 hover:underline font-bold">
-                            �️ Supprimer ce match
+                            �Supprimer ce match
                         </button>
                     </form>
                 </div>

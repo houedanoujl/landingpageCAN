@@ -5,7 +5,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-3xl">💬</span> Modération des commentaires
+                        <span class="text-3xl"></span> Modération des commentaires
                     </h1>
                     <p class="text-gray-600 mt-1">Gérez et modérez les commentaires sur les pronostics</p>
                 </div>

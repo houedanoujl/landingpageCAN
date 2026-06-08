@@ -80,7 +80,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
-                <span id="locate-btn-text">📍 Trouver les plus proches de moi</span>
+                <span id="locate-btn-text">Trouver les plus proches de moi</span>
             </button>
         </div>
 
@@ -380,15 +380,15 @@
 
                 switch (error.code) {
                     case error.PERMISSION_DENIED:
-                        message = '❌ Accès à la géolocalisation refusé';
+                        message = 'Accès à la géolocalisation refusé';
                         instructions = 'Pour utiliser cette fonctionnalité, veuillez autoriser l\'accès à votre position dans les paramètres de votre navigateur.';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        message = '📍 Position non disponible';
+                        message = 'Position non disponible';
                         instructions = 'Vérifiez que le GPS est activé sur votre appareil.';
                         break;
                     case error.TIMEOUT:
-                        message = '⏱️ Délai d\'attente dépassé';
+                        message = 'Délai d\'attente dépassé';
                         instructions = 'La récupération de votre position prend trop de temps. Réessayez.';
                         break;
                 }
@@ -413,7 +413,7 @@
                     <div class="flex-1">
                         <h4 class="font-bold text-yellow-800 mb-2">Comment activer la géolocalisation ?</h4>
                         <ul class="list-disc list-inside space-y-1 text-sm text-yellow-700">
-                            <li>Cliquez sur l'icône de cadenas 🔒 dans la barre d'adresse</li>
+                            <li>Cliquez sur l'icône de cadenas dans la barre d'adresse</li>
                             <li>Recherchez "Localisation" ou "Position"</li>
                             <li>Sélectionnez "Autoriser"</li>
                             <li>Rechargez la page</li>
@@ -536,7 +536,7 @@
                 const permissionState = await checkGeolocationPermission();
 
                 if (permissionState === 'denied') {
-                    showStatus('error', '❌ Accès à la géolocalisation refusé');
+                    showStatus('error', 'Accès à la géolocalisation refusé');
                     showPermissionInstructions();
                     return;
                 }

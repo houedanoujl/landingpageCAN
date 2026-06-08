@@ -52,7 +52,7 @@
                         <div class="flex gap-2">
                             <!-- Indicatif Sénégal uniquement -->
                             <div class="px-4 py-3 border-2 border-gray-200 bg-gray-50 rounded-xl text-sm font-bold text-gray-700 flex items-center">
-                                🇸🇳 +221
+                                +221
                             </div>
                             <input type="tel" x-model="phone"
                                 placeholder="77 123 45 67"

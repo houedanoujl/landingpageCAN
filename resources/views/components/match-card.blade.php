@@ -35,9 +35,7 @@
             <!-- Group Badge -->
             @if($match->group_name)
                 <div class="flex items-center gap-2 text-white">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                    </svg>
+                    <i data-lucide="users" class="w-4 h-4"></i>
                     <span class="text-sm font-bold uppercase tracking-wider">Groupe {{ $match->group_name }}</span>
                 </div>
             @endif
@@ -54,9 +52,7 @@
                 </div>
             @else
                 <div class="flex items-center gap-2 bg-green-500 px-3 py-1 rounded-full">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                    </svg>
+                    <i data-lucide="clock" class="w-3 h-3 text-white"></i>
                     <span class="text-white text-xs font-bold uppercase">À venir</span>
                 </div>
             @endif
@@ -69,16 +65,12 @@
         <!-- Date & Time Display -->
         <div class="text-center mb-6">
             <div class="inline-flex flex-col items-center gap-1 bg-soboa-orange/10 px-6 py-3 rounded-2xl border border-soboa-orange/20">
-                <svg class="w-5 h-5 text-soboa-orange mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+                <i data-lucide="calendar-days" class="w-5 h-5 text-soboa-orange mb-1"></i>
                 <span class="text-gray-700 font-semibold text-sm capitalize leading-tight">
                     {{ $match->match_date->translatedFormat('l d F Y') }}
                 </span>
                 <div class="flex items-center gap-2 mt-1">
-                    <svg class="w-4 h-4 text-soboa-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+                    <i data-lucide="clock" class="w-4 h-4 text-soboa-orange"></i>
                     <span class="text-2xl font-black text-soboa-orange">
                         {{ $match->match_date->format('H:i') }}
                     </span>
@@ -91,7 +83,7 @@
             <!-- Match de phase finale à déterminer - Afficher le nom de la phase -->
             <div class="text-center mb-6">
                 <div class="inline-flex items-center justify-center w-28 h-28 fold:w-32 fold:h-32 bg-gradient-to-br from-soboa-blue to-blue-600 rounded-full shadow-xl mb-4">
-                    <span class="text-4xl fold:text-5xl">🏆</span>
+                    <span class="text-4xl fold:text-5xl"></span>
                 </div>
                 <h2 class="text-2xl fold:text-3xl font-black text-soboa-blue mb-2">{{ $match->phase_name }}</h2>
                 <p class="text-sm fold:text-base text-gray-600 font-semibold">Équipes à déterminer</p>
@@ -170,21 +162,15 @@
         @if(!$isFinished)
             @if(session('user_id'))
                 <a href="/matches"
-                   class="block w-full bg-gradient-to-r from-soboa-orange to-orange-600 hover:from-orange-600 hover:to-soboa-orange text-white font-black py-4 rounded-xl text-center transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 group/button">
-                    <svg class="w-5 h-5 group-hover/button:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                    </svg>
+                   class="block w-full bg-gradient-to-r from-soboa-orange to-soboa-orange-secondary hover:from-soboa-orange-secondary hover:to-soboa-orange text-white font-black py-4 rounded-xl text-center transition-all duration-base transform hover:scale-105 hover:shadow-elev-3 flex items-center justify-center gap-2 group/button focus:outline-none focus:ring-2 focus:ring-soboa-orange focus:ring-offset-2">
+                    <i data-lucide="star" class="w-5 h-5 group-hover/button:rotate-12 transition-transform"></i>
                     <span class="text-lg">Pronostiquer maintenant</span>
-                    <svg class="w-5 h-5 group-hover/button:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                    </svg>
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover/button:translate-x-1 transition-transform"></i>
                 </a>
             @else
                 <a href="/login"
-                   class="block w-full bg-gradient-to-r from-soboa-blue to-blue-600 hover:from-blue-600 hover:to-soboa-blue text-white font-black py-4 rounded-xl text-center transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 group/button">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                    </svg>
+                   class="block w-full bg-gradient-to-r from-soboa-blue to-soboa-blue-light hover:from-soboa-blue-light hover:to-soboa-blue text-white font-black py-4 rounded-xl text-center transition-all duration-base transform hover:scale-105 hover:shadow-elev-3 flex items-center justify-center gap-2 group/button focus:outline-none focus:ring-2 focus:ring-soboa-blue focus:ring-offset-2">
+                    <i data-lucide="log-in" class="w-5 h-5"></i>
                     <span class="text-lg">Se connecter pour pronostiquer</span>
                 </a>
             @endif
@@ -192,9 +178,7 @@
             <!-- Finished Match - Show result summary -->
             <div class="bg-gradient-to-r from-gray-100 to-gray-200 p-4 rounded-xl text-center">
                 <div class="flex items-center justify-center gap-2 text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+                    <i data-lucide="badge-check" class="w-5 h-5"></i>
                     <span class="font-bold">Match terminé</span>
                 </div>
             </div>

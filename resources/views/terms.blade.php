@@ -2,7 +2,7 @@
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-2xl shadow-xl p-8">
             <h1 class="text-3xl font-black text-soboa-blue mb-8 text-center">
-                📜 Conditions Générales d'Utilisation
+                Conditions Générales d'Utilisation
             </h1>
             
             <p class="text-gray-600 text-center mb-8">
@@ -123,7 +123,7 @@
                 <section>
                     <h2 class="text-xl font-bold text-soboa-blue mb-3">Article 7 - Jeu responsable</h2>
                     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                        <p class="font-semibold text-yellow-800 mb-2">⚠️ Avertissement</p>
+                        <p class="font-semibold text-yellow-800 mb-2">Avertissement</p>
                         <p class="text-yellow-700">
                             Ce jeu est un divertissement gratuit. Bien qu'il ne s'agisse pas d'un jeu d'argent, 
                             nous encourageons une participation responsable. Ne laissez pas le jeu affecter 

@@ -81,11 +81,11 @@
                             <td class="px-4 py-4">
                                 @php $rank = ($users->currentPage() - 1) * $users->perPage() + $index + 1; @endphp
                                 @if($rank == 1)
-                                <span class="text-2xl">🥇</span>
+                                <span class="text-2xl"></span>
                                 @elseif($rank == 2)
-                                <span class="text-2xl">🥈</span>
+                                <span class="text-2xl"></span>
                                 @elseif($rank == 3)
-                                <span class="text-2xl">🥉</span>
+                                <span class="text-2xl"></span>
                                 @else
                                 <span class="font-bold text-gray-600">{{ $rank }}</span>
                                 @endif

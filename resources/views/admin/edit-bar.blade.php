@@ -11,7 +11,7 @@
                     ← Retour aux points de vente
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">📍</span> Modifier Point de Vente
+                    <span class="text-4xl"></span> Modifier Point de Vente
                 </h1>
             </div>
 
@@ -46,22 +46,22 @@
                                     <select name="type_pdv" required
                                             class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                                         <option value="dakar" {{ old('type_pdv', $bar->type_pdv ?? 'dakar') === 'dakar' ? 'selected' : '' }}>
-                                            🏙️ Points de vente Dakar
+                                            Points de vente Dakar
                                         </option>
                                         <option value="regions" {{ old('type_pdv', $bar->type_pdv) === 'regions' ? 'selected' : '' }}>
-                                            🗺️ Points de vente Régions
+                                            Points de vente Régions
                                         </option>
                                         <option value="chr" {{ old('type_pdv', $bar->type_pdv) === 'chr' ? 'selected' : '' }}>
-                                            🍽️ Cafés-Hôtel-Restaurants (CHR)
+                                            Cafés-Hôtel-Restaurants (CHR)
                                         </option>
                                         <option value="fanzone" {{ old('type_pdv', $bar->type_pdv) === 'fanzone' ? 'selected' : '' }}>
-                                            🎉 Fanzones
+                                            Fanzones
                                         </option>
                                         <option value="fanzone_public" {{ old('type_pdv', $bar->type_pdv) === 'fanzone_public' ? 'selected' : '' }}>
-                                            🎪 Fanzone tout public
+                                            Fanzone tout public
                                         </option>
                                         <option value="fanzone_hotel" {{ old('type_pdv', $bar->type_pdv) === 'fanzone_hotel' ? 'selected' : '' }}>
-                                            🏨 Fanzone hôtel
+                                            Fanzone hôtel
                                         </option>
                                     </select>
                                 </div>
@@ -81,10 +81,10 @@
                                                class="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue"
                                                placeholder="Ex: Cocody, Rue des Jardins, Abidjan">
                                         <button type="button" onclick="searchAddress()" class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold py-3 px-4 rounded-lg transition">
-                                            🔍
+                                            
                                         </button>
                                     </div>
-                                    <p class="text-gray-500 text-xs mt-2">Cliquez sur 🔍 pour localiser automatiquement ou cliquez directement sur la carte</p>
+                                    <p class="text-gray-500 text-xs mt-2">Cliquez sur pour localiser automatiquement ou cliquez directement sur la carte</p>
                                 </div>
 
                                 <div>
@@ -105,7 +105,7 @@
 
                                 <div class="bg-green-50 border border-green-200 rounded-lg p-3">
                                     <p class="text-green-700 text-sm">
-                                        ✅ <strong>Cliquez sur la carte</strong> pour mettre à jour les coordonnées GPS!
+                                        <strong>Cliquez sur la carte</strong> pour mettre à jour les coordonnées GPS!
                                     </p>
                                 </div>
 
@@ -117,13 +117,13 @@
 
                                 <div class="flex flex-col gap-3 pt-4 border-t">
                                     <button type="submit" class="w-full bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold py-3 px-6 rounded-lg transition">
-                                        ✅ Enregistrer les modifications
+                                        Enregistrer les modifications
                                     </button>
                                     <a href="{{ route('admin.bars') }}" class="w-full text-center bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
                                         Annuler
                                     </a>
                                     <button type="button" onclick="confirmDelete()" class="w-full text-center bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                                        🗑️ Supprimer ce PDV
+                                        Supprimer ce PDV
                                     </button>
                                 </div>
                             </div>
@@ -173,7 +173,7 @@
 
         // Fonction de suppression
         function confirmDelete() {
-            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce point de vente ? Cette action est irréversible.')) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce point de vente ? Cette action est irréversible.')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '{{ route("admin.delete-bar", $bar->id) }}';

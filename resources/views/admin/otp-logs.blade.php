@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto">
             <!-- En-tête -->
             <div class="mb-8">
-                <h1 class="text-4xl font-black text-gray-900">📋 Historique des codes OTP</h1>
+                <h1 class="text-4xl font-black text-gray-900">Historique des codes OTP</h1>
                 <p class="text-gray-600 mt-2">Suivez tous les codes d'accès administrateur envoyés et les tentatives de connexion</p>
             </div>
 
@@ -15,7 +15,7 @@
                             <p class="text-gray-600 text-sm font-medium">Codes envoyés</p>
                             <p class="text-3xl font-bold text-blue-600">{{ $stats['total_sent'] }}</p>
                         </div>
-                        <div class="text-4xl">📤</div>
+                        <div class="text-4xl"></div>
                     </div>
                 </div>
 
@@ -25,7 +25,7 @@
                             <p class="text-gray-600 text-sm font-medium">Connexions réussies</p>
                             <p class="text-3xl font-bold text-green-600">{{ $stats['total_verified'] }}</p>
                         </div>
-                        <div class="text-4xl">✅</div>
+                        <div class="text-4xl"></div>
                     </div>
                 </div>
 
@@ -35,7 +35,7 @@
                             <p class="text-gray-600 text-sm font-medium">Envois échoués</p>
                             <p class="text-3xl font-bold text-red-600">{{ $stats['total_failed'] }}</p>
                         </div>
-                        <div class="text-4xl">❌</div>
+                        <div class="text-4xl"></div>
                     </div>
                 </div>
 
@@ -45,7 +45,7 @@
                             <p class="text-gray-600 text-sm font-medium">Codes expirés</p>
                             <p class="text-3xl font-bold text-orange-600">{{ $stats['total_expired'] }}</p>
                         </div>
-                        <div class="text-4xl">⏱️</div>
+                        <div class="text-4xl"></div>
                     </div>
                 </div>
             </div>
@@ -103,19 +103,19 @@
                                     <td class="px-6 py-4 text-sm">
                                         @if($log->status === 'sent')
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                                📤 Envoyé
+                                                Envoyé
                                             </span>
                                         @elseif($log->status === 'verified')
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                                ✅ Vérifié
+                                                Vérifié
                                             </span>
                                         @elseif($log->status === 'failed')
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                                ❌ Échoué
+                                                Échoué
                                             </span>
                                         @else
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
-                                                ⏱️ Expiré
+                                                Expiré
                                             </span>
                                         @endif
                                     </td>
@@ -156,7 +156,7 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                                        <div class="text-4xl mb-2">📭</div>
+                                        <div class="text-4xl mb-2"></div>
                                         <p>Aucun log OTP trouvé</p>
                                     </td>
                                 </tr>

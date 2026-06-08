@@ -16,6 +16,7 @@ class SiteSetting extends Model
         'secondary_color',
         'logo_path',
         'hero_image_path',
+        'hero_promo_text',
         'favorite_team_id',
         'geofencing_radius',
         'tournament_ended',

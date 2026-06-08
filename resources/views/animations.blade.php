@@ -25,7 +25,7 @@
                 <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                     <div class="text-center md:text-left">
                         <div class="inline-flex items-center gap-3 mb-3">
-                            <span class="text-5xl md:text-6xl animate-bounce">📅</span>
+                            <span class="text-5xl md:text-6xl animate-bounce"></span>
                             <div class="h-12 w-1 bg-soboa-orange rounded-full hidden md:block"></div>
                         </div>
                         <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-2xl tracking-tight">
@@ -168,7 +168,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-6 h-6 bg-gradient-to-r from-soboa-blue to-blue-600 rounded-full shadow-sm flex items-center justify-center">
-                            <span class="text-white text-[10px]">⚽</span>
+                            <span class="text-white text-[10px]"></span>
                         </div>
                         <span class="text-gray-600 font-medium">Matchs diffusés</span>
                     </div>
@@ -245,12 +245,12 @@
                                 <!-- Match header -->
                                 <div class="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100">
                                     <div class="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center shadow">
-                                        <span class="text-lg">⚽</span>
+                                        <span class="text-lg"></span>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="font-bold text-gray-800 text-sm leading-tight" x-text="anim.match"></p>
                                         <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                                            <span>🕐</span>
+                                            <span></span>
                                             <span x-text="anim.time"></span>
                                         </div>
                                     </div>
@@ -259,7 +259,7 @@
                                 <!-- Lieu -->
                                 <div class="flex items-start gap-3 mb-4">
                                     <div class="w-8 h-8 bg-soboa-orange/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <span class="text-sm">📍</span>
+                                        <span class="text-sm"></span>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="font-semibold text-gray-800 text-sm leading-tight" x-text="anim.venue"></p>
@@ -275,13 +275,13 @@
                                         <a :href="'https://www.google.com/maps/dir/?api=1&destination=' + anim.lat + ',' + anim.lng"
                                            target="_blank"
                                            class="flex-1 bg-gradient-to-r from-soboa-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-center font-bold py-2 px-3 rounded-lg text-xs transition-all shadow-sm hover:shadow flex items-center justify-center gap-1">
-                                            <span class="text-sm">🗺️</span>
+                                            <span class="text-sm"></span>
                                             <span>Itinéraire</span>
                                         </a>
                                     </template>
                                     <a :href="'/matches#match-' + anim.matchId"
                                        class="flex-1 bg-gradient-to-r from-soboa-orange to-orange-500 hover:from-orange-500 hover:to-orange-600 text-black text-center font-bold py-2 px-3 rounded-lg text-xs transition-all shadow-sm hover:shadow flex items-center justify-center gap-1">
-                                        <span class="text-sm">🎯</span>
+                                        <span class="text-sm"></span>
                                         <span>Pronostiquer</span>
                                     </a>
                                 </div>
@@ -292,7 +292,7 @@
                     <!-- Empty state -->
                     <template x-if="selectedDayAnimations.length === 0">
                         <div class="col-span-full text-center py-12">
-                            <span class="text-6xl">📅</span>
+                            <span class="text-6xl"></span>
                             <p class="text-gray-500 mt-3 text-lg">Aucune animation ce jour</p>
                         </div>
                     </template>

@@ -177,15 +177,17 @@ class TwilioService
     /**
      * Envoie un SMS direct (pas de vérification)
      */
-    public function sendSms(string $phoneNumber, string $message): array
+    public function sendSms(string $phoneNumber, string $message, ?string $context = null, ?int $sentBy = null): array
     {
+        $formattedPhone = $this->formatE164($phoneNumber);
+
         if (!$this->client) {
             Log::error('Twilio: Client non configuré');
+            $this->logSms($formattedPhone, $message, 'failed', null, 'Configuration Twilio manquante', $context, $sentBy);
             return ['success' => false, 'error' => 'Configuration Twilio manquante'];
         }
 
         try {
-            $formattedPhone = $this->formatE164($phoneNumber);
             $fromNumber = config('services.twilio.from_number');
 
             Log::info('Twilio: Envoi SMS', [
@@ -207,6 +209,8 @@ class TwilioService
                 'status' => $sms->status
             ]);
 
+            $this->logSms($formattedPhone, $message, 'sent', $sms->sid, null, $context, $sentBy);
+
             return [
                 'success' => true,
                 'sid' => $sms->sid,
@@ -218,19 +222,42 @@ class TwilioService
                 'code' => $e->getCode(),
                 'message' => $e->getMessage()
             ]);
+            $this->logSms($formattedPhone, $message, 'failed', null, $e->getMessage(), $context, $sentBy);
             return ['success' => false, 'error' => $e->getMessage()];
         } catch (\Exception $e) {
             Log::error('Twilio SMS Error', [
                 'message' => $e->getMessage()
             ]);
+            $this->logSms($formattedPhone, $message, 'failed', null, $e->getMessage(), $context, $sentBy);
             return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Enregistre un SMS dans le journal (table sms_logs).
+     * Ne doit jamais interrompre l'envoi en cas d'erreur d'écriture.
+     */
+    private function logSms(string $to, string $message, string $status, ?string $sid, ?string $error, ?string $context, ?int $sentBy): void
+    {
+        try {
+            \App\Models\SmsLog::create([
+                'to_number'  => $to,
+                'message'    => $message,
+                'status'     => $status,
+                'twilio_sid' => $sid,
+                'error'      => $error,
+                'context'    => $context,
+                'sent_by'    => $sentBy,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('SmsLog: échec écriture journal SMS', ['message' => $e->getMessage()]);
         }
     }
 
     /**
      * Envoie un SMS à plusieurs destinataires
      */
-    public function sendBulkSms(array $phoneNumbers, string $message): array
+    public function sendBulkSms(array $phoneNumbers, string $message, ?string $context = null, ?int $sentBy = null): array
     {
         $results = [
             'success' => 0,
@@ -239,7 +266,7 @@ class TwilioService
         ];
 
         foreach ($phoneNumbers as $phone) {
-            $result = $this->sendSms($phone, $message);
+            $result = $this->sendSms($phone, $message, $context, $sentBy);
             if ($result['success']) {
                 $results['success']++;
             } else {

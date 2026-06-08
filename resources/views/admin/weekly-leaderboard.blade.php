@@ -5,7 +5,7 @@
             <div class="container mx-auto px-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-bold">📊 Classement Hebdomadaire</h1>
+                        <h1 class="text-2xl md:text-3xl font-bold">Classement Hebdomadaire</h1>
                         <p class="text-blue-200 mt-1">
                             {{ $weekStart->format('d/m/Y') }} - {{ $weekEnd->format('d/m/Y') }}
                         </p>
@@ -70,7 +70,7 @@
                             1 => 'from-gray-300 to-gray-500',
                             2 => 'from-orange-400 to-orange-600',
                         ];
-                        $medals = ['🥇', '🥈', '🥉'];
+                        $medals = ['', '', ''];
                     @endphp
                     <div class="bg-gradient-to-br {{ $podiumColors[$index] }} rounded-xl shadow-lg p-6 text-white {{ $index === 0 ? 'md:order-2' : ($index === 1 ? 'md:order-1' : 'md:order-3') }}">
                         <div class="flex items-center justify-between mb-4">
@@ -125,11 +125,11 @@
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-2">
                                             @if($user->rank === 1)
-                                                <span class="text-2xl">🥇</span>
+                                                <span class="text-2xl"></span>
                                             @elseif($user->rank === 2)
-                                                <span class="text-2xl">🥈</span>
+                                                <span class="text-2xl"></span>
                                             @elseif($user->rank === 3)
-                                                <span class="text-2xl">🥉</span>
+                                                <span class="text-2xl"></span>
                                             @elseif($user->rank <= 15)
                                                 <span class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center font-bold text-white">
                                                     {{ $user->rank }}
@@ -179,7 +179,7 @@
                             @empty
                                 <tr>
                                     <td colspan="8" class="px-4 py-12 text-center text-gray-500">
-                                        <div class="text-4xl mb-2">📭</div>
+                                        <div class="text-4xl mb-2"></div>
                                         Aucune activité cette semaine
                                     </td>
                                 </tr>
@@ -208,8 +208,8 @@
 
             <!-- Info mise à jour -->
             <div class="mt-6 text-center text-sm text-gray-500">
-                <p>🔄 Les données sont mises à jour en temps réel. Dernière consultation : {{ now()->format('d/m/Y à H:i') }}</p>
-                <p class="mt-1 text-green-600 font-medium">🏆 Les 15 premiers de chaque semaine sont gagnants</p>
+                <p>Les données sont mises à jour en temps réel. Dernière consultation : {{ now()->format('d/m/Y à H:i') }}</p>
+                <p class="mt-1 text-green-600 font-medium">Les 15 premiers de chaque semaine sont gagnants</p>
             </div>
         </div>
     </div>

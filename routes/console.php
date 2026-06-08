@@ -21,13 +21,23 @@ Schedule::command('notifications:send-match-results')
     ->onOneServer()
     ->runInBackground();
 
-// Process finished matches and calculate points automatically
-// DÉSACTIVÉ: L'admin doit calculer les points manuellement via le bouton "Recalculer"
-// Schedule::command('matches:process-finished')
-//     ->everyFiveMinutes()
-//     ->withoutOverlapping()
-//     ->onOneServer()
-//     ->runInBackground();
+// External score sync (football-data.org). Self-skips if disabled or no
+// candidate matches in the active window — zero API usage off-tournament.
+Schedule::command('matches:sync-scores')
+    ->everyTwoMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
+
+// Auto-finalize matches with scores past kickoff +3h, then award points.
+// Idempotent: PointLog guard prevents duplicate awards. Acts as the fallback
+// when the external API is down or no external_id is set — admin manual entry
+// still triggers point processing.
+Schedule::command('matches:process-finished')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground();
 
 // Clean old log files daily at 2 AM
 Schedule::command('logs:clean --days=7')

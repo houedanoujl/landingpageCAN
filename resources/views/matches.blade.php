@@ -1,1632 +1,529 @@
 <x-layouts.app title="Pronostics">
-    <!-- Popup Récap Points (cachée par défaut) -->
-    <div id="pointsRecapModal"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden transform scale-95 opacity-0 transition-all duration-300"
-            id="modalContent">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-soboa-orange to-yellow-500 p-6 text-center">
-                <div
-                    class="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center mb-3 animate-bounce">
-                    <span class="text-4xl">🎯</span>
-                </div>
-                <h3 class="text-2xl font-black text-white">Pronostic Enregistré !</h3>
+<div x-data="matchesPage()" x-init="init()" class="space-y-6">
+
+    {{-- ========== HEADER ========== --}}
+    <header class="relative py-section-sm px-6 rounded-2xl overflow-hidden shadow-elev-2">
+        <div class="absolute inset-0 z-0">
+            <img src="/images/sen.webp" alt="" loading="lazy" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-soboa-text-dark/80 via-soboa-blue/60 to-soboa-text-dark/80"></div>
+        </div>
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-black text-white drop-shadow-lg flex items-center gap-3">
+                    <i data-lucide="target" class="w-8 h-8 text-soboa-orange-light"></i>
+                    Pronostics
+                </h1>
+                <p class="text-white/80 font-semibold uppercase tracking-widest text-xs mt-1">
+                    Pariez sur vos matchs favoris
+                </p>
             </div>
-
-            <!-- Body -->
-            <div class="p-6 space-y-4">
-                <!-- Match info -->
-                <div class="bg-gray-50 rounded-xl p-4 text-center">
-                    <p class="text-sm text-gray-600 font-medium mb-2">Votre pronostic</p>
-                    <p class="text-xl font-black text-gray-800" id="modalMatchInfo">Match Info</p>
-                    <div class="flex items-center justify-center gap-3 mt-2">
-                        <span class="text-3xl font-black text-soboa-blue" id="modalScoreA">0</span>
-                        <span class="text-gray-400">-</span>
-                        <span class="text-3xl font-black text-soboa-blue" id="modalScoreB">0</span>
-                    </div>
-                </div>
-
-                <!-- Points détail -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between bg-blue-50 rounded-lg p-3">
-                        <div class="flex items-center gap-2">
-                            <span>✅</span>
-                            <span class="font-medium text-gray-700">Participation</span>
-                        </div>
-                        <span class="font-black text-blue-600">+1 pt</span>
-                    </div>
-
-                    <div id="venueBonus" class="hidden flex items-center justify-between bg-green-50 rounded-lg p-3">
-                        <div class="flex items-center gap-2">
-                            <span>📍</span>
-                            <span class="font-medium text-gray-700">Bonus PDV</span>
-                            <span class="text-xs text-green-600" id="venueName"></span>
-                        </div>
-                        <span class="font-black text-green-600">+4 pts 🎉</span>
-                    </div>
-
-                    <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-3">
-                        <p class="text-xs text-yellow-800">
-                            <strong>Bonus possibles :</strong> +3 pts si bon vainqueur • +3 pts si score exact
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Total points actuels -->
-                <div class="bg-gradient-to-r from-soboa-blue to-blue-600 rounded-xl p-4 text-white text-center">
-                    <p class="text-sm opacity-80 mb-1">Vos points totaux</p>
-                    <p class="text-4xl font-black" id="modalTotalPoints">{{ session('user_points', 0) }}</p>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="p-6 pt-0">
-                <button onclick="closePointsModal()"
-                    class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
-                    Super ! Continuer
-                </button>
+            <div class="bg-white/10 backdrop-blur-md ring-1 ring-white/20 px-4 py-2 rounded-xl">
+                <span class="text-[10px] text-white/70 font-bold uppercase tracking-wider block">Matchs disponibles</span>
+                <span class="text-soboa-orange-light font-black text-2xl block">{{ $matchesByPhase->flatten()->count() }}</span>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- Geolocation removed - points awarded automatically during predictions -->
-
-    <div class="space-y-6">
-        <!-- Header -->
-        <div class="relative py-12 px-8 rounded-2xl overflow-hidden mb-8 shadow-2xl">
-            <div class="absolute inset-0 z-0">
-                <img src="/images/sen.webp" class="w-full h-full object-cover" alt="Background">
-                <div class="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
-            </div>
-            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-4xl font-black text-white drop-shadow-2xl">Pronostics</h1>
-                    <p class="text-white/80 font-bold uppercase tracking-widest text-xs mt-1 drop-shadow-lg">
-                        Pariez sur vos matchs favoris
-                    </p>
-                </div>
-                <div class="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl shadow-xl">
-                    <span class="text-xs text-white/70 font-black uppercase tracking-wider block">Matchs
-                        disponibles</span>
-                    <span
-                        class="text-soboa-orange font-black drop-shadow-md">{{ $matchesByPhase->flatten()->count() }}</span>
-                </div>
-            </div>
-        </div>
-
-        @if($tournamentEnded)
-        <!-- Bannière Tournoi Terminé -->
-        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-6 text-white shadow-lg">
+    {{-- ========== TOURNAMENT ENDED BANNER ========== --}}
+    @if($tournamentEnded)
+        <div class="bg-gradient-to-r from-soboa-orange to-soboa-orange-secondary rounded-2xl p-5 text-white shadow-elev-2">
             <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    <span class="text-4xl">🏆</span>
+                <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="trophy" class="w-8 h-8"></i>
                 </div>
                 <div class="flex-1">
-                    <p class="font-black text-2xl">Tournoi Termine !</p>
-                    <p class="text-white/90 mt-1">
-                        Les pronostics sont desormais fermes. Merci a tous les participants !
-                    </p>
-                    <a href="/leaderboard" class="inline-flex items-center gap-2 mt-3 bg-white text-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-white/90 transition">
-                        Voir le classement final
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
-                    </a>
+                    <p class="font-black text-xl">Tournoi terminé</p>
+                    <p class="text-white/90 text-sm mt-0.5">Les pronostics sont fermés. Merci à tous les participants !</p>
                 </div>
+                <a href="/leaderboard" class="btn btn-ghost-light btn-md">
+                    Classement
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
             </div>
         </div>
-        @else
-        <!-- Info Bonus PDV - Proche -->
-        <div id="nearbyVenueInfo"
-            class="hidden bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
-                    <span class="text-2xl">📍</span>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm text-white/80">Vous êtes proche de</p>
-                    <p class="font-black text-lg" id="nearbyVenueName">PDV Détecté</p>
-                    <p class="text-xs text-white/70 mt-1">
-                        🎉 <strong>+4 points bonus</strong> automatiques sur vos pronostics !
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Info PDV les plus proches - Loin -->
-        <div id="farVenuesInfo"
-            class="hidden bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg">
-            <div class="flex items-start gap-3">
-                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span class="text-xl">📍</span>
-                </div>
-                <div class="flex-1">
-                    <p class="font-bold text-sm mb-2">Points de vente les plus proches :</p>
-                    <div id="closestVenuesList" class="space-y-1 text-xs">
-                        <!-- Liste dynamique des 3 PDV les plus proches -->
+    @else
+        {{-- ========== GEOLOCATION BANNERS ========== --}}
+        <template x-if="venueState === 'near' && nearbyVenue">
+            <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 text-white shadow-elev-1">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                        <i data-lucide="map-pin-check" class="w-6 h-6"></i>
                     </div>
-                    <p class="text-xs text-white/70 mt-2">
-                        💡 Rendez-vous dans un point de vente pour gagner <strong>+4 pts bonus</strong> !
-                    </p>
+                    <div class="flex-1">
+                        <p class="text-xs text-white/80">Vous êtes proche de</p>
+                        <p class="font-black text-lg" x-text="nearbyVenue?.name"></p>
+                        <p class="text-xs text-white/80 mt-0.5"><strong>+4 points bonus</strong> automatiques sur vos pronostics</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
 
-        <!-- Bannière de notification succès (modification pronostic) -->
-        <div id="successBanner"
-            class="hidden bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 text-white shadow-lg animate-pulse-once">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <span class="text-2xl">✅</span>
-                </div>
-                <div class="flex-1">
-                    <p class="font-black text-lg" id="successBannerTitle">Pronostic modifie !</p>
-                    <p class="text-sm text-white/90" id="successBannerMessage">Votre pronostic a ete mis a jour avec succes.</p>
-                </div>
-                <button onclick="hideSuccessBanner()" class="text-white/80 hover:text-white p-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Info système -->
-        <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">ℹ️</span>
-                <div>
-                    <p class="font-bold text-blue-800">Comment ca marche ?</p>
-                    <p class="text-sm text-blue-700 mt-1">
-                        Faites vos pronostics ! Si vous etes dans un PDV partenaire (a moins de 200m), vous recevez
-                        automatiquement <strong>+4 points bonus</strong> sur chaque pronostic (1x par jour).
-                    </p>
+        <template x-if="venueState === 'far' && closestVenues.length">
+            <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light rounded-2xl p-4 text-white shadow-elev-1">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="map" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold text-sm mb-2">PDV les plus proches</p>
+                        <ul class="space-y-1 text-xs">
+                            <template x-for="v in closestVenues" :key="v.id">
+                                <li class="flex justify-between items-center py-1 border-b border-white/10 last:border-0">
+                                    <span class="font-medium" x-text="v.name"></span>
+                                    <span class="font-bold" x-text="v.distance_m < 1000 ? v.distance_m + 'm' : v.distance_km.toFixed(1) + 'km'"></span>
+                                </li>
+                            </template>
+                        </ul>
+                        <p class="text-xs text-white/80 mt-2">Rendez-vous dans un PDV pour gagner <strong>+4 pts bonus</strong></p>
+                    </div>
                 </div>
             </div>
-        </div>
-        @endif
+        </template>
 
-        <!-- Mention 18+ -->
-        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-            <div class="flex items-center justify-center gap-3">
-                <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span class="text-white font-black text-xs">18+</span>
-                </div>
-                <p class="text-red-700 text-sm font-medium">
-                    Ce jeu est réservé aux plus de 18 ans. 
-                    <a href="{{ route('terms') }}" class="underline hover:text-red-900">Conditions de participation</a>
+        {{-- ========== INFO PANEL ========== --}}
+        <div class="bg-soboa-cream rounded-xl p-4 border-l-4 border-soboa-orange flex items-start gap-3">
+            <div class="w-9 h-9 rounded-full bg-soboa-orange/15 text-soboa-orange flex items-center justify-center flex-shrink-0">
+                <i data-lucide="info" class="w-5 h-5"></i>
+            </div>
+            <div class="text-sm text-soboa-text-dark">
+                <p class="font-bold mb-0.5">Comment ça marche ?</p>
+                <p class="text-soboa-text-dark/80">
+                    Faites vos pronostics. Dans un PDV partenaire (&lt; 200m), recevez automatiquement
+                    <strong class="text-soboa-orange">+4 points bonus</strong> (1× par jour).
                 </p>
             </div>
         </div>
+    @endif
 
-        <!-- Onglets des phases -->
-        @if($matchesByPhase->count() > 0)
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden"
-                x-data="{ activePhase: '{{ $matchesByPhase->keys()->first() }}' }">
-                <!-- Tabs navigation -->
-                <div class="border-b border-gray-200 overflow-x-auto scrollbar-hide relative">
-                    <!-- Gradient indicators for scroll on mobile -->
-                    <div
-                        class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 lg:hidden">
-                    </div>
-
-                    <nav class="flex flex-nowrap gap-1 px-1 py-1">
-                        @foreach($phaseOrder as $phaseKey => $phaseName)
-                            @if(isset($matchesByPhase[$phaseKey]) && $matchesByPhase[$phaseKey]->count() > 0)
-                                <button @click="activePhase = '{{ $phaseKey }}'"
-                                    :class="activePhase === '{{ $phaseKey }}' ? 'border-soboa-blue text-soboa-blue bg-blue-50 font-black shadow-sm' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'"
-                                    class="whitespace-nowrap py-3 px-3 sm:px-6 border-b-3 font-bold text-sm sm:text-base transition-all flex-shrink-0 rounded-t-lg min-w-fit touch-manipulation active:scale-95"
-                                    id="tab-{{ $phaseKey }}">
-                                    <span class="hidden sm:inline">{{ $phaseName }}</span>
-                                    <span
-                                        class="sm:hidden">{{ str_replace(['Phase de Poules', '1/16e de Finale', '1/8e de Finale', 'Quarts de Finale', 'Demi-Finales', 'Match pour la 3e Place', 'Finale'], ['Poules', '1/16', '1/8', 'Quarts', 'Demis', '3e Place', 'Finale'], $phaseName) }}</span>
-                                    <span class="ml-1.5 sm:ml-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-bold"
-                                        :class="activePhase === '{{ $phaseKey }}' ? 'bg-soboa-blue text-white' : 'bg-gray-200 text-gray-700'">
-                                        {{ $matchesByPhase[$phaseKey]->count() }}
-                                    </span>
-                                </button>
-                            @endif
-                        @endforeach
-                    </nav>
-                </div>
-
-                <!-- Tabs content -->
-                <div class="p-6">
-                    @foreach($phaseOrder as $phaseKey => $phaseName)
-                        @if(isset($matchesByPhase[$phaseKey]) && $matchesByPhase[$phaseKey]->count() > 0)
-                            <div x-show="activePhase === '{{ $phaseKey }}'">
-                                @if($phaseKey === 'group_stage' && $groupStageByGroup->count() > 0)
-                                    <!-- Sous-onglets pour les groupes -->
-                                    <div class="mb-6" x-data="{ activeGroup: '{{ $groupStageByGroup->keys()->first() }}' }">
-                                        <!-- Navigation groupes -->
-                                        <div class="flex flex-wrap gap-2 mb-6 justify-center sm:justify-start">
-                                            @foreach($groupStageByGroup as $groupName => $groupMatches)
-                                                <button @click="activeGroup = '{{ $groupName }}'"
-                                                    :class="activeGroup === '{{ $groupName }}' ? 'bg-soboa-blue text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                                                    class="px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-all touch-manipulation active:scale-95 min-w-[80px] sm:min-w-[100px]">
-                                                    {{ $groupName }}
-                                                    <span class="ml-1 opacity-75 text-xs">({{ $groupMatches->count() }})</span>
-                                                </button>
-                                            @endforeach
-                                        </div>
-
-                                        <!-- Contenu des groupes -->
-                                        @foreach($groupStageByGroup as $groupName => $groupMatches)
-                                            <div x-show="activeGroup === '{{ $groupName }}'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                                @foreach($groupMatches as $match)
-                                                            <div id="match-{{ $match->id }}"
-                                                                data-phase="{{ $match->phase }}"
-                                                                data-home-team="{{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}"
-                                                                data-away-team="{{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}"
-                                                                class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all border-2 border-gray-100
-                                                    {{ isset($favoriteTeamId) && ($match->home_team_id == $favoriteTeamId || $match->away_team_id == $favoriteTeamId) ? 'ring-2 ring-soboa-orange ring-offset-2' : '' }}">
-
-                                                                <!-- Header du match -->
-                                                                <div class="bg-gradient-to-r from-soboa-blue to-blue-600 px-6 py-3 text-white">
-                                                                    <div class="flex items-center justify-between">
-                                                                        <div class="flex items-center gap-3">
-                                                                            <span class="text-xl">⚽</span>
-                                                                            <div>
-                                                                                <p class="text-sm font-medium text-white">
-                                                                                    {{ \Carbon\Carbon::parse($match->match_date)->translatedFormat('l d F Y à H:i') }}
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                        @if($match->status === 'finished')
-                                                                            <span class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                                                                Terminé
-                                                                            </span>
-                                                                        @elseif($match->status === 'live')
-                                                                            <span
-                                                                                class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                                                                                🔴 En cours
-                                                                            </span>
-                                                                        @else
-                                                                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                                                                À venir
-                                                                            </span>
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
-
-                                                                <!-- Corps du match -->
-                                                                <div class="p-6">
-                                                                    <!-- Équipes -->
-                                                                    <div class="flex items-center justify-between mb-6">
-                                                                        <!-- Équipe domicile -->
-                                                                        <div class="flex-1 text-center">
-                                                                            @if($match->homeTeam && $match->homeTeam->iso_code)
-                                                                                <div
-                                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-2">
-                                                                                    <img src="https://flagicons.lipis.dev/flags/4x3/{{ strtolower($match->homeTeam->iso_code) }}.svg"
-                                                                                        alt="{{ $match->homeTeam->name }}"
-                                                                                        class="w-12 h-12 object-contain rounded"
-                                                                                        onerror="this.style.display='none'; this.parentElement.classList.add('bg-soboa-blue'); this.parentElement.innerHTML='<span class=\'text-3xl\'>\uD83C\uDFC1</span>';">
-                                                                                </div>
-                                                                            @else
-                                                                                <div
-                                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-2 shadow-md">
-                                                                                    <span class="text-3xl">🏁</span>
-                                                                                </div>
-                                                                            @endif
-                                                                            <h3 class="font-black text-lg text-gray-800">
-                                                                                {{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}
-                                                                            </h3>
-                                                                        </div>
-
-                                                                        <!-- Score / VS -->
-                                                                        <div class="px-6">
-                                                                            @if($match->status === 'finished' && $match->score_home !== null && $match->score_away !== null)
-                                                                                <div class="text-center">
-                                                                                    <div
-                                                                                        class="flex items-center gap-3 text-3xl font-black text-soboa-blue">
-                                                                                        <span>{{ $match->score_home }}</span>
-                                                                                        <span class="text-gray-400">-</span>
-                                                                                        <span>{{ $match->score_away }}</span>
-                                                                                    </div>
-                                                                                    <p class="text-xs text-gray-500 mt-1">Score final</p>
-                                                                                </div>
-                                                                            @else
-                                                                                <div class="text-center">
-                                                                                    <span class="text-2xl font-black text-gray-400">VS</span>
-                                                                                    <p class="text-xs text-gray-500 mt-1">
-                                                                                        {{ \Carbon\Carbon::parse($match->match_date)->format('H:i') }}
-                                                                                    </p>
-                                                                                </div>
-                                                                            @endif
-                                                                        </div>
-
-                                                                        <!-- Équipe extérieure -->
-                                                                        <div class="flex-1 text-center">
-                                                                            @if($match->awayTeam && $match->awayTeam->iso_code)
-                                                                                <div
-                                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-2">
-                                                                                    <img src="https://flagicons.lipis.dev/flags/4x3/{{ strtolower($match->awayTeam->iso_code) }}.svg"
-                                                                                        alt="{{ $match->awayTeam->name }}"
-                                                                                        class="w-12 h-12 object-contain rounded"
-                                                                                        onerror="this.style.display='none'; this.parentElement.classList.add('bg-soboa-blue'); this.parentElement.innerHTML='<span class=\'text-3xl\'>\uD83C\uDFC1</span>';">
-                                                                                </div>
-                                                                            @else
-                                                                                <div
-                                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-2 shadow-md">
-                                                                                    <span class="text-3xl">🏁</span>
-                                                                                </div>
-                                                                            @endif
-                                                                            <h3 class="font-black text-lg text-gray-800">
-                                                                                {{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}
-                                                                            </h3>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <!-- Points de vente où le match sera diffusé -->
-                                                                    @if($match->animations && $match->animations->count() > 0)
-                                                                        <div class="mb-6 pb-6 border-b">
-                                                                            <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                                                                                <span>📍</span>
-                                                                                <span>Diffusé dans {{ $match->animations->count() }} PDV</span>
-                                                                            </h4>
-                                                                            <!-- Scroll horizontal container -->
-                                                                            <div class="overflow-x-auto scrollbar-hide -mx-6 px-6">
-                                                                                <div class="flex gap-2 pb-2" style="min-width: min-content;">
-                                                                                    @foreach($match->animations as $animation)
-                                                                                        @php
-                                                                                            $bar = $animation->bar;
-                                                                                            $typeColors = [
-                                                                                                'dakar' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'border' => 'border-blue-300', 'icon' => '🏙️'],
-                                                                                                'regions' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'border' => 'border-green-300', 'icon' => '🗺️'],
-                                                                                                'chr' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'border' => 'border-orange-300', 'icon' => '🍽️'],
-                                                                                                'fanzone' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-800', 'border' => 'border-purple-300', 'icon' => '🎉'],
-                                                                                            ];
-                                                                                            $colors = $typeColors[$bar->type_pdv ?? 'dakar'] ?? $typeColors['dakar'];
-                                                                                        @endphp
-                                                                                        <span
-                                                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }} whitespace-nowrap flex-shrink-0">
-                                                                                            <span>{{ $colors['icon'] }}</span>
-                                                                                            <span>{{ $bar->name }}</span>
-                                                                                            @if($bar->zone)
-                                                                                                <span class="opacity-75">• {{ $bar->zone }}</span>
-                                                                                            @endif
-                                                                                        </span>
-                                                                                    @endforeach
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    @endif
-
-                                                                    <!-- Formulaire de pronostic -->
-                                                                    @if($match->status !== 'finished')
-                                                                        @php
-                                                                            $userPrediction = $userPredictions[$match->id] ?? null;
-                                                                            // Verrouiller au début du match
-                                                                            $isPredictionLocked = \Carbon\Carbon::parse($match->match_date)->isPast();
-                                                                        @endphp
-
-                                                                        @if(session('user_id'))
-                                                                            <div class="border-t pt-6">
-                                                                                @if($userPrediction)
-                                                                                    <!-- Pronostic existant -->
-                                                                                    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-                                                                                        <div class="flex items-center justify-between mb-3">
-                                                                                            <div class="flex items-center gap-2">
-                                                                                                <span class="text-2xl">✅</span>
-                                                                                                <div>
-                                                                                                    <p class="font-bold text-green-800">Votre pronostic</p>
-                                                                                                    <p class="text-xs text-green-600">Enregistré le
-                                                                                                        {{ $userPrediction->created_at->format('d/m/Y à H:i') }}
-                                                                                                    </p>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            @if($userPrediction->points_earned > 0)
-                                                                                                <span
-                                                                                                    class="bg-green-600 text-white font-bold px-3 py-1 rounded-full text-sm">
-                                                                                                    +{{ $userPrediction->points_earned }} pts
-                                                                                                </span>
-                                                                                            @endif
-                                                                                        </div>
-                                                                                        <div
-                                                                                            class="flex items-center justify-center gap-4 text-lg font-black text-green-800">
-                                                                                            <span>{{ $userPrediction->score_a }}</span>
-                                                                                            <span class="text-green-600">-</span>
-                                                                                            <span>{{ $userPrediction->score_b }}</span>
-                                                                                        </div>
-                                                                                        @if(!$isPredictionLocked)
-                                                                                            <button onclick="enableEdit({{ $match->id }})"
-                                                                                                class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                                                                                                Modifier mon pronostic
-                                                                                            </button>
-                                                                                        @endif
-                                                                                    </div>
-                                                                                @else
-                                                                                    <!-- Formulaire de pronostic -->
-                                                                                    @if($isPredictionLocked)
-                                                                                        <div class="bg-gray-100 border border-gray-300 rounded-xl p-4 text-center">
-                                                                                            <span class="text-2xl">🔒</span>
-                                                                                            <p class="text-gray-600 font-medium mt-2">Les pronostics sont fermés pour ce
-                                                                                                match</p>
-                                                                                        </div>
-                                                                                    @else
-                                                                                        <form action="{{ route('predictions.store') }}" method="POST"
-                                                                                            class="space-y-4 prediction-form" data-match-id="{{ $match->id }}">
-                                                                                            @csrf
-                                                                                            <input type="hidden" name="match_id" value="{{ $match->id }}">
-                                                                                            <input type="hidden" name="venue_id" id="venue_id_{{ $match->id }}"
-                                                                                                value="">
-                                                                                            <input type="hidden" name="match_info"
-                                                                                                value="{{ ($match->homeTeam ? $match->homeTeam->name : $match->team_a) }} vs {{ ($match->awayTeam ? $match->awayTeam->name : $match->team_b) }}">
-
-                                                                                            @php
-                                                                                                $isKnockoutPhase = in_array($match->phase, ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final']);
-                                                                                            @endphp
-
-                                                                                            <div class="flex items-center justify-center gap-4">
-                                                                                                <div class="text-center flex-1">
-                                                                                                    <label class="block text-sm font-bold text-gray-700 mb-2">
-                                                                                                        Score
-                                                                                                        {{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}
-                                                                                                    </label>
-                                                                                                    <input type="number" name="score_a" min="0" max="20" required
-                                                                                                        class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0"
-                                                                                                        x-data="{}" x-on:change="checkDraw()">
-                                                                                                </div>
-                                                                                                <span class="text-2xl font-black text-gray-400 mt-6">-</span>
-                                                                                                <div class="text-center flex-1">
-                                                                                                    <label class="block text-sm font-bold text-gray-700 mb-2">
-                                                                                                        Score
-                                                                                                        {{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}
-                                                                                                    </label>
-                                                                                                    <input type="number" name="score_b" min="0" max="20" required
-                                                                                                        class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0"
-                                                                                                        x-data="{}" x-on:change="checkDraw()">
-                                                                                                </div>
-                                                                                            </div>
-
-                                                                                            @if($isKnockoutPhase)
-                                                                                                <!-- Option égalité + tirs au but pour phases à élimination -->
-                                                                                                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4"
-                                                                                                    id="penalty-section-{{ $match->id }}" style="display: none;">
-                                                                                                    <div class="flex items-center gap-2 mb-3">
-                                                                                                        <span class="text-2xl">⚠️</span>
-                                                                                                        <p class="font-bold text-yellow-800">Égalité détectée - Phase à
-                                                                                                            élimination</p>
-                                                                                                    </div>
-                                                                                                    <p class="text-sm text-yellow-700 mb-3">
-                                                                                                        En phase à élimination, il ne peut pas y avoir de match nul. Qui
-                                                                                                        gagnera aux tirs au but ?
-                                                                                                    </p>
-                                                                                                    <div class="grid grid-cols-2 gap-3">
-                                                                                                        <label class="cursor-pointer">
-                                                                                                            <input type="radio" name="penalty_winner" value="home"
-                                                                                                                class="hidden peer" required>
-                                                                                                            <div
-                                                                                                                class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
-                                                                                                                <p
-                                                                                                                    class="font-bold text-gray-800 peer-checked:text-soboa-blue">
-                                                                                                                    🏆
-                                                                                                                    {{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}
-                                                                                                                </p>
-                                                                                                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
-                                                                                                            </div>
-                                                                                                        </label>
-                                                                                                        <label class="cursor-pointer">
-                                                                                                            <input type="radio" name="penalty_winner" value="away"
-                                                                                                                class="hidden peer" required>
-                                                                                                            <div
-                                                                                                                class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
-                                                                                                                <p
-                                                                                                                    class="font-bold text-gray-800 peer-checked:text-soboa-blue">
-                                                                                                                    🏆
-                                                                                                                    {{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}
-                                                                                                                </p>
-                                                                                                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
-                                                                                                            </div>
-                                                                                                        </label>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                                <input type="hidden" name="predict_draw" id="predict_draw_{{ $match->id }}"
-                                                                                                    value="0">
-                                                                                            @endif
-
-                                                                                            <button type="submit"
-                                                                                                class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
-                                                                                                🎯 Valider mon pronostic
-                                                                                            </button>
-
-                                                                                            <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
-                                                                                                <p class="text-xs text-blue-800">
-                                                                                                    <strong>Points:</strong> +1 pt participation • +3 pts bon vainqueur
-                                                                                                    • +3 pts score exact •
-                                                                                                    <strong id="bonus-info-{{ $match->id }}">+4 pts bonus PDV si
-                                                                                                        détecté</strong>
-                                                                                                </p>
-                                                                                            </div>
-                                                                                        </form>
-                                                                                    @endif
-                                                                                @endif
-                                                                            </div>
-                                                                        @else
-                                                                            <div class="border-t pt-6">
-                                                                                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                                                                                    <span class="text-2xl">🔐</span>
-                                                                                    <p class="text-yellow-800 font-medium mt-2">Connectez-vous pour faire votre
-                                                                                        pronostic</p>
-                                                                                    <a href="/login"
-                                                                                        class="mt-3 inline-block bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-2 px-6 rounded-lg transition">
-                                                                                        Se connecter
-                                                                                    </a>
-                                                                                </div>
-                                                                            </div>
-                                                                        @endif
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                @endforeach
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        @foreach($matchesByPhase[$phaseKey] as $match)
-                                            <div id="match-{{ $match->id }}"
-                                                data-phase="{{ $match->phase }}"
-                                                data-home-team="{{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}"
-                                                data-away-team="{{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}"
-                                                class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all border-2 border-gray-100
-                                                                    {{ isset($favoriteTeamId) && ($match->home_team_id == $favoriteTeamId || $match->away_team_id == $favoriteTeamId) ? 'ring-2 ring-soboa-orange ring-offset-2' : '' }}">
-
-                                                <!-- Header du match -->
-                                                <div class="bg-gradient-to-r from-soboa-blue to-blue-600 px-6 py-3 text-white">
-                                                    <div class="flex items-center justify-between">
-                                                        <div class="flex items-center gap-3">
-                                                            <span class="text-xl">⚽</span>
-                                                            <div>
-                                                                <p class="text-sm font-medium text-white">
-                                                                    {{ \Carbon\Carbon::parse($match->match_date)->translatedFormat('l d F Y à H:i') }}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        @if($match->status === 'finished')
-                                                            <span class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                                                Terminé
-                                                            </span>
-                                                        @elseif($match->status === 'live')
-                                                            <span
-                                                                class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                                                                🔴 En cours
-                                                            </span>
-                                                        @else
-                                                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                                                À venir
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                </div>
-
-                                                <!-- Corps du match -->
-                                                <div class="p-6">
-                                                    <!-- Équipes -->
-                                                    <div class="flex items-center justify-between mb-6">
-                                                        <!-- Équipe domicile -->
-                                                        <div class="flex-1 text-center">
-                                                            @if($match->homeTeam && $match->homeTeam->iso_code)
-                                                                <div
-                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-2">
-                                                                    <img src="https://flagicons.lipis.dev/flags/4x3/{{ strtolower($match->homeTeam->iso_code) }}.svg"
-                                                                        alt="{{ $match->homeTeam->name }}"
-                                                                        class="w-12 h-12 object-contain rounded"
-                                                                        onerror="this.style.display='none'; this.parentElement.classList.add('bg-soboa-blue'); this.parentElement.innerHTML='<span class=\'text-3xl\'>\uD83C\uDFC1</span>';">
-                                                                </div>
-                                                            @else
-                                                                <div
-                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-2 shadow-md">
-                                                                    <span class="text-3xl">🏁</span>
-                                                                </div>
-                                                            @endif
-                                                            <h3 class="font-black text-lg text-gray-800">
-                                                                {{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}
-                                                            </h3>
-                                                        </div>
-
-                                                        <!-- Score / VS -->
-                                                        <div class="px-6">
-                                                            @if($match->status === 'finished' && $match->score_home !== null && $match->score_away !== null)
-                                                                <div class="text-center">
-                                                                    <div class="flex items-center gap-3 text-3xl font-black text-soboa-blue">
-                                                                        <span>{{ $match->score_home }}</span>
-                                                                        <span class="text-gray-400">-</span>
-                                                                        <span>{{ $match->score_away }}</span>
-                                                                    </div>
-                                                                    <p class="text-xs text-gray-500 mt-1">Score final</p>
-                                                                </div>
-                                                            @else
-                                                                <div class="text-center">
-                                                                    <span class="text-2xl font-black text-gray-400">VS</span>
-                                                                    <p class="text-xs text-gray-500 mt-1">
-                                                                        {{ \Carbon\Carbon::parse($match->match_date)->format('H:i') }}
-                                                                    </p>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-
-                                                        <!-- Équipe extérieure -->
-                                                        <div class="flex-1 text-center">
-                                                            @if($match->awayTeam && $match->awayTeam->iso_code)
-                                                                <div
-                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-2">
-                                                                    <img src="https://flagicons.lipis.dev/flags/4x3/{{ strtolower($match->awayTeam->iso_code) }}.svg"
-                                                                        alt="{{ $match->awayTeam->name }}"
-                                                                        class="w-12 h-12 object-contain rounded"
-                                                                        onerror="this.style.display='none'; this.parentElement.classList.add('bg-soboa-blue'); this.parentElement.innerHTML='<span class=\'text-3xl\'>\uD83C\uDFC1</span>';">
-                                                                </div>
-                                                            @else
-                                                                <div
-                                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-2 shadow-md">
-                                                                    <span class="text-3xl">🏁</span>
-                                                                </div>
-                                                            @endif
-                                                            <h3 class="font-black text-lg text-gray-800">
-                                                                {{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}
-                                                            </h3>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Points de vente où le match sera diffusé -->
-                                                    @if($match->animations && $match->animations->count() > 0)
-                                                        <div class="mb-6 pb-6 border-b">
-                                                            <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                                                                <span>📍</span>
-                                                                <span>Diffusé dans {{ $match->animations->count() }} PDV</span>
-                                                            </h4>
-                                                            <!-- Scroll horizontal container -->
-                                                            <div class="overflow-x-auto scrollbar-hide -mx-6 px-6">
-                                                                <div class="flex gap-2 pb-2" style="min-width: min-content;">
-                                                                    @foreach($match->animations as $animation)
-                                                                        @php
-                                                                            $bar = $animation->bar;
-                                                                            $typeColors = [
-                                                                                'dakar' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'border' => 'border-blue-300', 'icon' => '🏙️'],
-                                                                                'regions' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'border' => 'border-green-300', 'icon' => '🗺️'],
-                                                                                'chr' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'border' => 'border-orange-300', 'icon' => '🍽️'],
-                                                                                'fanzone' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-800', 'border' => 'border-purple-300', 'icon' => '🎉'],
-                                                                            ];
-                                                                            $colors = $typeColors[$bar->type_pdv ?? 'dakar'] ?? $typeColors['dakar'];
-                                                                        @endphp
-                                                                        <span
-                                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border {{ $colors['bg'] }} {{ $colors['text'] }} {{ $colors['border'] }} whitespace-nowrap flex-shrink-0">
-                                                                            <span>{{ $colors['icon'] }}</span>
-                                                                            <span>{{ $bar->name }}</span>
-                                                                            @if($bar->zone)
-                                                                                <span class="opacity-75">• {{ $bar->zone }}</span>
-                                                                            @endif
-                                                                        </span>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    @endif
-
-                                                    <!-- Formulaire de pronostic -->
-                                                    @if($match->status !== 'finished')
-                                                        @php
-                                                            $userPrediction = $userPredictions[$match->id] ?? null;
-                                                            // Verrouiller au début du match
-                                                            $isPredictionLocked = \Carbon\Carbon::parse($match->match_date)->isPast();
-                                                        @endphp
-
-                                                        @if(session('user_id'))
-                                                            <div class="border-t pt-6">
-                                                                @if($userPrediction)
-                                                                    <!-- Pronostic existant -->
-                                                                    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-                                                                        <div class="flex items-center justify-between mb-3">
-                                                                            <div class="flex items-center gap-2">
-                                                                                <span class="text-2xl">✅</span>
-                                                                                <div>
-                                                                                    <p class="font-bold text-green-800">Votre pronostic</p>
-                                                                                    <p class="text-xs text-green-600">Enregistré le
-                                                                                        {{ $userPrediction->created_at->format('d/m/Y à H:i') }}
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                            @if($userPrediction->points_earned > 0)
-                                                                                <span
-                                                                                    class="bg-green-600 text-white font-bold px-3 py-1 rounded-full text-sm">
-                                                                                    +{{ $userPrediction->points_earned }} pts
-                                                                                </span>
-                                                                            @endif
-                                                                        </div>
-                                                                        <div
-                                                                            class="flex items-center justify-center gap-4 text-lg font-black text-green-800">
-                                                                            <span>{{ $userPrediction->score_a }}</span>
-                                                                            <span class="text-green-600">-</span>
-                                                                            <span>{{ $userPrediction->score_b }}</span>
-                                                                        </div>
-                                                                        @if(!$isPredictionLocked)
-                                                                            <button onclick="enableEdit({{ $match->id }})"
-                                                                                class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                                                                                Modifier mon pronostic
-                                                                            </button>
-                                                                        @endif
-                                                                    </div>
-                                                                @else
-                                                                    <!-- Formulaire de pronostic -->
-                                                                    @if($isPredictionLocked)
-                                                                        <div class="bg-gray-100 border border-gray-300 rounded-xl p-4 text-center">
-                                                                            <span class="text-2xl">🔒</span>
-                                                                            <p class="text-gray-600 font-medium mt-2">Les pronostics sont fermés pour ce
-                                                                                match</p>
-                                                                        </div>
-                                                                    @else
-                                                                        <form action="{{ route('predictions.store') }}" method="POST"
-                                                                            class="space-y-4 prediction-form" data-match-id="{{ $match->id }}">
-                                                                            @csrf
-                                                                            <input type="hidden" name="match_id" value="{{ $match->id }}">
-                                                                            <input type="hidden" name="venue_id" id="venue_id_{{ $match->id }}" value="">
-                                                                            <input type="hidden" name="match_info"
-                                                                                value="{{ ($match->homeTeam ? $match->homeTeam->name : $match->team_a) }} vs {{ ($match->awayTeam ? $match->awayTeam->name : $match->team_b) }}">
-
-                                                                            @php
-                                                                                $isKnockoutPhase = in_array($match->phase, ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final']);
-                                                                            @endphp
-
-                                                                            <div class="flex items-center justify-center gap-4">
-                                                                                <div class="text-center flex-1">
-                                                                                    <label class="block text-sm font-bold text-gray-700 mb-2">
-                                                                                        Score
-                                                                                        {{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}
-                                                                                    </label>
-                                                                                    <input type="number" name="score_a" min="0" max="20" required
-                                                                                        class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0"
-                                                                                        x-data="{}" x-on:change="checkDraw()">
-                                                                                </div>
-                                                                                <span class="text-2xl font-black text-gray-400 mt-6">-</span>
-                                                                                <div class="text-center flex-1">
-                                                                                    <label class="block text-sm font-bold text-gray-700 mb-2">
-                                                                                        Score
-                                                                                        {{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}
-                                                                                    </label>
-                                                                                    <input type="number" name="score_b" min="0" max="20" required
-                                                                                        class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0"
-                                                                                        x-data="{}" x-on:change="checkDraw()">
-                                                                                </div>
-                                                                            </div>
-
-                                                                            @if($isKnockoutPhase)
-                                                                                <!-- Option égalité + tirs au but pour phases à élimination -->
-                                                                                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4"
-                                                                                    id="penalty-section-{{ $match->id }}" style="display: none;">
-                                                                                    <div class="flex items-center gap-2 mb-3">
-                                                                                        <span class="text-2xl">⚠️</span>
-                                                                                        <p class="font-bold text-yellow-800">Égalité détectée - Phase à
-                                                                                            élimination</p>
-                                                                                    </div>
-                                                                                    <p class="text-sm text-yellow-700 mb-3">
-                                                                                        En phase à élimination, il ne peut pas y avoir de match nul. Qui gagnera
-                                                                                        aux tirs au but ?
-                                                                                    </p>
-                                                                                    <div class="grid grid-cols-2 gap-3">
-                                                                                        <label class="cursor-pointer">
-                                                                                            <input type="radio" name="penalty_winner" value="home"
-                                                                                                class="hidden peer" required>
-                                                                                            <div
-                                                                                                class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
-                                                                                                <p class="font-bold text-gray-800 peer-checked:text-soboa-blue">
-                                                                                                    🏆
-                                                                                                    {{ $match->homeTeam ? $match->homeTeam->name : $match->team_a }}
-                                                                                                </p>
-                                                                                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
-                                                                                            </div>
-                                                                                        </label>
-                                                                                        <label class="cursor-pointer">
-                                                                                            <input type="radio" name="penalty_winner" value="away"
-                                                                                                class="hidden peer" required>
-                                                                                            <div
-                                                                                                class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
-                                                                                                <p class="font-bold text-gray-800 peer-checked:text-soboa-blue">
-                                                                                                    🏆
-                                                                                                    {{ $match->awayTeam ? $match->awayTeam->name : $match->team_b }}
-                                                                                                </p>
-                                                                                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
-                                                                                            </div>
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <input type="hidden" name="predict_draw" id="predict_draw_{{ $match->id }}"
-                                                                                    value="0">
-                                                                            @endif
-
-                                                                            <button type="submit"
-                                                                                class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
-                                                                                🎯 Valider mon pronostic
-                                                                            </button>
-
-                                                                            <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
-                                                                                <p class="text-xs text-blue-800">
-                                                                                    <strong>Points:</strong> +1 pt participation • +3 pts bon vainqueur • +3
-                                                                                    pts score exact •
-                                                                                    <strong id="bonus-info-{{ $match->id }}">+4 pts bonus PDV si
-                                                                                        détecté</strong>
-                                                                                </p>
-                                                                            </div>
-                                                                        </form>
-                                                                    @endif
-                                                                @endif
-                                                            </div>
-                                                        @else
-                                                            <div class="border-t pt-6">
-                                                                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                                                                    <span class="text-2xl">🔐</span>
-                                                                    <p class="text-yellow-800 font-medium mt-2">Connectez-vous pour faire votre
-                                                                        pronostic</p>
-                                                                    <a href="/login"
-                                                                        class="mt-3 inline-block bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-2 px-6 rounded-lg transition">
-                                                                        Se connecter
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-        @else
-            <!-- Message si aucun match -->
-            <div class="bg-white rounded-xl shadow-lg p-12 text-center">
-                <span class="text-6xl">📅</span>
-                <h3 class="text-2xl font-black text-gray-800 mt-4">Aucun match disponible</h3>
-                <p class="text-gray-600 mt-2">Revenez bientôt pour de nouveaux matchs !</p>
-            </div>
-        @endif
+    {{-- ========== 18+ MENTION ========== --}}
+    <div class="bg-red-50 ring-1 ring-red-200 rounded-lg p-3 flex items-center justify-center gap-3">
+        <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-white font-black text-[10px]">18+</span>
+        </div>
+        <p class="text-red-700 text-sm">
+            Jeu réservé aux plus de 18 ans.
+            <a href="{{ route('terms') }}" class="underline font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 rounded">Conditions</a>
+        </p>
     </div>
 
-    <script>
-        // Variables globales
-        let userLatitude = null;
-        let userLongitude = null;
-        let nearbyVenue = null;
+    @if($matchesByPhase->count() > 0)
+        {{-- ========== PHASE TABS (sticky) ========== --}}
+        <nav class="sticky top-[68px] lg:top-[80px] z-sticky -mx-4 px-4 py-2 bg-white/85 backdrop-blur-md ring-1 ring-gray-200 rounded-2xl"
+             aria-label="Phases du tournoi">
+            <div class="flex gap-1.5 overflow-x-auto scrollbar-hide" role="tablist">
+                @foreach($phaseOrder as $phaseKey => $phaseName)
+                    @if(isset($matchesByPhase[$phaseKey]) && $matchesByPhase[$phaseKey]->count() > 0)
+                        @php
+                            $shortName = str_replace(
+                                ['Phase de Poules', '1/16e de Finale', '1/8e de Finale', 'Quarts de Finale', 'Demi-Finales', 'Match pour la 3e Place', 'Finale'],
+                                ['Poules', '1/16', '1/8', 'Quarts', 'Demis', '3e Place', 'Finale'],
+                                $phaseName
+                            );
+                        @endphp
+                        <button type="button"
+                                role="tab"
+                                :aria-selected="(activePhase === '{{ $phaseKey }}').toString()"
+                                @click="activePhase = '{{ $phaseKey }}'"
+                                :class="activePhase === '{{ $phaseKey }}'
+                                    ? 'bg-soboa-blue text-white shadow-elev-1'
+                                    : 'text-gray-700 hover:bg-gray-100'"
+                                class="whitespace-nowrap inline-flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold text-sm transition-all duration-base focus:outline-none focus:ring-2 focus:ring-soboa-blue active:scale-95">
+                            <span class="hidden sm:inline">{{ $phaseName }}</span>
+                            <span class="sm:hidden">{{ $shortName }}</span>
+                            <span class="text-[11px] px-1.5 py-0.5 rounded-full"
+                                  :class="activePhase === '{{ $phaseKey }}' ? 'bg-white/25' : 'bg-gray-200 text-gray-700'">
+                                {{ $matchesByPhase[$phaseKey]->count() }}
+                            </span>
+                        </button>
+                    @endif
+                @endforeach
+            </div>
+        </nav>
 
-        // Fonction pour détecter l'égalité et afficher les tirs au but
-        function checkDraw() {
-            document.querySelectorAll('.prediction-form').forEach(form => {
-                const matchId = form.dataset.matchId;
-                const scoreA = form.querySelector('input[name="score_a"]');
-                const scoreB = form.querySelector('input[name="score_b"]');
-                const penaltySection = document.getElementById('penalty-section-' + matchId);
-                const predictDrawInput = document.getElementById('predict_draw_' + matchId);
-                const penaltyInputs = form.querySelectorAll('input[name="penalty_winner"]');
+        {{-- ========== PHASE PANELS ========== --}}
+        @foreach($phaseOrder as $phaseKey => $phaseName)
+            @if(isset($matchesByPhase[$phaseKey]) && $matchesByPhase[$phaseKey]->count() > 0)
+                <section x-show="activePhase === '{{ $phaseKey }}'" x-cloak role="tabpanel" aria-label="{{ $phaseName }}">
+                    @if($phaseKey === 'group_stage' && $groupStageByGroup->count() > 0)
+                        {{-- Group sub-pills --}}
+                        <div class="flex flex-wrap gap-1.5 mb-4">
+                            @foreach($groupStageByGroup as $groupName => $_)
+                                <button type="button"
+                                        @click="activeGroup = '{{ $groupName }}'"
+                                        :class="activeGroup === '{{ $groupName }}'
+                                            ? 'bg-soboa-orange text-white shadow-elev-1'
+                                            : 'bg-white text-soboa-text-dark hover:bg-soboa-cream ring-1 ring-gray-200'"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-base focus:outline-none focus:ring-2 focus:ring-soboa-orange active:scale-95">
+                                    Groupe {{ $groupName }}
+                                </button>
+                            @endforeach
+                        </div>
 
-                if (scoreA && scoreB && penaltySection) {
-                    const a = parseInt(scoreA.value);
-                    const b = parseInt(scoreB.value);
+                        @foreach($groupStageByGroup as $groupName => $groupMatches)
+                            <div x-show="activeGroup === '{{ $groupName }}'" x-cloak class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                @foreach($groupMatches as $match)
+                                    <x-match-row :match="$match"
+                                                 :userPrediction="$userPredictions[$match->id] ?? null"
+                                                 :favoriteTeamId="$favoriteTeamId"
+                                                 :tournamentEnded="$tournamentEnded" />
+                                @endforeach
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            @foreach($matchesByPhase[$phaseKey] as $match)
+                                <x-match-row :match="$match"
+                                             :userPrediction="$userPredictions[$match->id] ?? null"
+                                             :favoriteTeamId="$favoriteTeamId"
+                                             :tournamentEnded="$tournamentEnded" />
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
+            @endif
+        @endforeach
 
-                    if (!isNaN(a) && !isNaN(b) && a === b) {
-                        // Égalité détectée
-                        penaltySection.style.display = 'block';
-                        predictDrawInput.value = '1';
+    @else
+        {{-- ========== EMPTY STATE ========== --}}
+        <div class="bg-white rounded-2xl shadow-elev-1 p-12 text-center">
+            <div class="w-20 h-20 mx-auto bg-soboa-orange/10 rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="calendar-x" class="w-10 h-10 text-soboa-orange"></i>
+            </div>
+            <h3 class="text-2xl font-black text-soboa-text-dark">Aucun match disponible</h3>
+            <p class="text-gray-600 mt-2">Revenez bientôt pour de nouveaux matchs !</p>
+        </div>
+    @endif
 
-                        // Rendre les radios required
-                        penaltyInputs.forEach(input => {
-                            input.setAttribute('required', 'required');
-                        });
-                    } else {
-                        // Pas d'égalité
-                        penaltySection.style.display = 'none';
-                        predictDrawInput.value = '0';
+    {{-- ========== PREDICTION MODAL ========== --}}
+    <div x-show="modal.open" x-cloak
+         x-transition:enter="transition ease-out duration-base"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-fast"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="modal-backdrop-sheet"
+         @keydown.escape.window="closePrediction()"
+         @click.self="closePrediction()"
+         role="dialog" aria-modal="true" aria-labelledby="prediction-modal-title">
 
-                        // Retirer required et décocher
-                        penaltyInputs.forEach(input => {
-                            input.removeAttribute('required');
-                            input.checked = false;
-                        });
-                    }
+        <div x-show="modal.open" x-cloak
+             x-transition:enter="transition ease-out duration-base"
+             x-transition:enter-start="translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+             x-transition:enter-end="translate-y-0 sm:scale-100 opacity-100"
+             x-transition:leave="transition ease-in duration-fast"
+             x-transition:leave-start="translate-y-0 sm:scale-100 opacity-100"
+             x-transition:leave-end="translate-y-full sm:translate-y-4 sm:scale-95 opacity-0"
+             class="modal-sheet-panel">
+
+            <header class="modal-header">
+                <div class="flex-1 min-w-0">
+                    <p class="text-[11px] uppercase tracking-widest text-white/70 font-bold">Pronostic</p>
+                    <h2 id="prediction-modal-title" class="font-black text-lg leading-tight truncate" x-text="modal.match?.matchInfo"></h2>
+                    <p class="text-xs text-white/80 mt-0.5" x-text="modal.match?.kickoff"></p>
+                </div>
+                <button type="button" @click="closePrediction()" class="modal-close" aria-label="Fermer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </header>
+
+            <form @submit.prevent="submitPrediction()" class="p-5 space-y-5 overflow-y-auto">
+                <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <div class="text-center">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-gray-50 ring-1 ring-gray-200 overflow-hidden flex items-center justify-center mb-2">
+                            <template x-if="modal.match?.homeFlag">
+                                <img :src="modal.match.homeFlag" :alt="modal.match.homeName" loading="lazy" class="w-full h-full object-cover">
+                            </template>
+                            <template x-if="!modal.match?.homeFlag">
+                                <span class="font-black text-soboa-blue" x-text="modal.match?.homeName?.slice(0,2)"></span>
+                            </template>
+                        </div>
+                        <label :for="'score-a-' + modal.match?.id" class="block text-xs font-bold text-soboa-text-dark truncate" x-text="modal.match?.homeName"></label>
+                        <input :id="'score-a-' + modal.match?.id"
+                               type="number"
+                               inputmode="numeric"
+                               min="0" max="20"
+                               required
+                               x-model.number="modal.scoreA"
+                               class="mt-2 w-full text-center text-3xl font-black border-2 border-gray-200 rounded-xl py-3 focus:border-soboa-orange focus:outline-none focus:ring-2 focus:ring-soboa-orange/20 transition-colors duration-base"
+                               aria-label="Score équipe domicile">
+                    </div>
+
+                    <span class="text-2xl font-black text-gray-300 mt-12">-</span>
+
+                    <div class="text-center">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-gray-50 ring-1 ring-gray-200 overflow-hidden flex items-center justify-center mb-2">
+                            <template x-if="modal.match?.awayFlag">
+                                <img :src="modal.match.awayFlag" :alt="modal.match.awayName" loading="lazy" class="w-full h-full object-cover">
+                            </template>
+                            <template x-if="!modal.match?.awayFlag">
+                                <span class="font-black text-soboa-blue" x-text="modal.match?.awayName?.slice(0,2)"></span>
+                            </template>
+                        </div>
+                        <label :for="'score-b-' + modal.match?.id" class="block text-xs font-bold text-soboa-text-dark truncate" x-text="modal.match?.awayName"></label>
+                        <input :id="'score-b-' + modal.match?.id"
+                               type="number"
+                               inputmode="numeric"
+                               min="0" max="20"
+                               required
+                               x-model.number="modal.scoreB"
+                               class="mt-2 w-full text-center text-3xl font-black border-2 border-gray-200 rounded-xl py-3 focus:border-soboa-orange focus:outline-none focus:ring-2 focus:ring-soboa-orange/20 transition-colors duration-base"
+                               aria-label="Score équipe extérieure">
+                    </div>
+                </div>
+
+                {{-- Penalty (knockout + draw) --}}
+                <div x-show="modal.match?.isKnockout && isDraw()" x-cloak
+                     x-transition.duration.300ms
+                     class="bg-amber-50 ring-2 ring-amber-300 rounded-xl p-4 space-y-3">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                        <div class="text-sm">
+                            <p class="font-bold text-amber-800">Égalité — phase à élimination</p>
+                            <p class="text-amber-700 text-xs mt-0.5">Pas de match nul possible. Qui gagne aux tirs au but ?</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" value="home" x-model="modal.penaltyWinner" class="peer sr-only" :required="modal.match?.isKnockout && isDraw()">
+                            <div class="ring-2 ring-gray-200 peer-checked:ring-soboa-blue peer-checked:bg-soboa-blue/10 rounded-lg p-3 text-center transition-colors duration-base">
+                                <p class="font-bold text-soboa-text-dark text-sm truncate" x-text="modal.match?.homeName"></p>
+                                <p class="text-[10px] text-gray-500 mt-0.5">Vainqueur TAB</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" value="away" x-model="modal.penaltyWinner" class="peer sr-only" :required="modal.match?.isKnockout && isDraw()">
+                            <div class="ring-2 ring-gray-200 peer-checked:ring-soboa-blue peer-checked:bg-soboa-blue/10 rounded-lg p-3 text-center transition-colors duration-base">
+                                <p class="font-bold text-soboa-text-dark text-sm truncate" x-text="modal.match?.awayName"></p>
+                                <p class="text-[10px] text-gray-500 mt-0.5">Vainqueur TAB</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Points hint --}}
+                <div class="bg-soboa-blue/5 rounded-lg p-3 text-xs text-soboa-text-dark/80 leading-relaxed">
+                    <p><strong class="text-soboa-blue">+1</strong> participation · <strong class="text-soboa-blue">+3</strong> bon vainqueur · <strong class="text-soboa-blue">+3</strong> score exact
+                        · <strong class="text-soboa-orange" x-text="venueState === 'near' ? '+4 PDV garanti ✓' : '+4 PDV si détecté'"></strong>
+                    </p>
+                </div>
+
+                <div x-show="modal.error" x-cloak class="bg-red-50 ring-1 ring-red-200 rounded-lg p-3 text-sm text-red-700 flex items-start gap-2">
+                    <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                    <span x-text="modal.error"></span>
+                </div>
+
+                <button type="submit" :disabled="modal.submitting" class="btn btn-primary btn-lg btn-block">
+                    <i data-lucide="check-circle-2" class="w-5 h-5" x-show="!modal.submitting"></i>
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin" x-show="modal.submitting" x-cloak></i>
+                    <span x-text="modal.submitting ? 'Envoi…' : 'Valider mon pronostic'"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- ========== SUCCESS RECAP MODAL ========== --}}
+    <div x-show="recap.open" x-cloak
+         x-transition:enter="transition ease-out duration-base"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="modal-backdrop"
+         @click.self="recap.open = false"
+         role="dialog" aria-modal="true" aria-labelledby="recap-modal-title">
+        <div x-show="recap.open" x-cloak
+             x-transition:enter="transition ease-out duration-base"
+             x-transition:enter-start="scale-90 opacity-0"
+             x-transition:enter-end="scale-100 opacity-100"
+             class="modal-panel modal-panel-sm">
+            <div class="bg-gradient-to-r from-soboa-orange to-soboa-orange-secondary p-5 text-center">
+                <div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center mb-2 animate-bounce-slow">
+                    <i data-lucide="party-popper" class="w-9 h-9 text-soboa-orange"></i>
+                </div>
+                <h3 id="recap-modal-title" class="text-xl font-black text-white">Pronostic enregistré !</h3>
+            </div>
+            <div class="p-5 space-y-3">
+                <div class="bg-soboa-cream rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-600 font-medium">Votre pronostic</p>
+                    <p class="text-base font-bold text-soboa-text-dark" x-text="recap.matchInfo"></p>
+                    <p class="text-2xl font-black text-soboa-blue mt-1">
+                        <span x-text="recap.scoreA"></span> - <span x-text="recap.scoreB"></span>
+                    </p>
+                </div>
+                <div class="space-y-1.5 text-sm">
+                    <div class="flex items-center justify-between bg-soboa-blue/5 rounded-lg p-2.5">
+                        <span class="text-soboa-text-dark">Participation</span>
+                        <span class="font-black text-soboa-blue">+1 pt</span>
+                    </div>
+                    <div x-show="recap.venueBonus > 0" x-cloak class="flex items-center justify-between bg-emerald-50 rounded-lg p-2.5">
+                        <span class="text-soboa-text-dark">Bonus PDV <span class="text-xs text-emerald-600" x-text="recap.venueName ? '(' + recap.venueName + ')' : ''"></span></span>
+                        <span class="font-black text-emerald-600">+4 pts</span>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light rounded-xl p-3 text-center text-white">
+                    <p class="text-xs text-white/80">Vos points totaux</p>
+                    <p class="text-3xl font-black" x-text="recap.totalPoints"></p>
+                </div>
+                <button type="button" @click="recap.open = false" class="btn btn-primary btn-md btn-block">
+                    Continuer
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function matchesPage() {
+        return {
+            activePhase: @json($matchesByPhase->keys()->first()),
+            activeGroup: @json($groupStageByGroup->keys()->first()),
+            venueState: 'unknown',
+            nearbyVenue: null,
+            closestVenues: [],
+            modal: {
+                open: false,
+                match: null,
+                scoreA: '',
+                scoreB: '',
+                penaltyWinner: '',
+                submitting: false,
+                error: null,
+                isEdit: false,
+            },
+            recap: {
+                open: false,
+                matchInfo: '',
+                scoreA: 0,
+                scoreB: 0,
+                venueName: null,
+                venueBonus: 0,
+                totalPoints: {{ session('user_points', 0) }},
+            },
+
+            init() {
+                setTimeout(() => this.detectGeolocation(), 1500);
+            },
+
+            isDraw() {
+                return this.modal.scoreA !== '' && this.modal.scoreB !== '' && Number(this.modal.scoreA) === Number(this.modal.scoreB);
+            },
+
+            openPrediction(payload) {
+                this.modal.match = payload;
+                this.modal.scoreA = payload.existing?.scoreA ?? '';
+                this.modal.scoreB = payload.existing?.scoreB ?? '';
+                this.modal.penaltyWinner = payload.existing?.penaltyWinner ?? '';
+                this.modal.isEdit = !!payload.existing;
+                this.modal.error = null;
+                this.modal.open = true;
+                document.body.style.overflow = 'hidden';
+                this.$nextTick(() => {
+                    if (window.lucide) window.lucide.createIcons();
+                    document.getElementById('score-a-' + payload.id)?.focus();
+                });
+            },
+
+            closePrediction() {
+                this.modal.open = false;
+                document.body.style.overflow = '';
+            },
+
+            async submitPrediction() {
+                if (this.modal.submitting) return;
+                if (this.modal.match.isKnockout && this.isDraw() && !this.modal.penaltyWinner) {
+                    this.modal.error = 'Choisissez le vainqueur aux tirs au but.';
+                    return;
                 }
-            });
-        }
+                this.modal.submitting = true;
+                this.modal.error = null;
 
-        // Attacher checkDraw aux changements de score
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('input[name="score_a"], input[name="score_b"]').forEach(input => {
-                input.addEventListener('input', checkDraw);
-                input.addEventListener('change', checkDraw);
-            });
-            
-            // Vérifier si un message de succès est stocké (après rechargement)
-            const successMessage = sessionStorage.getItem('prediction_success_message');
-            if (successMessage) {
-                sessionStorage.removeItem('prediction_success_message');
-                showSuccessBanner(successMessage);
-            }
-        });
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const fd = new FormData();
+                fd.append('_token', csrf);
+                fd.append('match_id', this.modal.match.id);
+                fd.append('match_info', this.modal.match.matchInfo);
+                fd.append('score_a', this.modal.scoreA);
+                fd.append('score_b', this.modal.scoreB);
+                fd.append('predict_draw', this.isDraw() ? '1' : '0');
+                if (this.modal.penaltyWinner) fd.append('penalty_winner', this.modal.penaltyWinner);
+                if (this.nearbyVenue?.id) fd.append('venue_id', this.nearbyVenue.id);
 
-        // Fonction pour calculer la distance Haversine
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Rayon de la Terre en km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
+                try {
+                    const res = await fetch(@json(route('predictions.store')), {
+                        method: 'POST',
+                        body: fd,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        this.modal.error = data.message || data.error || 'Erreur lors de l\'enregistrement.';
+                        this.modal.submitting = false;
+                        return;
+                    }
 
-        // Détecter automatiquement la géolocalisation via l'API
-        async function detectGeolocation() {
-            if (!navigator.geolocation) {
-                console.log('[SOBOA FOOT TIME] Géolocalisation non supportée');
-                return;
-            }
+                    const totalPoints = data.user_points_total ?? this.recap.totalPoints;
+                    this.recap = {
+                        open: true,
+                        matchInfo: this.modal.match.matchInfo,
+                        scoreA: this.modal.scoreA,
+                        scoreB: this.modal.scoreB,
+                        venueName: data.venue ?? null,
+                        venueBonus: data.venue_bonus_points ?? 0,
+                        totalPoints,
+                    };
 
-            console.log('[SOBOA FOOT TIME] Détection géolocalisation...');
+                    document.querySelectorAll('[data-user-points]').forEach(el => el.textContent = totalPoints);
+                    sessionStorage.setItem('user_points', totalPoints);
 
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    userLatitude = position.coords.latitude;
-                    userLongitude = position.coords.longitude;
+                    this.closePrediction();
 
-                    console.log('[SOBOA FOOT TIME] Position détectée:', userLatitude, userLongitude);
+                    // Reload after recap close to refresh server-rendered cards
+                    setTimeout(() => {
+                        sessionStorage.setItem('prediction_success_message', data.message || 'Pronostic enregistré');
+                        window.location.reload();
+                    }, 2500);
+                } catch (err) {
+                    console.error('[SOBOA FOOT TIME]', err);
+                    this.modal.error = 'Erreur de connexion. Réessayez.';
+                    this.modal.submitting = false;
+                }
+            },
 
+            async detectGeolocation() {
+                if (!navigator.geolocation) return;
+                navigator.geolocation.getCurrentPosition(async (pos) => {
                     try {
-                        // Appeler l'API de géolocalisation pour obtenir les PDV proches
-                        const response = await fetch('/api/geolocation/venues', {
+                        const res = await fetch('/api/geolocation/venues', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
                             },
-                            body: JSON.stringify({
-                                latitude: userLatitude,
-                                longitude: userLongitude
-                            })
+                            body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
                         });
-
-                        const data = await response.json();
-
-                        if (!data.success) {
-                            console.log('[SOBOA FOOT TIME] Erreur API géolocalisation');
-                            return;
-                        }
-
+                        const data = await res.json();
+                        if (!data.success) return;
                         const venues = data.venues || [];
-                        const nearbyV = venues.find(v => v.is_nearby);
-
-                        if (nearbyV) {
-                            nearbyVenue = nearbyV;
-                            console.log('[SOBOA FOOT TIME] PDV détecté:', nearbyVenue.name, '(', nearbyVenue.distance_m, 'm)');
-
-                            // Afficher le bandeau de bonus (Proche)
-                            const nearbyInfo = document.getElementById('nearbyVenueInfo');
-                            const nearbyName = document.getElementById('nearbyVenueName');
-                            nearbyName.textContent = nearbyVenue.name;
-                            nearbyInfo.classList.remove('hidden');
-                            document.getElementById('farVenuesInfo').classList.add('hidden');
-
-                            // Remplir tous les champs venue_id
-                            document.querySelectorAll('input[name="venue_id"]').forEach(input => {
-                                input.value = nearbyVenue.id;
-                            });
-
-                            // Mettre à jour les infos bonus
-                            document.querySelectorAll('[id^="bonus-info-"]').forEach(el => {
-                                el.innerHTML = '<strong class="text-green-600">+4 pts bonus PDV garantis ! 🎉</strong>';
-                            });
+                        const near = venues.find(v => v.is_nearby);
+                        if (near) {
+                            this.nearbyVenue = near;
+                            this.venueState = 'near';
+                            localStorage.setItem('detected_venue_id', near.id);
                         } else {
-                            console.log('[SOBOA FOOT TIME] Pas de PDV à proximité immédiate (200m)');
-
-                            // Cacher le bandeau "Proche"
-                            document.getElementById('nearbyVenueInfo').classList.add('hidden');
-
-                            // Afficher et peupler le bandeau "Loin" avec les 3 plus proches
-                            const farInfo = document.getElementById('farVenuesInfo');
-                            const closestList = document.getElementById('closestVenuesList');
-
-                            if (venues.length > 0) {
-                                const top3Venues = venues.slice(0, 3);
-                                closestList.innerHTML = top3Venues.map(v => {
-                                    const distanceStr = v.distance_m < 1000 
-                                        ? `${v.distance_m}m` 
-                                        : `${v.distance_km.toFixed(1)}km`;
-                                    return `<div class="flex justify-between items-center py-1.5 border-b border-white/10 last:border-0">
-                                        <span class="font-medium">${v.name}</span>
-                                        <span class="font-bold text-white/90">${distanceStr}</span>
-                                    </div>`;
-                                }).join('');
-                                farInfo.classList.remove('hidden');
-                            }
+                            this.closestVenues = venues.slice(0, 3);
+                            this.venueState = 'far';
                         }
-                    } catch (error) {
-                        console.error('[SOBOA FOOT TIME] Erreur API Géolocalisation:', error);
+                    } catch (e) {
+                        console.warn('[SOBOA FOOT TIME] geo api', e);
                     }
-                },
-                (error) => {
-                    // Gérer les erreurs de géolocalisation
-                    console.log('[SOBOA FOOT TIME] Géolocalisation refusée ou indisponible:', error.message);
-                },
-                {
-                    enableHighAccuracy: false,
-                    timeout: 15000,
-                    maximumAge: 60000
-                }
-            );
-        }
-
-        // Check-in functions removed - points are now awarded automatically during predictions
-
-        // Intercepter les soumissions de formulaire
-        document.addEventListener('DOMContentLoaded', () => {
-            // Détecter la géolocalisation APRÈS le chargement de la page (non-bloquant)
-            setTimeout(() => {
-                detectGeolocation();
-            }, 1500); // Délai de 1500ms pour laisser la page se charger complètement
-
-            // Intercepter tous les formulaires de pronostic
-            document.querySelectorAll('.prediction-form').forEach(form => {
-                form.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-
-                    const formData = new FormData(form);
-                    const matchId = form.dataset.matchId;
-
-                    try {
-                        const response = await fetch(form.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        });
-
-                        const data = await response.json();
-
-                        if (data.message || data.teams) {
-                            // Afficher la popup de récap
-                            showPointsModal({
-                                matchInfo: formData.get('match_info'),
-                                scoreA: formData.get('score_a'),
-                                scoreB: formData.get('score_b'),
-                                venueName: data.venue || null,
-                                venueBonus: data.venue_bonus_points || 0,
-                                totalPoints: data.user_points_total || {{ session('user_points', 0) }}
-                            });
-
-                            // Mettre à jour l'interface SANS recharger la page
-                            updatePredictionDisplay(matchId, {
-                                scoreA: formData.get('score_a'),
-                                scoreB: formData.get('score_b'),
-                                predictDraw: formData.get('predict_draw'),
-                                penaltyWinner: formData.get('penalty_winner'),
-                                createdAt: new Date().toLocaleString('fr-FR')
-                            });
-
-                            // Mettre à jour les points de l'utilisateur
-                            if (data.user_points_total) {
-                                document.querySelectorAll('[data-user-points]').forEach(el => {
-                                    el.textContent = data.user_points_total;
-                                });
-                                // Mettre à jour la session
-                                sessionStorage.setItem('user_points', data.user_points_total);
-                            }
-                        }
-                    } catch (error) {
-                        console.error('[SOBOA FOOT TIME] Erreur soumission:', error);
-                        // Message d'erreur plus user-friendly
-                        const errorMsg = error.message || 'Erreur lors de l\'enregistrement';
-                        showErrorNotification(errorMsg);
-                    }
-                });
-            });
-        });
-
-        // Afficher la popup de récap
-        function showPointsModal(data) {
-            const modal = document.getElementById('pointsRecapModal');
-            const modalContent = document.getElementById('modalContent');
-
-            // Remplir les données
-            document.getElementById('modalMatchInfo').textContent = data.matchInfo;
-            document.getElementById('modalScoreA').textContent = data.scoreA;
-            document.getElementById('modalScoreB').textContent = data.scoreB;
-            document.getElementById('modalTotalPoints').textContent = data.totalPoints;
-
-            // Afficher ou cacher le bonus venue
-            const venueBonus = document.getElementById('venueBonus');
-            if (data.venueName && data.venueBonus > 0) {
-                document.getElementById('venueName').textContent = '(' + data.venueName + ')';
-                venueBonus.classList.remove('hidden');
-                venueBonus.classList.add('flex');
-            } else {
-                venueBonus.classList.add('hidden');
-            }
-
-            // Afficher la modale avec animation
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-
-        // Fermer la popup
-        function closePointsModal() {
-            const modal = document.getElementById('pointsRecapModal');
-            const modalContent = document.getElementById('modalContent');
-
-            modalContent.classList.remove('scale-100', 'opacity-100');
-            modalContent.classList.add('scale-95', 'opacity-0');
-
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        // Mettre à jour l'affichage du pronostic après soumission AJAX
-        // isEdit = true si c'est une modification d'un pronostic existant
-        function updatePredictionDisplay(matchId, predictionData, isEdit = false) {
-            const matchCard = document.getElementById('match-' + matchId);
-            if (!matchCard) return;
-
-            // Trouver le formulaire et le conteneur parent
-            const form = matchCard.querySelector('.prediction-form');
-            if (!form) return;
-
-            const formContainer = form.parentElement;
-
-            // Récupérer les noms des équipes depuis les data-attributes
-            const homeTeam = matchCard.dataset.homeTeam || 'Équipe A';
-            const awayTeam = matchCard.dataset.awayTeam || 'Équipe B';
-
-            // Déterminer le texte et les styles selon nouveau/modifié
-            const statusIcon = isEdit ? '✏️' : '✅';
-            const statusText = isEdit ? 'Pronostic modifié' : 'Votre pronostic';
-            const statusSubtext = isEdit ? 'Modifié à l\'instant' : 'Enregistré à l\'instant';
-            const bgClass = isEdit ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200';
-            const textClass = isEdit ? 'text-blue-800' : 'text-green-800';
-            const subTextClass = isEdit ? 'text-blue-600' : 'text-green-600';
-            const scoreTextClass = isEdit ? 'text-blue-800' : 'text-green-800';
-            const scoreDashClass = isEdit ? 'text-blue-600' : 'text-green-600';
-            const btnClass = isEdit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700';
-
-            // Créer l'affichage du pronostic enregistré
-            const predictionHTML = `
-                <div class="${bgClass} border rounded-xl p-4 prediction-success-animation ${isEdit ? 'ring-2 ring-blue-400 ring-offset-2' : ''}">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-2xl">${statusIcon}</span>
-                            <div>
-                                <p class="font-bold ${textClass}">${statusText}</p>
-                                <p class="text-xs ${subTextClass}">${statusSubtext}</p>
-                            </div>
-                        </div>
-                        ${isEdit ? `
-                            <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
-                                Modifié
-                            </span>
-                        ` : ''}
-                    </div>
-                    <div class="flex items-center justify-center gap-4 text-lg font-black ${scoreTextClass}">
-                        <span>${predictionData.scoreA}</span>
-                        <span class="${scoreDashClass}">-</span>
-                        <span>${predictionData.scoreB}</span>
-                    </div>
-                    ${predictionData.predictDraw === '1' && predictionData.penaltyWinner ? `
-                        <div class="mt-2 text-center">
-                            <span class="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded">
-                                🏆 Tirs au but: ${predictionData.penaltyWinner === 'home' ? homeTeam : awayTeam}
-                            </span>
-                        </div>
-                    ` : ''}
-                    <button onclick="enableEdit(${matchId})" 
-                        class="mt-3 w-full ${btnClass} text-white font-bold py-2 px-4 rounded-lg transition">
-                        Modifier mon pronostic
-                    </button>
-                </div>
-            `;
-
-            // Remplacer le formulaire par l'affichage du pronostic
-            formContainer.innerHTML = predictionHTML;
-
-            // Animation de succès
-            setTimeout(() => {
-                const successDiv = formContainer.querySelector('.prediction-success-animation');
-                if (successDiv) {
-                    successDiv.classList.add('animate-pulse-once');
-                }
-            }, 100);
-        }
-
-        // Afficher une notification d'erreur
-        function showErrorNotification(message) {
-            // Créer une notification toast
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-slide-in';
-            notification.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">❌</span>
-                    <div>
-                        <p class="font-bold">Erreur</p>
-                        <p class="text-sm">${message}</p>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(notification);
-
-            // Retirer après 5 secondes
-            setTimeout(() => {
-                notification.classList.add('animate-slide-out');
-                setTimeout(() => notification.remove(), 300);
-            }, 5000);
-        }
-
-        // Phases à élimination (knockout)
-        const knockoutPhases = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
-
-        function enableEdit(matchId) {
-            const matchCard = document.getElementById('match-' + matchId);
-            if (!matchCard) return;
-
-            // If a form is already present, just focus the first input
-            const existingForm = matchCard.querySelector('.prediction-form');
-            if (existingForm) {
-                existingForm.querySelector('input[name="score_a"]')?.focus();
-                return;
-            }
-
-            // Récupérer les infos du match depuis les data-attributes
-            const matchPhase = matchCard.dataset.phase || '';
-            const homeTeam = matchCard.dataset.homeTeam || 'Équipe A';
-            const awayTeam = matchCard.dataset.awayTeam || 'Équipe B';
-            const isKnockout = knockoutPhases.includes(matchPhase);
-
-            // Try to extract previously displayed scores from the success block
-            const successDiv = matchCard.querySelector('.prediction-success-animation') || matchCard.querySelector('.bg-green-50');
-            let scoreA = '';
-            let scoreB = '';
-            let penaltyWinner = '';
-
-            if (successDiv) {
-                const text = successDiv.textContent || '';
-                const m = text.match(/(\d+)\s*[-–]\s*(\d+)/);
-                if (m) {
-                    scoreA = m[1];
-                    scoreB = m[2];
-                }
-                if (/Tirs au but|TAB|tirs au but/i.test(text)) {
-                    if (text.includes(homeTeam) && text.includes('Vainqueur')) penaltyWinner = 'home';
-                    else if (text.includes(awayTeam) && text.includes('Vainqueur')) penaltyWinner = 'away';
-                    else if (/domicile/i.test(text)) penaltyWinner = 'home';
-                    else if (/extérieur/i.test(text)) penaltyWinner = 'away';
-                }
-            }
-
-            // CSRF token and store URL from the server-rendered template
-            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-            const predictionsStoreUrl = "{{ route('predictions.store') }}";
-
-            // Section penalty (visible seulement si phase knockout)
-            const penaltySectionHtml = isKnockout ? `
-                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 penalty-section" id="penalty-section-edit-${matchId}" style="display: none;">
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="text-2xl">⚠️</span>
-                        <p class="font-bold text-yellow-800">Égalité détectée - Phase à élimination</p>
-                    </div>
-                    <p class="text-sm text-yellow-700 mb-3">
-                        En phase à élimination, il ne peut pas y avoir de match nul. Qui gagnera aux tirs au but ?
-                    </p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="penalty_winner" value="home" class="hidden peer" ${penaltyWinner === 'home' ? 'checked' : ''}>
-                            <div class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
-                                <p class="font-bold text-gray-800">🏆 ${homeTeam}</p>
-                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="penalty_winner" value="away" class="hidden peer" ${penaltyWinner === 'away' ? 'checked' : ''}>
-                            <div class="border-2 border-gray-300 peer-checked:border-soboa-blue peer-checked:bg-blue-50 rounded-lg p-3 text-center transition hover:border-gray-400">
-                                <p class="font-bold text-gray-800">🏆 ${awayTeam}</p>
-                                <p class="text-xs text-gray-600 mt-1">Vainqueur aux TAB</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-                <input type="hidden" name="predict_draw" id="predict_draw_edit_${matchId}" value="0">
-            ` : '';
-
-            const formHtml = `
-                <form action="${predictionsStoreUrl}" method="POST" class="space-y-4 prediction-form prediction-form-edit" data-match-id="${matchId}" data-is-knockout="${isKnockout}">
-                    <input type="hidden" name="_token" value="${csrf}">
-                    <input type="hidden" name="match_id" value="${matchId}">
-                    <input type="hidden" name="venue_id" id="venue_id_${matchId}" value="">
-                    <input type="hidden" name="match_info" value="${homeTeam} vs ${awayTeam}">
-
-                    <div class="flex items-center justify-center gap-4">
-                        <div class="text-center flex-1">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Score ${homeTeam}</label>
-                            <input type="number" name="score_a" min="0" max="20" required
-                                class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0 score-input-edit"
-                                value="${scoreA}"
-                                onchange="checkDrawEdit(${matchId})"
-                                oninput="checkDrawEdit(${matchId})">
-                        </div>
-                        <span class="text-2xl font-black text-gray-400 mt-6">-</span>
-                        <div class="text-center flex-1">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Score ${awayTeam}</label>
-                            <input type="number" name="score_b" min="0" max="20" required
-                                class="w-full text-center text-2xl font-black border-2 border-gray-300 rounded-xl p-3 focus:border-soboa-orange focus:ring-0 score-input-edit"
-                                value="${scoreB}"
-                                onchange="checkDrawEdit(${matchId})"
-                                oninput="checkDrawEdit(${matchId})">
-                        </div>
-                    </div>
-
-                    ${penaltySectionHtml}
-
-                    <button type="submit"
-                        class="w-full bg-soboa-orange hover:bg-soboa-orange-dark text-black font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
-                        🎯 Valider mon pronostic
-                    </button>
-                </form>
-            `;
-
-            // Replace the current prediction display (success block or the container) with the form
-            const container = successDiv ? successDiv.parentElement : matchCard.querySelector('.border-t.pt-6') || matchCard.querySelector('.p-6');
-            if (container) {
-                container.innerHTML = formHtml;
-                
-                // Attacher le gestionnaire AJAX au formulaire
-                const form = container.querySelector('.prediction-form-edit');
-                if (form) {
-                    form.addEventListener('submit', handleEditFormSubmit);
-                }
-
-                // Focus the first input for convenience
-                container.querySelector('input[name="score_a"]')?.focus();
-                
-                // Vérifier immédiatement si c'est une égalité (pour les scores pré-remplis)
-                if (isKnockout && scoreA !== '' && scoreB !== '') {
-                    checkDrawEdit(matchId);
-                }
-            } else {
-                // Fallback: reload the page if we cannot find where to inject the form
-                window.location.reload();
-            }
-        }
-
-        // Fonction pour vérifier l'égalité dans le formulaire d'édition (phases knockout)
-        function checkDrawEdit(matchId) {
-            const matchCard = document.getElementById('match-' + matchId);
-            if (!matchCard) return;
-
-            const form = matchCard.querySelector('.prediction-form-edit');
-            if (!form) return;
-
-            const isKnockout = form.dataset.isKnockout === 'true';
-            if (!isKnockout) return;
-
-            const scoreA = form.querySelector('input[name="score_a"]')?.value;
-            const scoreB = form.querySelector('input[name="score_b"]')?.value;
-            const penaltySection = document.getElementById('penalty-section-edit-' + matchId);
-            const predictDrawInput = document.getElementById('predict_draw_edit_' + matchId);
-
-            if (scoreA !== '' && scoreB !== '' && scoreA === scoreB) {
-                // Égalité détectée
-                if (penaltySection) {
-                    penaltySection.style.display = 'block';
-                    // Rendre le choix du vainqueur obligatoire
-                    penaltySection.querySelectorAll('input[name="penalty_winner"]').forEach(input => {
-                        input.required = true;
-                    });
-                }
-                if (predictDrawInput) predictDrawInput.value = '1';
-            } else {
-                // Pas d'égalité
-                if (penaltySection) {
-                    penaltySection.style.display = 'none';
-                    penaltySection.querySelectorAll('input[name="penalty_winner"]').forEach(input => {
-                        input.required = false;
-                    });
-                }
-                if (predictDrawInput) predictDrawInput.value = '0';
-            }
-        }
-
-        // Gestionnaire de soumission AJAX pour le formulaire d'édition
-        async function handleEditFormSubmit(e) {
-            e.preventDefault();
-            
-            const form = e.target;
-            const matchId = form.dataset.matchId;
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            
-            // Désactiver le bouton pendant la soumission
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '⏳ Envoi...';
-
-            const formData = new FormData(form);
-            
-            // Récupérer le venue_id depuis le formulaire original s'il existe
-            const venueIdInput = document.getElementById('venue_id_' + matchId);
-            if (venueIdInput && !formData.get('venue_id')) {
-                // Essayer de récupérer depuis localStorage ou autre source
-                const savedVenueId = localStorage.getItem('detected_venue_id');
-                if (savedVenueId) {
-                    formData.set('venue_id', savedVenueId);
-                }
-            }
-
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                // Le contrôleur renvoie un code 200 avec 'message' en cas de succès
-                // On vérifie que response.ok (status 200-299) et qu'il y a un message
-                if (response.ok && data.message) {
-                    // Stocker le message dans sessionStorage pour l'afficher après rechargement
-                    sessionStorage.setItem('prediction_success_message', data.message);
-                    
-                    // Recharger la page immédiatement
-                    window.location.reload();
-                } else {
-                    // Erreur côté serveur
-                    const errorMsg = data.message || data.error || 'Une erreur est survenue';
-                    showErrorNotification(errorMsg);
-                    
-                    // Réactiver le bouton
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
-                }
-            } catch (error) {
-                console.error('Erreur lors de la soumission:', error);
-                showErrorNotification('Erreur de connexion. Veuillez réessayer.');
-                
-                // Réactiver le bouton
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-            }
-        }
-
-        // Afficher la bannière de succès (style PDV)
-        function showSuccessBanner(message, title = 'Pronostic modifié !') {
-            const banner = document.getElementById('successBanner');
-            const bannerTitle = document.getElementById('successBannerTitle');
-            const bannerMessage = document.getElementById('successBannerMessage');
-            
-            if (banner && bannerTitle && bannerMessage) {
-                bannerTitle.textContent = title;
-                bannerMessage.textContent = message;
-                banner.classList.remove('hidden');
-                
-                // Scroll vers le haut pour voir la bannière
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Auto-hide après 5 secondes
-                setTimeout(() => {
-                    hideSuccessBanner();
-                }, 5000);
-            }
-        }
-
-        // Masquer la bannière de succès
-        function hideSuccessBanner() {
-            const banner = document.getElementById('successBanner');
-            if (banner) {
-                banner.classList.add('hidden');
-            }
-        }
-
-        // Notification de succès (toast en haut à droite - backup)
-        function showSuccessNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-slide-in';
-            notification.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">✅</span>
-                    <div>
-                        <p class="font-bold">Succès</p>
-                        <p class="text-sm">${message}</p>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.classList.add('animate-slide-out');
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-    </script>
-
-    <style>
-        /* Animation pour le pronostic enregistré */
-        @keyframes pulse-once {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.02);
-            }
-        }
-
-        .animate-pulse-once {
-            animation: pulse-once 0.6s ease-in-out;
-        }
-
-        /* Animations pour notifications */
-        @keyframes slide-in {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slide-out {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
-        .animate-slide-in {
-            animation: slide-in 0.3s ease-out;
-        }
-
-        .animate-slide-out {
-            animation: slide-out 0.3s ease-in;
-        }
-
-        /* Hide scrollbar for tabs navigation */
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            /* IE and Edge */
-            scrollbar-width: none;
-            /* Firefox */
-        }
-
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-            /* Chrome, Safari, Opera */
-        }
-
-        /* Smooth scroll for tabs */
-        .overflow-x-auto {
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Better touch targets for mobile */
-        .touch-manipulation {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-    </style>
+                }, () => {}, { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 });
+            },
+        };
+    }
+</script>
+
+<style>
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+</style>
 </x-layouts.app>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\SmsLog;
 use App\Models\User;
 use App\Services\TwilioService;
 use Illuminate\Http\Request;
@@ -28,6 +29,31 @@ class AdminSmsController extends Controller
             ->get(['id', 'name', 'phone']);
 
         return view('admin.sms.index', compact('users'));
+    }
+
+    /**
+     * Journal des SMS envoyés
+     */
+    public function logs(Request $request)
+    {
+        $query = SmsLog::with('sender')->latest();
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+        if ($context = $request->input('context')) {
+            $query->where('context', $context);
+        }
+
+        $logs = $query->paginate(50)->withQueryString();
+
+        $stats = [
+            'total'  => SmsLog::count(),
+            'sent'   => SmsLog::where('status', 'sent')->count(),
+            'failed' => SmsLog::where('status', 'failed')->count(),
+        ];
+
+        return view('admin.sms.logs', compact('logs', 'stats'));
     }
 
     /**
@@ -76,7 +102,7 @@ class AdminSmsController extends Controller
             'message_length' => strlen($message)
         ]);
 
-        $results = $this->twilioService->sendBulkSms($phoneNumbers, $message);
+        $results = $this->twilioService->sendBulkSms($phoneNumbers, $message, 'admin_bulk', session('user_id'));
 
         Log::info('Admin SMS: Résultats', $results);
 
@@ -100,7 +126,9 @@ class AdminSmsController extends Controller
 
         $result = $this->twilioService->sendSms(
             $request->input('phone'),
-            $request->input('message')
+            $request->input('message'),
+            'test',
+            session('user_id')
         );
 
         if ($result['success']) {

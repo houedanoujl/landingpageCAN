@@ -43,7 +43,7 @@
         {{-- Titre --}}
         <div class="text-center mb-8">
             <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">
-                <span class="text-yellow-400">🎉</span> Temps Forts
+                <span class="text-yellow-400"></span> Temps Forts
             </h2>
             <p class="text-gray-400">Les meilleurs moments de nos animations</p>
         </div>

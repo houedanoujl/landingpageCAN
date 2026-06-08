@@ -6,16 +6,21 @@
             <div class="mb-8 flex justify-between items-center">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-4xl">📱</span> Envoi de SMS
+                        <span class="text-4xl"></span> Envoi de SMS
                     </h1>
                     <p class="text-gray-600 mt-2">Envoyez des SMS aux utilisateurs de l'application</p>
                 </div>
-                <a href="{{ route('admin.dashboard') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    Retour
-                </a>
+                <div class="flex gap-2">
+                    <a href="{{ route('admin.sms.logs') }}" class="bg-soboa-blue hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
+                        Journal des SMS
+                    </a>
+                    <a href="{{ route('admin.dashboard') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Retour
+                    </a>
+                </div>
             </div>
 
             <!-- Messages de notification -->
@@ -141,19 +146,19 @@
                             <div class="flex flex-wrap gap-2">
                                 <button type="button" @click="useTemplate('match')"
                                     class="px-3 py-1 text-sm bg-soboa-blue text-white rounded-full hover:opacity-80">
-                                    🏆 Match
+                                    Match
                                 </button>
                                 <button type="button" @click="useTemplate('promo')"
                                     class="px-3 py-1 text-sm bg-soboa-orange text-white rounded-full hover:opacity-80">
-                                    🎁 Promotion
+                                    Promotion
                                 </button>
                                 <button type="button" @click="useTemplate('reminder')"
                                     class="px-3 py-1 text-sm bg-green-600 text-white rounded-full hover:opacity-80">
-                                    ⏰ Rappel
+                                    Rappel
                                 </button>
                                 <button type="button" @click="useTemplate('winner')"
                                     class="px-3 py-1 text-sm bg-yellow-500 text-gray-800 rounded-full hover:opacity-80">
-                                    🎉 Gagnant
+                                    Gagnant
                                 </button>
                             </div>
                         </div>
@@ -162,11 +167,11 @@
                         <div class="flex justify-end gap-3">
                             <button type="button" @click="showTestModal = true"
                                 class="px-6 py-3 bg-gray-500 text-white font-bold rounded-xl hover:bg-gray-600 transition">
-                                📤 Test
+                                Test
                             </button>
                             <button type="submit"
                                 class="px-6 py-3 bg-soboa-blue text-white font-bold rounded-xl hover:opacity-90 transition">
-                                📱 Envoyer les SMS
+                                Envoyer les SMS
                             </button>
                         </div>
                     </form>
@@ -176,7 +181,7 @@
                 <div class="lg:col-span-1 space-y-6">
                     <!-- Statistiques -->
                     <div class="bg-white rounded-xl shadow-lg p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Statistiques</h3>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Statistiques</h3>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                 <span class="text-gray-600">Utilisateurs avec téléphone</span>
@@ -195,7 +200,7 @@
 
                     <!-- Aide -->
                     <div class="bg-blue-50 rounded-xl p-6 border border-blue-200">
-                        <h3 class="text-lg font-bold text-blue-800 mb-3">💡 Conseils</h3>
+                        <h3 class="text-lg font-bold text-blue-800 mb-3">Conseils</h3>
                         <ul class="text-sm text-blue-700 space-y-2">
                             <li>• Un SMS = 160 caractères max</li>
                             <li>• Évitez les caractères spéciaux</li>
@@ -210,7 +215,7 @@
                     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
                     @click.self="showTestModal = false">
                     <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">📤 Envoyer un SMS de test</h3>
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Envoyer un SMS de test</h3>
                         
                         <div class="mb-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Numéro de test</label>

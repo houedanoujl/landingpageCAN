@@ -5,7 +5,7 @@
             <div class="container mx-auto px-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-bold">📍 Check-ins</h1>
+                        <h1 class="text-2xl md:text-3xl font-bold">Check-ins</h1>
                         <p class="text-purple-200 mt-1">Visites des lieux partenaires avec coordonnées GPS</p>
                     </div>
                     <div class="flex gap-2">
@@ -62,7 +62,7 @@
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-4">
                         <h3 class="text-white font-bold flex items-center gap-2">
-                            <span>🏆</span> Top 5 Lieux les plus visités
+                            <span></span> Top 5 Lieux les plus visités
                         </h3>
                     </div>
                     <div class="divide-y divide-gray-100">
@@ -89,7 +89,7 @@
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
                         <h3 class="text-white font-bold flex items-center gap-2">
-                            <span>👤</span> Top 5 Utilisateurs actifs
+                            <span></span> Top 5 Utilisateurs actifs
                         </h3>
                     </div>
                     <div class="divide-y divide-gray-100">
@@ -341,7 +341,7 @@
                 <div class="mt-6 bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="px-4 py-3 border-b bg-gray-50">
                         <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <span>🗺️</span> Carte des check-ins récents
+                            <span></span> Carte des check-ins récents
                         </h3>
                     </div>
                     <div class="p-4">

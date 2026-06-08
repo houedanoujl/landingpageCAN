@@ -10,10 +10,31 @@
             session(['user_points' => $userPoints]);
         }
     }
+
+    $navItems = [
+        ['href' => route('home'), 'label' => 'Accueil', 'active' => request()->routeIs('home'), 'featured' => false],
+        ['href' => route('matches'), 'label' => 'Pronostics', 'active' => request()->routeIs('matches'), 'featured' => false],
+        ['href' => route('calendar'), 'label' => 'Calendrier', 'active' => request()->routeIs('calendar'), 'featured' => false],
+        ['href' => route('leaderboard'), 'label' => 'Classement', 'active' => request()->routeIs('leaderboard'), 'featured' => false],
+        ['href' => route('soboa-foot'), 'label' => 'SOBOA FOOT', 'active' => request()->routeIs('soboa-foot'), 'featured' => true],
+    ];
+
+    $desktopNavBase = 'px-4 py-2 rounded-lg font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-white/70';
+    $desktopNavActive = 'text-white bg-white/15 ring-1 ring-white/20 shadow-inner';
+    $desktopNavInactive = 'text-white/80 hover:text-white hover:bg-white/10';
+    $desktopNavFeatured = 'px-4 py-2 rounded-full font-black text-sm transition-all shadow-md shadow-black/10 focus:outline-none focus:ring-2 focus:ring-white/70';
+    $desktopNavFeaturedActive = 'bg-white text-soboa-blue';
+    $desktopNavFeaturedInactive = 'bg-soboa-orange text-white hover:bg-soboa-orange-secondary';
+
+    $mobileNavBase = 'block px-4 py-3 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-white/70';
+    $mobileNavActive = 'text-white bg-white/15 ring-1 ring-white/20';
+    $mobileNavInactive = 'text-white hover:bg-white/10';
+    $mobileNavFeaturedActive = 'bg-white text-soboa-blue';
+    $mobileNavFeaturedInactive = 'bg-soboa-orange text-white hover:bg-soboa-orange-secondary font-black';
 @endphp
 <!DOCTYPE html>
 <!--
-    Developed with ❤️ by Big Five Abidjan
+    Developed by Big Five Abidjan
     https://bigfive.solutions
     Support: jeanluc(at)bigfiveabidjan.com
 -->
@@ -79,7 +100,7 @@
     <link rel="icon" type="image/jpeg" href="/images/logoSOBOA.png.webp">
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/site.webmanifest">
-    <meta name="theme-color" content="#121212">
+    <meta name="theme-color" content="#0058A3">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -87,7 +108,7 @@
     <!-- Google Fonts - Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap"
         rel="stylesheet">
 
     <!-- Vite & Tailwind CSS -->
@@ -100,6 +121,40 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+        function renderLucideIcons() {
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLucideIcons();
+            const debouncedRender = (() => {
+                let timer = null;
+                return () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(renderLucideIcons, 50);
+                };
+            })();
+            const observer = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    for (const node of m.addedNodes) {
+                        if (node.nodeType !== 1) continue;
+                        if (node.matches?.('[data-lucide]') || node.querySelector?.('[data-lucide]')) {
+                            debouncedRender();
+                            return;
+                        }
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+        document.addEventListener('alpine:initialized', renderLucideIcons);
+        document.addEventListener('livewire:navigated', renderLucideIcons);
+    </script>
 
     <style>
         * {
@@ -183,18 +238,18 @@
         }
 
         .gradient-text {
-            background: linear-gradient(135deg, #FFD700 0%, #CCAC00 100%);
+            background: linear-gradient(135deg, #F4A05B 0%, #F1862D 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .hero-gradient {
-            background: linear-gradient(135deg, #121212 0%, #000000 50%, #121212 100%);
+            background: linear-gradient(135deg, #0058A3 0%, #0054A1 50%, #0B1F33 100%);
         }
 
         .orange-glow {
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 40px rgba(241, 134, 45, 0.35);
         }
 
         [x-cloak] {
@@ -327,6 +382,9 @@
     });
 ">
 
+    <!-- Skip to content (keyboard a11y) -->
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
     <!-- Toast Notification -->
     <div x-show="toast" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
@@ -335,26 +393,21 @@
         class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] w-auto max-w-sm">
         <div class="bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
             <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
+                <i data-lucide="check" class="w-6 h-6"></i>
             </div>
             <div>
                 <div class="font-bold text-lg" x-text="toast?.message"></div>
                 <div class="text-white/80 text-sm" x-text="toast?.description"></div>
             </div>
-            <button @click="toast = null" class="ml-2 text-white/60 hover:text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
+            <button @click="toast = null" class="ml-2 text-white/60 hover:text-white p-1 focus:outline-none focus:ring-2 focus:ring-white rounded-full">
+                <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
     </div>
 
     <!-- Navigation -->
     <nav
-        class="fixed top-0 left-0 right-0 z-[1001] transition-all duration-300 bg-soboa-orange backdrop-blur-md shadow-xl border-b border-black/10">
+        class="fixed top-0 left-0 right-0 z-[1001] transition-all duration-300 bg-soboa-blue backdrop-blur-md shadow-xl border-b border-white/10">
         <div class="max-w-7xl mx-auto px-3 fold:px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between py-3 fold:py-4 gap-2 lg:gap-4">
                 <!-- Logo -->
@@ -363,87 +416,74 @@
                         class="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform overflow-hidden bg-white border-2 border-white">
                         <img src="/images/logoSOBOA.png.webp" alt="SOBOA FOOT TIME" class="w-full h-full object-contain p-0.5">
                     </div>
-                    <div class="text-black">
+                    <div class="text-white">
                         <span
                             class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none block">SOBOA FOOT TIME</span>
-                        <span
-                            class="text-black font-extrabold text-[10px] md:text-xs block tracking-[0.2em] uppercase opacity-90">Le
-                            goût de notre victoire</span>
                     </div>
                 </a>
 
-                <!-- Desktop Navigation (visible ≥ 1024px) -->
+                <!-- Desktop Navigation (visible >= 1024px) -->
                 <div class="hidden lg:flex items-center gap-1 flex-grow justify-center">
-                    <a href="/"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Accueil</a>
-                    <a href="/matches"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Pronostics</a>
-                    <a href="/calendar"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5">
-                        <span>📅</span>
-                        <span>Calendrier</span>
-                    </a>
-                    <a href="/map"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-orange/20 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5">
-                        <span>🎉</span>
-                        <span class="text-soboa-blue font-bold">Animations</span>
-                    </a>
-                    <a href="/leaderboard"
-                        class="px-4 py-2 text-black/80 hover:text-black hover:bg-soboa-blue/10 rounded-lg font-semibold text-sm transition-all">Classement</a>
-                    <a href="{{ route('soboa-foot') }}"
-                        class="px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5 bg-soboa-orange/20 text-soboa-blue hover:bg-soboa-orange/40">
-                        <span>⚽</span>
-                        <span class="font-black">SOBOA FOOT</span>
-                    </a>
+                    @foreach($navItems as $item)
+                        @php
+                            $desktopClass = $item['featured']
+                                ? $desktopNavFeatured . ' ' . ($item['active'] ? $desktopNavFeaturedActive : $desktopNavFeaturedInactive)
+                                : $desktopNavBase . ' ' . ($item['active'] ? $desktopNavActive : $desktopNavInactive);
+                        @endphp
+                        <a href="{{ $item['href'] }}"
+                           @if($item['active']) aria-current="page" @endif
+                           class="{{ $desktopClass }}">
+                            {{ $item['label'] }}
+                        </a>
+                    @endforeach
                 </div>
 
                 <!-- User Actions -->
                 <div class="flex items-center gap-3">
                     @if(session('user_id'))
-                        <div class="hidden lg:flex items-center gap-3 flex-shrink-0">
+                        <div class="hidden lg:flex items-center gap-2 flex-shrink-0">
                             <a href="/mes-pronostics"
-                                class="px-3 py-1.5 bg-soboa-blue/10 text-black hover:bg-soboa-blue/20 hover:text-black rounded-lg font-bold text-sm transition-all">
-                                📋 Mes Pronostics
+                                class="btn btn-ghost-light btn-sm btn-pill">
+                                Mes Pronostics
                             </a>
                             <a href="/dashboard"
-                                class="group flex items-center gap-3 pl-2 xl:pl-4 xl:border-l border-black/20">
-                                <div class="text-right hidden xl:block">
+                                class="group flex items-center gap-2.5 bg-white/5 hover:bg-white/10 rounded-full pl-3.5 pr-1.5 py-1 ring-1 ring-white/15 transition-all">
+                                <div class="text-right hidden xl:block leading-tight">
                                     <span
-                                        class="text-black group-hover:text-white font-bold text-sm block leading-tight transition-colors">{{ session('predictor_name') }}</span>
-                                    <span class="text-[10px] text-black/60 uppercase tracking-wider font-semibold">Mon
-                                        Compte</span>
+                                        class="text-white group-hover:text-soboa-orange font-bold text-sm block transition-colors">{{ session('predictor_name') }}</span>
+                                    <span class="text-[10px] text-white/55 uppercase tracking-wider font-semibold">Mon Compte</span>
                                 </div>
                                 <div
-                                    class="bg-gradient-to-r from-soboa-blue to-gray-800 pl-3 pr-2 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-black/20 hover:shadow-black/40 transition-all transform hover:scale-105 ring-1 ring-black/10">
+                                    class="bg-gradient-to-r from-soboa-orange to-soboa-orange-secondary pl-3 pr-2 py-1.5 rounded-full flex items-center gap-1.5 shadow-md ring-1 ring-white/20">
                                     <span class="text-white font-black text-sm" data-user-points>{{ $userPoints }}</span>
                                     <span class="text-white/90 text-[10px] font-bold uppercase">pts</span>
-                                    <div class="bg-white/10 rounded-full w-5 h-5 flex items-center justify-center ml-0.5">
-                                        <span class="text-[10px] leading-none">🏆</span>
+                                    <div class="bg-white/20 rounded-full w-5 h-5 flex items-center justify-center ml-0.5">
+                                        <i data-lucide="trophy" class="w-3 h-3 text-white"></i>
                                     </div>
                                 </div>
                             </a>
-                            <a href="/logout" class="text-black/60 hover:text-black text-xs font-medium">Déconnexion</a>
+                            <a href="/logout" title="Déconnexion" aria-label="Déconnexion"
+                                class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                            </a>
                         </div>
                     @else
-                        <a href="/login"
-                            class="hidden lg:inline-flex bg-soboa-blue hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                        <a href="/login" class="btn btn-primary btn-md btn-pill hidden lg:inline-flex">
                             Jouer maintenant
+                        </a>
+                        <a href="/login" class="btn btn-primary btn-sm btn-pill lg:hidden">
+                            Jouer
                         </a>
                     @endif
 
-                    <!-- Mobile Menu Button (VISIBLE < 1024px, HIDDEN ≥ 1024px) -->
+                    <!-- Mobile Menu Button (VISIBLE < 1024px, HIDDEN >= 1024px) -->
                     <button @click="mobileMenuOpen = !mobileMenuOpen"
-                        class="lg:!hidden p-2 text-black hover:bg-soboa-blue/10 rounded-lg transition-colors flex-shrink-0">
-                        <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                        <svg x-show="mobileMenuOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
+                        :aria-expanded="mobileMenuOpen.toString()"
+                        aria-controls="mobile-menu"
+                        aria-label="Menu"
+                        class="lg:!hidden p-2.5 text-white hover:bg-white/10 rounded-lg transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i x-show="!mobileMenuOpen" data-lucide="menu" class="w-6 h-6"></i>
+                        <i x-show="mobileMenuOpen" x-cloak data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
             </div>
@@ -454,56 +494,46 @@
             x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-4" x-cloak
-            class="lg:hidden bg-soboa-orange border-t border-black/10 relative z-[100]">
+            id="mobile-menu"
+            class="lg:hidden bg-soboa-blue border-t border-white/10 relative z-[100]">
             <div class="px-4 py-4 space-y-2">
-                <a href="/"
-                    class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
-                    Accueil</a>
-                <a href="/matches"
-                    class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
-                    Pronostics</a>
-                <a href="/calendar"
-                    class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors flex items-center gap-2">
-                    <span>📅</span>
-                    <span>Calendrier</span>
-                </a>
-                <a href="/map"
-                    class="block px-4 py-3 text-black hover:bg-soboa-orange/20 rounded-lg font-semibold transition-colors flex items-center gap-2">
-                    <span>🎉</span>
-                    <span class="text-soboa-blue font-bold">Animations</span>
-                </a>
-                <a href="{{ route('soboa-foot') }}"
-                    class="flex px-4 py-3 bg-soboa-orange/20 text-soboa-blue hover:bg-soboa-orange/40 rounded-lg font-black transition-colors items-center gap-2">
-                    <span>⚽</span>
-                    <span>SOBOA FOOT</span>
-                </a>
-                <a href="/leaderboard"
-                    class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
-                    Classement</a>
+                @foreach($navItems as $item)
+                    @php
+                        $mobileClass = $item['featured']
+                            ? $mobileNavBase . ' ' . ($item['active'] ? $mobileNavFeaturedActive : $mobileNavFeaturedInactive)
+                            : $mobileNavBase . ' ' . ($item['active'] ? $mobileNavActive : $mobileNavInactive);
+                    @endphp
+                    <a href="{{ $item['href'] }}"
+                       @click="mobileMenuOpen = false"
+                       @if($item['active']) aria-current="page" @endif
+                       class="{{ $mobileClass }}">
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
 
                 @if(session('user_id'))
-                    <div class="pt-4 border-t border-black/10">
+                    <div class="pt-4 border-t border-white/10">
                         <a href="/mes-pronostics"
-                            class="block px-4 py-3 text-black hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">
-                            📋 Mes Pronostics
+                            class="block px-4 py-3 text-white hover:bg-white/10 rounded-lg font-semibold transition-colors">
+                            Mes Pronostics
                         </a>
                         <a href="/dashboard"
-                            class="px-4 py-3 flex items-center justify-between hover:bg-soboa-blue/10 rounded-lg transition-colors group">
+                            class="px-4 py-3 flex items-center justify-between hover:bg-white/10 rounded-lg transition-colors group">
                             <span
-                                class="text-black group-hover:text-white font-bold transition-colors">{{ session('predictor_name') }}</span>
+                                class="text-white group-hover:text-soboa-orange font-bold transition-colors">{{ session('predictor_name') }}</span>
                             <div
-                                class="bg-gradient-to-r from-soboa-blue to-gray-800 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                class="bg-gradient-to-r from-soboa-orange to-soboa-orange-secondary px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
                                 <span class="text-white font-black text-sm" data-user-points>{{ $userPoints }}</span>
                                 <span class="text-white/80 text-xs font-bold uppercase">pts</span>
                             </div>
                         </a>
                         <a href="/logout"
-                            class="block px-4 py-3 text-red-600 hover:bg-soboa-blue/10 rounded-lg font-semibold transition-colors">Déconnexion</a>
+                            class="block px-4 py-3 text-red-300 hover:bg-white/10 rounded-lg font-semibold transition-colors">Déconnexion</a>
                     </div>
                 @else
                     <div class="pt-4">
                         <a href="/login"
-                            class="block w-full bg-soboa-blue hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg text-center shadow-lg transition-colors">
+                            class="block w-full bg-soboa-orange hover:bg-soboa-orange-secondary text-white font-bold py-3 px-4 rounded-lg text-center shadow-lg transition-colors">
                             Jouer maintenant
                         </a>
                     </div>
@@ -513,7 +543,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow pt-[100px]">
+    <main id="main-content" tabindex="-1" class="flex-grow pt-[100px]">
         {{ $slot }}
     </main>
 
@@ -539,8 +569,6 @@
                         </div>
                         <div>
                             <span class="font-black text-xl uppercase">SOBOA FOOT TIME</span>
-                            <span class="text-soboa-orange block text-sm font-bold uppercase tracking-wider">Le goût de
-                                notre victoire</span>
                         </div>
                     </div>
                     <p class="text-white/60 text-sm">Pronostiquez, jouez et gagnez avec SOBOA FOOT TIME !</p>
@@ -558,11 +586,11 @@
                 <div class="text-center md:text-left">
                     <h4 class="font-bold text-soboa-orange mb-4">Système de points</h4>
                     <ul class="space-y-2 text-white/70 text-sm">
-                        <li>🔑 +1 pt / connexion quotidienne</li>
-                        <li>⚽ +1 pt / pronostic</li>
-                        <li>🎯 +3 pts / bon vainqueur</li>
-                        <li>🏆 +3 pts / score exact</li>
-                        <li>📍 +4 pts / visite lieu partenaire</li>
+                        <li>+1 pt / connexion quotidienne</li>
+                        <li>+1 pt / pronostic</li>
+                        <li>+3 pts / bon vainqueur</li>
+                        <li>+3 pts / score exact</li>
+                        <li>+4 pts / visite lieu partenaire</li>
                     </ul>
                 </div>
             </div>
@@ -582,7 +610,7 @@
                 </div>
                 <div class="text-center mt-3">
                     <a href="{{ route('terms') }}" class="text-soboa-orange hover:text-white text-xs underline transition-colors">
-                        📋 Consulter les conditions de participation
+                        Consulter les conditions de participation
                     </a>
                 </div>
             </div>
@@ -594,42 +622,49 @@
     </footer>
 
 
-    <!-- Page Loader -->
-    <div id="page-loader"
-        class="fixed inset-0 z-[9999] bg-white flex items-center justify-center transition-opacity duration-500">
-        <div class="relative flex flex-col items-center">
-            <img src="/images/logoSOBOA.png.webp" alt="SOBOA" class="w-24 h-24 object-contain animate-pulse">
-            <div class="mt-4 flex gap-1">
-                <div class="w-3 h-3 bg-soboa-orange rounded-full animate-bounce" style="animation-delay: 0s"></div>
-                <div class="w-3 h-3 bg-soboa-blue rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                <div class="w-3 h-3 bg-soboa-orange rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-            </div>
-        </div>
+    <!-- Top Progress Bar -->
+    <div id="page-loader" class="fixed top-0 left-0 right-0 h-1 z-[9999] pointer-events-none">
+        <div id="page-loader-bar" class="h-full bg-soboa-orange shadow-[0_0_8px_rgba(255,102,0,0.6)] origin-left scale-x-0 opacity-0 transition-transform duration-700 ease-out"></div>
     </div>
 
     <script>
-        // Optimized Page Transitions Logic with Better Back Button Handling
+        // Top progress bar driver with bfcache support
         (function() {
             const loader = document.getElementById('page-loader');
-            
-            // Performance optimization: Store initial state
+            const bar = document.getElementById('page-loader-bar');
             const initialLoadTime = performance.now();
+            let trickleTimer = null;
 
-            // Function to hide loader with a slight fade
-            const hideLoader = () => {
-                if (loader) {
-                    loader.classList.add('opacity-0');
-                    setTimeout(() => {
-                        loader.classList.add('pointer-events-none');
-                    }, 300);
-                }
+            const setScale = (s) => {
+                if (!bar) return;
+                bar.style.transform = `scaleX(${s})`;
             };
 
-            // Function to show loader
+            const hideLoader = () => {
+                if (!bar) return;
+                bar.style.opacity = '1';
+                setScale(1);
+                clearTimeout(trickleTimer);
+                setTimeout(() => {
+                    bar.style.opacity = '0';
+                    setTimeout(() => { setScale(0); }, 200);
+                }, 200);
+            };
+
             const showLoader = () => {
-                if (loader) {
-                    loader.classList.remove('opacity-0', 'pointer-events-none');
-                }
+                if (!bar) return;
+                clearTimeout(trickleTimer);
+                bar.style.opacity = '1';
+                setScale(0.15);
+                const trickle = (v) => {
+                    if (v >= 0.9) return;
+                    trickleTimer = setTimeout(() => {
+                        const next = v + (0.9 - v) * 0.15;
+                        setScale(next);
+                        trickle(next);
+                    }, 250);
+                };
+                trickle(0.15);
             };
 
             // Hide loader on initial load
@@ -873,7 +908,6 @@
                     const toast = document.createElement('div');
                     toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce-in';
                     toast.innerHTML = `
-                        <div class="text-3xl">🎁</div>
                         <div>
                             <div class="font-bold text-lg">${message}</div>
                             <div class="text-sm text-white/80">Total: ${totalPoints} points</div>

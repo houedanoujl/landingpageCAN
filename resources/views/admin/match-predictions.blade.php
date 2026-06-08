@@ -8,7 +8,7 @@
                     ← Retour aux matchs
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">📊</span> Pronostics du Match
+                    <span class="text-4xl"></span> Pronostics du Match
                 </h1>
             </div>
 
@@ -23,9 +23,9 @@
                                      alt="{{ $match->homeTeam->name }}"
                                      class="w-12 h-8 object-cover rounded shadow"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                                <span class="text-xl" style="display:none;">🏴</span>
+                                <span class="text-xl" style="display:none;"></span>
                             @else
-                                <span class="text-xl">🏴</span>
+                                <span class="text-xl"></span>
                             @endif
                             <span class="font-bold text-lg">{{ $match->homeTeam->name }}</span>
                         </div>
@@ -42,9 +42,9 @@
                                      alt="{{ $match->awayTeam->name }}"
                                      class="w-12 h-8 object-cover rounded shadow"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                                <span class="text-xl" style="display:none;">🏴</span>
+                                <span class="text-xl" style="display:none;"></span>
                             @else
-                                <span class="text-xl">🏴</span>
+                                <span class="text-xl"></span>
                             @endif
                             <span class="font-bold text-lg">{{ $match->awayTeam->name }}</span>
                         </div>
@@ -110,7 +110,7 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 @if($predictions->isEmpty())
                 <div class="p-8 text-center text-gray-500">
-                    <div class="text-6xl mb-4">🤷</div>
+                    <div class="text-6xl mb-4"></div>
                     <p class="text-lg font-semibold">Aucun pronostic pour ce match</p>
                 </div>
                 @else
@@ -191,7 +191,7 @@
                 <!-- Statistiques -->
                 @if($match->status === 'finished' && $predictions->isNotEmpty())
                 <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
-                    <h3 class="font-bold text-gray-700 mb-3">📈 Statistiques</h3>
+                    <h3 class="font-bold text-gray-700 mb-3">Statistiques</h3>
                     <div class="grid grid-cols-4 gap-4 text-sm">
                         <div>
                             <p class="text-gray-500">Pronostics corrects (vainqueur)</p>

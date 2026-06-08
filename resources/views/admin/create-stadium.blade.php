@@ -8,7 +8,7 @@
                     ← Retour aux stades
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">🏟️</span> Nouveau Stade
+                    <span class="text-4xl"></span> Nouveau Stade
                 </h1>
             </div>
 
@@ -78,7 +78,7 @@
 
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <p class="text-blue-700 text-sm">
-                                💡 <strong>Astuce :</strong> Vous pouvez obtenir les coordonnées GPS d'un stade en utilisant Google Maps. Faites un clic droit sur l'emplacement et sélectionnez "Copier les coordonnées".
+                                <strong>Astuce :</strong> Vous pouvez obtenir les coordonnées GPS d'un stade en utilisant Google Maps. Faites un clic droit sur l'emplacement et sélectionnez "Copier les coordonnées".
                             </p>
                         </div>
 

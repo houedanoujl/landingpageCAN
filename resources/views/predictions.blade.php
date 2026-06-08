@@ -82,15 +82,14 @@
         @endif
 
         @if($totalPredictions == 0)
-            <div class="bg-white rounded-xl shadow p-8 text-center">
+            <div class="bg-white rounded-2xl shadow-elev-1 p-section-md text-center">
                 <div class="w-20 h-20 bg-soboa-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-10 h-10 text-soboa-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
+                    <i data-lucide="clipboard-list" class="w-10 h-10 text-soboa-blue"></i>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800 mb-2">Aucun pronostic</h2>
-                <p class="text-gray-600 mb-4">Vous n'avez pas encore fait de pronostic.</p>
-                <a href="/matches" class="inline-block bg-soboa-orange hover:bg-soboa-orange-secondary text-white font-bold py-3 px-6 rounded-lg shadow transition">
+                <h2 class="text-xl font-black text-soboa-text-dark mb-1">Aucun pronostic</h2>
+                <p class="text-gray-500 mb-5 max-w-xs mx-auto text-sm">Démarrez votre course aux points en pronostiquant un match à venir.</p>
+                <a href="/matches" class="btn btn-primary btn-md btn-pill">
+                    <i data-lucide="target" class="w-4 h-4"></i>
                     Voir les matchs
                 </a>
             </div>

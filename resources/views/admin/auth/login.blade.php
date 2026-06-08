@@ -83,7 +83,7 @@
                     <a href="/" class="text-gray-500 hover:text-gray-700 text-sm font-medium">← Retour au site</a>
                 </div>
             </div>
-            <p class="text-center text-gray-400 text-xs mt-6">🔒 Connexion sécurisée</p>
+            <p class="text-center text-gray-400 text-xs mt-6">Connexion sécurisée</p>
         </div>
     </div>
     <style>[x-cloak] { display: none !important; }</style>

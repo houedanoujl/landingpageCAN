@@ -99,7 +99,7 @@
                 <form method="GET" action="{{ route('admin.matches') }}" class="flex gap-4 items-end">
                     <div class="flex-1">
                         <label for="search" class="block text-sm font-bold text-gray-700 mb-2">
-                            🔍 Rechercher un match
+                            Rechercher un match
                         </label>
                         <input
                             type="text"
@@ -169,7 +169,7 @@
                         </button>
                         <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer les matchs sélectionnés et leurs pronostics associés ?')"
                                 class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                            🗑️ Supprimer les matchs sélectionnés
+                            Supprimer les matchs sélectionnés
                         </button>
                     </div>
                 </div>
@@ -183,12 +183,12 @@
 
                     // Noms des phases
                     $phaseNames = [
-                        'group_stage' => '🏁 Phase de Poules',
-                        'round_of_16' => '🔥 Huitièmes de finale',
-                        'quarter_final' => '⚡ Quarts de finale',
-                        'semi_final' => '🌟 Demi-finales',
-                        'third_place' => '🥉 Match pour la 3ème place',
-                        'final' => '🏆 FINALE',
+                        'group_stage' => 'Phase de Poules',
+                        'round_of_16' => 'Huitièmes de finale',
+                        'quarter_final' => 'Quarts de finale',
+                        'semi_final' => 'Demi-finales',
+                        'third_place' => 'Match pour la 3ème place',
+                        'final' => 'FINALE',
                     ];
                 @endphp
 
@@ -240,7 +240,7 @@
                                                             <div class="flex items-center gap-1" id="match-teams-{{ $match->id }}">
                                                                 <!-- Équipe domicile -->
                                                                 <div class="flex items-center gap-1">
-                                                                    <img id="flag-home-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->homeTeam?->iso_code ?? 'xx' }}.png" class="w-5 h-3 rounded shadow" onerror="this.style.display='none'">
+                                                                    <img id="flag-home-{{ $match->id }}" src="{{ $match->homeTeam?->flag_url ?? '' }}" alt="" loading="lazy" class="w-5 h-3 rounded shadow" onerror="this.style.display='none'">
                                                                     <select 
                                                                         class="team-select text-xs font-bold border border-gray-200 rounded px-1 py-0.5 bg-white hover:border-soboa-orange focus:border-soboa-orange focus:ring-1 focus:ring-soboa-orange cursor-pointer"
                                                                         onchange="updateMatchTeam({{ $match->id }}, 'home', this.value)"
@@ -269,9 +269,9 @@
                                                                         </option>
                                                                         @endforeach
                                                                     </select>
-                                                                    <img id="flag-away-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->awayTeam?->iso_code ?? 'xx' }}.png" class="w-5 h-3 rounded shadow" onerror="this.style.display='none'">
+                                                                    <img id="flag-away-{{ $match->id }}" src="{{ $match->awayTeam?->flag_url ?? '' }}" alt="" loading="lazy" class="w-5 h-3 rounded shadow" onerror="this.style.display='none'">
                                                                 </div>
-                                                                <span id="save-indicator-{{ $match->id }}" class="hidden text-green-500 text-xs ml-1">✓</span>
+                                                                <span id="save-indicator-{{ $match->id }}" class="hidden text-green-500 text-xs ml-1"></span>
                                                             </div>
                                                         </td>
                                                             </div>
@@ -294,7 +294,7 @@
                                                         </td>
                                                         <td class="px-4 py-3 text-center">
                                                             <button type="button" onclick="openVenueModal({{ $match->id }})" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2 py-1 rounded text-xs transition-colors">
-                                                                📍 <span class="venue-count-{{ $match->id }}">{{ $match->animations->count() }}</span>
+                                                                <span class="venue-count-{{ $match->id }}">{{ $match->animations->count() }}</span>
                                                             </button>
                                                         </td>
                                                         <td class="px-4 py-3 text-right">
@@ -302,29 +302,29 @@
                                                                 <a href="{{ route('admin.match-predictions', $match->id) }}"
                                                                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
                                                                    title="Voir les pronostics">
-                                                                    📊
+                                                                    
                                                                 </a>
                                                                 <a href="{{ route('admin.edit-match', $match->id) }}"
                                                                    class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-2 py-1 rounded text-xs transition-colors"
                                                                    title="Modifier">
-                                                                    ✏️
+                                                                    
                                                                 </a>
                                                                 <button type="button" onclick="duplicateMatch({{ $match->id }})"
                                                                         class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
                                                                         title="Dupliquer">
-                                                                    📋
+                                                                    
                                                                 </button>
                                                                 @if($match->status === 'finished')
                                                                 <button type="button" onclick="calculatePoints({{ $match->id }})"
                                                                         class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
                                                                         title="Recalculer les points">
-                                                                    🔄
+                                                                    
                                                                 </button>
                                                                 @endif
                                                                 <button type="button" onclick="deleteMatch({{ $match->id }})"
                                                                         class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded text-xs transition-colors"
                                                                         title="Supprimer">
-                                                                    🗑️
+                                                                    
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -366,7 +366,7 @@
                                                     <div class="flex items-center gap-2" id="match-teams-knockout-{{ $match->id }}">
                                                         <!-- Équipe domicile -->
                                                         <div class="flex items-center gap-1">
-                                                            <img id="flag-home-ko-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->homeTeam?->iso_code ?? 'xx' }}.png" class="w-6 h-4 rounded shadow" onerror="this.style.display='none'">
+                                                            <img id="flag-home-ko-{{ $match->id }}" src="{{ $match->homeTeam?->flag_url ?? '' }}" alt="" loading="lazy" class="w-6 h-4 rounded shadow" onerror="this.style.display='none'">
                                                             <select 
                                                                 class="team-select text-sm font-bold border border-gray-200 rounded px-2 py-1 bg-white hover:border-soboa-orange focus:border-soboa-orange focus:ring-1 focus:ring-soboa-orange cursor-pointer"
                                                                 onchange="updateMatchTeam({{ $match->id }}, 'home', this.value)"
@@ -395,9 +395,9 @@
                                                                 </option>
                                                                 @endforeach
                                                             </select>
-                                                            <img id="flag-away-ko-{{ $match->id }}" src="https://flagcdn.com/w40/{{ $match->awayTeam?->iso_code ?? 'xx' }}.png" class="w-6 h-4 rounded shadow" onerror="this.style.display='none'">
+                                                            <img id="flag-away-ko-{{ $match->id }}" src="{{ $match->awayTeam?->flag_url ?? '' }}" alt="" loading="lazy" class="w-6 h-4 rounded shadow" onerror="this.style.display='none'">
                                                         </div>
-                                                        <span id="save-indicator-ko-{{ $match->id }}" class="hidden text-green-500 text-sm ml-1">✓</span>
+                                                        <span id="save-indicator-ko-{{ $match->id }}" class="hidden text-green-500 text-sm ml-1"></span>
                                                     </div>
                                                 </td>
                                                 <td class="px-4 py-4 text-center">
@@ -418,7 +418,7 @@
                                                 </td>
                                                 <td class="px-4 py-4 text-center">
                                                     <button type="button" onclick="openVenueModal({{ $match->id }})" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors">
-                                                        📍 <span class="venue-count-{{ $match->id }}">{{ $match->animations->count() }}</span> PDV
+                                                        <span class="venue-count-{{ $match->id }}">{{ $match->animations->count() }}</span> PDV
                                                     </button>
                                                 </td>
                                                 <td class="px-4 py-4 text-right">
@@ -426,29 +426,29 @@
                                                         <a href="{{ route('admin.match-predictions', $match->id) }}"
                                                            class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
                                                            title="Voir les pronostics">
-                                                            📊 Pronostics
+                                                            Pronostics
                                                         </a>
                                                         <a href="{{ route('admin.edit-match', $match->id) }}"
                                                            class="bg-soboa-orange hover:bg-soboa-orange/90 text-black font-bold px-3 py-1.5 rounded text-sm transition-colors"
                                                            title="Modifier">
-                                                            ✏️ Modifier
+                                                            Modifier
                                                         </a>
                                                         <button type="button" onclick="duplicateMatch({{ $match->id }})"
                                                                 class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
                                                                 title="Dupliquer ce match">
-                                                            📋 Dupliquer
+                                                            Dupliquer
                                                         </button>
                                                         @if($match->status === 'finished')
                                                         <button type="button" onclick="calculatePoints({{ $match->id }})"
                                                                 class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
                                                                 title="Recalculer les points">
-                                                            🔄 Recalculer
+                                                            Recalculer
                                                         </button>
                                                         @endif
                                                         <button type="button" onclick="deleteMatch({{ $match->id }})"
                                                                 class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded text-sm transition-colors"
                                                                 title="Supprimer">
-                                                            🗑️
+                                                            
                                                         </button>
                                                     </div>
                                                 </td>
@@ -475,7 +475,7 @@
                 <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
                     <!-- Header -->
                     <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 flex items-center justify-between">
-                        <h3 class="text-xl font-black text-white">📍 Attribuer des Points de Vente</h3>
+                        <h3 class="text-xl font-black text-white">Attribuer des Points de Vente</h3>
                         <button type="button" onclick="closeVenueModal()" class="text-white hover:text-gray-200 text-2xl font-bold">×</button>
                     </div>
 
@@ -496,6 +496,15 @@
             </div>
 
             <script>
+                // Build flag URL — mirrors App\Models\Team::flagUrl().
+                // flagcdn.com only supports ISO 3166-1; subdivisions (gb-eng, gb-sct…) need flagicons.lipis.dev.
+                function buildFlagUrl(iso) {
+                    iso = (iso || '').toLowerCase();
+                    if (!iso) return '';
+                    if (iso.includes('-')) return `https://flagicons.lipis.dev/flags/4x3/${iso}.svg`;
+                    return `https://flagcdn.com/w40/${iso}.png`;
+                }
+
                 function toggleGroupMatches(checkbox, groupName) {
                     const groupCheckboxes = document.querySelectorAll('.group-' + groupName + '-checkbox');
                     groupCheckboxes.forEach(cb => {
@@ -578,7 +587,7 @@
 
                         <div class="mb-4">
                             <input type="text" id="venueSearch" onkeyup="filterVenues()"
-                                   placeholder="🔍 Rechercher un point de vente..."
+                                   placeholder="Rechercher un point de vente..."
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         </div>
 
@@ -759,14 +768,14 @@
                             if (teamType === 'home' && updated.home_team) {
                                 const flagImg = document.getElementById(`flag-home-${matchId}`) || document.getElementById(`flag-home-ko-${matchId}`);
                                 if (flagImg) {
-                                    flagImg.src = `https://flagcdn.com/w40/${updated.home_team.iso_code}.png`;
+                                    flagImg.src = buildFlagUrl(updated.home_team.iso_code);
                                     flagImg.style.display = '';
                                 }
                             }
                             if (teamType === 'away' && updated.away_team) {
                                 const flagImg = document.getElementById(`flag-away-${matchId}`) || document.getElementById(`flag-away-ko-${matchId}`);
                                 if (flagImg) {
-                                    flagImg.src = `https://flagcdn.com/w40/${updated.away_team.iso_code}.png`;
+                                    flagImg.src = buildFlagUrl(updated.away_team.iso_code);
                                     flagImg.style.display = '';
                                 }
                             }

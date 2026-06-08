@@ -6,7 +6,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                        <span class="text-4xl">📍</span> Points de Vente
+                        <span class="text-4xl"></span> Points de Vente
                     </h1>
                     <p class="text-gray-600 mt-2">Gérez les points de vente partenaires</p>
                 </div>
@@ -16,7 +16,7 @@
                     </a>
                     <button onclick="document.getElementById('import-modal').classList.remove('hidden')"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
-                        <span>📥</span> Importer CSV
+                        <span></span> Importer CSV
                     </button>
                     <a href="{{ route('admin.create-bar') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
                         <span>+</span> Nouveau Point de Vente
@@ -43,7 +43,7 @@
                         <!-- Recherche générale -->
                         <div class="md:col-span-2">
                             <label for="search" class="block text-sm font-bold text-gray-700 mb-2">
-                                🔍 Rechercher
+                                Rechercher
                             </label>
                             <input
                                 type="text"
@@ -58,7 +58,7 @@
                         <!-- Filtre par type de PDV -->
                         <div>
                             <label for="type_pdv" class="block text-sm font-bold text-gray-700 mb-2">
-                                🏷️ Type de PDV
+                                Type de PDV
                             </label>
                             <select
                                 id="type_pdv"
@@ -93,7 +93,7 @@
                         <!-- Filtre par matches assignés -->
                         <div>
                             <label for="has_matches" class="block text-sm font-bold text-gray-700 mb-2">
-                                ⚽ Matches
+                                Matches
                             </label>
                             <select
                                 id="has_matches"
@@ -170,7 +170,7 @@
                             <td class="p-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-soboa-blue/10 rounded-full flex items-center justify-center">
-                                        <span class="text-xl">📍</span>
+                                        <span class="text-xl"></span>
                                     </div>
                                     <div>
                                         <div class="font-bold text-gray-800">{{ $bar->name }}</div>
@@ -208,7 +208,7 @@
                                     <div class="space-y-1">
                                         @foreach($bar->animations->take(2) as $animation)
                                             <div class="flex items-center gap-2 text-sm">
-                                                <span class="text-xs">⚽</span>
+                                                <span class="text-xs"></span>
                                                 <span class="font-medium text-gray-700">
                                                     @if($animation->match->homeTeam && $animation->match->awayTeam)
                                                         {{ $animation->match->homeTeam->name }} vs {{ $animation->match->awayTeam->name }}
@@ -242,7 +242,7 @@
                                 <div class="flex items-center justify-center gap-2 flex-wrap">
                                     <a href="{{ route('admin.bar-animations', $bar->id) }}"
                                        class="text-soboa-blue hover:underline text-sm font-bold whitespace-nowrap">
-                                        📅 Animations
+                                        Animations
                                     </a>
                                     <span class="text-gray-300">|</span>
                                     <form action="{{ route('admin.toggle-bar', $bar->id) }}" method="POST" class="inline">
@@ -292,7 +292,7 @@
             <div class="bg-blue-600 text-white p-6 rounded-t-xl">
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <span>📥</span> Importer des points de vente (CSV)
+                        <span></span> Importer des points de vente (CSV)
                     </h2>
                     <button onclick="document.getElementById('import-modal').classList.add('hidden')"
                             class="text-white hover:text-gray-200 text-2xl">
@@ -305,7 +305,7 @@
             <div class="p-6">
                 <!-- Instructions -->
                 <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
-                    <h3 class="font-bold text-blue-900 mb-2">📋 Format du fichier CSV</h3>
+                    <h3 class="font-bold text-blue-900 mb-2">Format du fichier CSV</h3>
                     <p class="text-sm text-blue-800 mb-3">Votre fichier CSV doit contenir les colonnes suivantes dans cet ordre :</p>
                     <ul class="text-sm text-blue-800 space-y-1 ml-4">
                         <li>• <strong>nom</strong> - Nom du point de vente</li>
@@ -328,7 +328,7 @@ Le Djoloff,Corniche Ouest Dakar,14.716677,-17.481383</pre>
                 <div class="mb-6">
                     <a href="{{ route('admin.download-bars-template') }}"
                        class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg transition border border-gray-300">
-                        <span>📄</span> Télécharger le modèle CSV
+                        <span></span> Télécharger le modèle CSV
                     </a>
                 </div>
 
@@ -348,7 +348,7 @@ Le Djoloff,Corniche Ouest Dakar,14.716677,-17.481383</pre>
 
                     <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
                         <p class="text-sm text-yellow-800">
-                            <strong>⚠️ Important :</strong> Tous les points de vente importés seront activés par défaut.
+                            <strong>Important :</strong> Tous les points de vente importés seront activés par défaut.
                         </p>
                     </div>
 
@@ -360,7 +360,7 @@ Le Djoloff,Corniche Ouest Dakar,14.716677,-17.481383</pre>
                         </button>
                         <button type="submit"
                                 class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                            📥 Importer
+                            Importer
                         </button>
                     </div>
                 </form>

@@ -8,7 +8,7 @@
                     ← Retour aux équipes
                 </a>
                 <h1 class="text-3xl font-black text-soboa-blue flex items-center gap-3">
-                    <span class="text-4xl">🏳️</span> Nouvelle Équipe
+                    <span class="text-4xl"></span> Nouvelle Équipe
                 </h1>
             </div>
 
@@ -52,7 +52,7 @@
 
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <p class="text-blue-700 text-sm">
-                                💡 <strong>Codes ISO courants :</strong><br>
+                                <strong>Codes ISO courants :</strong><br>
                                 ci = Côte d'Ivoire, sn = Sénégal, ng = Nigeria, cm = Cameroun, eg = Égypte, ma = Maroc, dz = Algérie, gh = Ghana
                             </p>
                         </div>

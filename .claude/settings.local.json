@@ -23,7 +23,31 @@
       "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan migrate --force 2>&1 | tail -20')",
       "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan migrate:status 2>&1 | grep -i \"archived\\\\|Ran\\\\|Pending\" | tail -8')",
       "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && tail -40 storage/logs/laravel.log 2>/dev/null')",
-      "Bash(curl -s http://localhost/)"
+      "Bash(curl -s http://localhost/)",
+      "Bash(curl -s -o /dev/null -w \"Home: HTTP %{http_code}\\\\n\" http://localhost/)",
+      "Bash(curl -s -o /dev/null -w \"Matches: HTTP %{http_code}\\\\n\" http://localhost/matches)",
+      "Bash(curl -s -o /dev/null -w \"Leaderboard: HTTP %{http_code}\\\\n\" http://localhost/leaderboard)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan db:seed --class=TestMatchSeeder --force 2>&1 | tail -5')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan rankings:archive \"CAN 2025\" --force 2>&1 | tail -8; echo \"---ARCHIVED ROWS---\"; php artisan tinker --execute=\"echo App\\\\\\\\Models\\\\\\\\ArchivedRanking::count\\(\\).\\\\\" archived; users zeroed: \\\\\".App\\\\\\\\Models\\\\\\\\User::where\\(\\\\\"points_total\\\\\",0\\)->count\\(\\).\\\\\"/\\\\\".App\\\\\\\\Models\\\\\\\\User::count\\(\\);\" 2>&1 | tail -2')",
+      "Bash(python *)",
+      "Bash(xargs wc *)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan migrate --force 2>&1 | tail -6 && echo \"---ROUTES---\" && php artisan route:list 2>&1 | grep -i \"sms\" && echo \"---LINT---\" && for f in app/Services/TwilioService.php app/Http/Controllers/Web/AdminSmsController.php app/Models/SmsLog.php app/Models/SiteSetting.php app/Http/Controllers/Web/AdminController.php; do php -l \"$f\"; done')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan migrate:status 2>&1 | grep -iE \"sms_logs|hero_promo|archived\" && echo \"---TABLES---\" && php artisan tinker --execute=\"echo Schema::hasTable\\(\\\\\"sms_logs\\\\\"\\)?\\\\\"sms_logs OK\\\\\":\\\\\"sms_logs MISSING\\\\\"; echo PHP_EOL; echo Schema::hasColumn\\(\\\\\"site_settings\\\\\",\\\\\"hero_promo_text\\\\\"\\)?\\\\\"hero_promo_text OK\\\\\":\\\\\"hero_promo_text MISSING\\\\\";\"')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan view:clear >/dev/null 2>&1; php artisan config:clear >/dev/null 2>&1')",
+      "Bash(curl -s -o /dev/null -w \"Home: %{http_code}\\\\n\" http://localhost/)",
+      "Bash(curl -s -o /dev/null -w \"soboa-foot: %{http_code}\\\\n\" http://localhost/soboa-foot)",
+      "Bash(curl -s -o /dev/null -w \"admin/sms/logs\\(noauth→redirect\\): %{http_code}\\\\n\" http://localhost/admin/sms/logs)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan view:cache 2>&1 | tail -5; echo \"EXIT:$?\"; php artisan view:clear >/dev/null 2>&1')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && \\(test -d node_modules && echo \"node_modules present\" || echo \"node_modules MISSING\"\\); node -v 2>&1; npm -v 2>&1')",
+      "PowerShell(node -v)",
+      "PowerShell(npm -v)",
+      "PowerShell(npm install 2>&1)",
+      "PowerShell(npm run build 2>&1)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan db:seed --class=TestMatchSeeder --force 2>&1 | tail -4')",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec landingpagecan-laravel.test-1 sh -c 'cd /app && php artisan view:clear >/dev/null 2>&1')",
+      "Bash(xargs grep *)",
+      "Bash(curl -s -o /dev/null -w \"Calendar: %{http_code}\\\\n\" http://localhost/calendar)",
+      "Bash(curl -s http://localhost/calendar)"
     ]
   }
 }
