@@ -206,7 +206,7 @@
                                             </td>
                                             <td class="px-3 py-2 text-gray-600 text-xs">
                                                 @if($log->match)
-                                                    {{ $log->match->homeTeam->name ?? '?' }} vs {{ $log->match->awayTeam->name ?? '?' }}
+                                                    {{ $log->match->home_name_fr ?? '?' }} vs {{ $log->match->away_name_fr ?? '?' }}
                                                 @elseif($log->bar)
                                                     {{ $log->bar->name }}
                                                 @else
@@ -254,7 +254,7 @@
             btn.innerHTML = '...';
             btn.disabled = true;
 
-            fetch(\`/admin/users/${userId}/reset-points\`, {
+            fetch(`/admin/users/${userId}/reset-points`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
