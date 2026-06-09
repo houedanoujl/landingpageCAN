@@ -3,8 +3,8 @@
 @php
     $homeTeam = $match->homeTeam ?? null;
     $awayTeam = $match->awayTeam ?? null;
-    $homeName = $homeTeam ? $homeTeam->name : $match->team_a;
-    $awayName = $awayTeam ? $awayTeam->name : $match->team_b;
+    $homeName = \App\Models\Team::fr($homeTeam ? $homeTeam->name : $match->team_a);
+    $awayName = \App\Models\Team::fr($awayTeam ? $awayTeam->name : $match->team_b);
 
     // Tendance des pronostics (agrégée et anonyme)
     $trendTotal = $trend['total'] ?? 0;
@@ -106,18 +106,18 @@
                         @if($homeFlag)
                             <div class="w-16 h-16 fold:w-20 fold:h-20 rounded-full overflow-hidden shadow-lg ring-2 fold:ring-4 ring-white group-hover/team:ring-soboa-orange transition-all duration-300 transform group-hover/team:scale-110 home-flag-container">
                                 <img src="{{ $homeFlag }}"
-                                     alt="{{ $match->team_a }}"
+                                     alt="{{ $homeName }}"
                                      class="w-full h-full object-cover home-flag-img"
                                      onerror="this.parentElement.outerHTML='<div class=\'w-20 h-20 rounded-full bg-gradient-to-br from-soboa-blue to-blue-600 shadow-lg ring-4 ring-white flex items-center justify-center group-hover/team:ring-soboa-orange transition-all duration-300 transform group-hover/team:scale-110\'><span class=\'text-2xl font-black text-white\'>{{ mb_substr($match->team_a, 0, 2) }}</span></div>'">
                             </div>
                         @else
                             <div class="w-16 h-16 fold:w-20 fold:h-20 rounded-full bg-gradient-to-br from-soboa-blue to-blue-600 shadow-lg ring-2 fold:ring-4 ring-white flex items-center justify-center group-hover/team:ring-soboa-orange transition-all duration-300 transform group-hover/team:scale-110">
-                                <span class="text-xl fold:text-2xl font-black text-white">{{ mb_substr($match->team_a, 0, 2) }}</span>
+                                <span class="text-xl fold:text-2xl font-black text-white">{{ mb_substr($homeName, 0, 2) }}</span>
                             </div>
                         @endif
                     </div>
                     <h3 class="font-black text-gray-800 text-base fold:text-lg leading-tight px-1 fold:px-2">
-                        {{ $homeTeam ? $homeTeam->name : $match->team_a }}
+                        {{ $homeName }}
                     </h3>
                 </div>
 
@@ -149,18 +149,18 @@
                         @if($awayFlag)
                             <div class="w-16 h-16 fold:w-20 fold:h-20 rounded-full overflow-hidden shadow-lg ring-2 fold:ring-4 ring-white group-hover/team:ring-soboa-orange transition-all duration-300 transform group-hover/team:scale-110 away-flag-container">
                                 <img src="{{ $awayFlag }}"
-                                     alt="{{ $match->team_b }}"
+                                     alt="{{ $awayName }}"
                                      class="w-full h-full object-cover away-flag-img"
                                      onerror="this.parentElement.outerHTML='<div class=\'w-20 h-20 rounded-full bg-gradient-to-br from-soboa-blue to-blue-600 shadow-lg ring-4 ring-white flex items-center justify-center group-hover/team:ring-soboa-orange transition-all duration-300 transform group-hover/team:scale-110\'><span class=\'text-2xl font-black text-white\'>{{ mb_substr($match->team_b, 0, 2) }}</span></div>'">
                             </div>
                         @else
                             <div class="w-16 h-16 fold:w-20 fold:h-20 rounded-full bg-gradient-to-br from-soboa-blue to-blue-600 shadow-lg ring-2 fold:ring-4 ring-white flex items-center justify-center group-hover/team:ring-soboa-orange transition-all duration-300 transform group-hover/team:scale-110">
-                                <span class="text-xl fold:text-2xl font-black text-white">{{ mb_substr($match->team_b, 0, 2) }}</span>
+                                <span class="text-xl fold:text-2xl font-black text-white">{{ mb_substr($awayName, 0, 2) }}</span>
                             </div>
                         @endif
                     </div>
                     <h3 class="font-black text-gray-800 text-base fold:text-lg leading-tight px-1 fold:px-2">
-                        {{ $awayTeam ? $awayTeam->name : $match->team_b }}
+                        {{ $awayName }}
                     </h3>
                 </div>
             </div>

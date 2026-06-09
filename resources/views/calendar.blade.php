@@ -272,7 +272,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
                                     <td class="px-2 py-2">
                                         <div class="flex items-center gap-2">
                                             <img src="{{ $teamData['team']->flag_url }}" class="w-6 h-4 rounded shadow" alt="" loading="lazy">
-                                            <span class="font-bold text-gray-800 text-xs sm:text-sm">{{ $teamData['team']->name }}</span>
+                                            <span class="font-bold text-gray-800 text-xs sm:text-sm">{{ \App\Models\Team::fr($teamData['team']->name) }}</span>
                                         </div>
                                     </td>
                                     <td class="px-2 py-2 text-center text-gray-600">{{ $teamData['played'] }}</td>

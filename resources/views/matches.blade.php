@@ -1,6 +1,6 @@
 <x-layouts.app title="Pronostics">
 <x-skeleton-screen type="matches" :cards="6" />
-<div x-data="matchesPage()" x-init="init()" class="space-y-6">
+<div x-data="matchesPage()" x-init="init()" :class="{ 'searching': search.trim().length > 0 }" class="space-y-6">
 
     {{-- ========== HEADER ========== --}}
     <header class="relative py-section-sm px-6 rounded-2xl overflow-hidden shadow-elev-2">
@@ -109,6 +109,27 @@
     </div>
 
     @if($matchesByPhase->count() > 0)
+        {{-- ========== RECHERCHE ========== --}}
+        <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            <input type="search"
+                   x-model="search"
+                   @input="applySearch()"
+                   placeholder="Rechercher une équipe…"
+                   class="w-full pl-10 pr-10 py-2.5 rounded-xl ring-1 ring-gray-200 focus:outline-none focus:ring-2 focus:ring-soboa-blue text-sm font-medium">
+            <button type="button" x-show="search.trim().length" x-cloak @click="search=''; applySearch()"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" aria-label="Effacer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        {{-- Aucun résultat de recherche --}}
+        <div x-show="search.trim().length && searchCount === 0" x-cloak
+             class="bg-white rounded-2xl shadow-elev-1 p-8 text-center text-gray-500">
+            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-gray-300"></i>
+            Aucun match pour « <span class="font-bold" x-text="search"></span> ».
+        </div>
+
         {{-- ========== PHASE TABS (sticky) ========== --}}
         <nav class="sticky top-[68px] lg:top-[80px] z-sticky -mx-4 px-4 py-2 bg-white/85 backdrop-blur-md ring-1 ring-gray-200 rounded-2xl"
              aria-label="Phases du tournoi">
@@ -148,7 +169,7 @@
                 <section x-show="activePhase === '{{ $phaseKey }}'" x-cloak role="tabpanel" aria-label="{{ $phaseName }}">
                     @if($phaseKey === 'group_stage' && $groupStageByGroup->count() > 0)
                         {{-- Group sub-pills --}}
-                        <div class="flex flex-wrap gap-1.5 mb-4">
+                        <div class="group-pills flex flex-wrap gap-1.5 mb-4">
                             @foreach($groupStageByGroup as $groupName => $_)
                                 <button type="button"
                                         @click="activeGroup = '{{ $groupName }}'"
@@ -162,7 +183,7 @@
                         </div>
 
                         @foreach($groupStageByGroup as $groupName => $groupMatches)
-                            <div x-show="activeGroup === '{{ $groupName }}'" x-cloak class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div x-show="activeGroup === '{{ $groupName }}'" x-cloak class="group-panel grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 @foreach($groupMatches as $match)
                                     <x-match-row :match="$match"
                                                  :userPrediction="$userPredictions[$match->id] ?? null"
@@ -381,6 +402,8 @@
         return {
             activePhase: @json($matchesByPhase->keys()->first()),
             activeGroup: @json($groupStageByGroup->keys()->first()),
+            search: '',
+            searchCount: 0,
             venueState: 'unknown',
             nearbyVenue: null,
             closestVenues: [],
@@ -427,6 +450,22 @@
 
             isDraw() {
                 return this.modal.scoreA !== '' && this.modal.scoreB !== '' && Number(this.modal.scoreA) === Number(this.modal.scoreB);
+            },
+
+            // Recherche d'un match par nom d'équipe (toutes phases/groupes confondus)
+            applySearch() {
+                const norm = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+                const q = norm(this.search);
+                const cards = this.$el.querySelectorAll('article[id^="match-"]');
+                let shown = 0;
+                cards.forEach((c) => {
+                    // Recherche sur les noms d'équipe (data-attrs) + texte visible de la carte (robuste)
+                    const hay = norm((c.dataset.homeTeam || '') + ' ' + (c.dataset.awayTeam || '') + ' ' + c.textContent);
+                    const ok = q === '' || hay.includes(q);
+                    c.style.display = ok ? '' : 'none';
+                    if (ok && q !== '') shown++;
+                });
+                this.searchCount = q === '' ? -1 : shown;
             },
 
             openPrediction(payload) {
@@ -585,5 +624,11 @@
 <style>
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+    /* Pendant une recherche : afficher toutes les phases/groupes, masquer onglets + pills */
+    .searching [role="tabpanel"] { display: block !important; }
+    .searching .group-panel { display: grid !important; }
+    .searching nav[aria-label="Phases du tournoi"],
+    .searching .group-pills { display: none !important; }
 </style>
 </x-layouts.app>
