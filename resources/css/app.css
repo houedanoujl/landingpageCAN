@@ -543,3 +543,51 @@ img, video, iframe {
 .vs-text {
     animation: vsPulse 2s ease-in-out infinite;
 }
+
+/* ====================================
+   SKELETON / CONTENT LOADING PLACEHOLDERS
+   ==================================== */
+@keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: #e9eef3;
+    background-image: linear-gradient(
+        90deg,
+        rgba(233, 238, 243, 0) 0%,
+        rgba(255, 255, 255, 0.65) 50%,
+        rgba(233, 238, 243, 0) 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+    border-radius: 0.5rem;
+}
+
+.skeleton-text { height: 0.75rem; border-radius: 0.375rem; }
+.skeleton-circle { border-radius: 9999px; }
+
+/* Placeholder shimmer pour les images en cours de chargement.
+   Ajouté/retiré automatiquement par le script global dans le layout. */
+.img-loading {
+    background-color: #e9eef3;
+    background-image: linear-gradient(
+        90deg,
+        rgba(233, 238, 243, 0) 0%,
+        rgba(255, 255, 255, 0.65) 50%,
+        rgba(233, 238, 243, 0) 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+/* Masque l'icône "image cassée" tant que la source n'est pas chargée */
+img.img-loading { color: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton, .img-loading { animation: none; }
+}

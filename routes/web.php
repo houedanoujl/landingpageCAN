@@ -62,7 +62,9 @@ Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 // Pronostics (requiert authentification)
 Route::post('/predictions', [PredictionController::class, 'store'])->name('predictions.store');
 Route::get('/mes-pronostics', [PredictionController::class, 'myPredictions'])->name('predictions.index');
-Route::get('/matches/{match}/predictions', [PredictionController::class, 'matchPredictions'])->name('matches.predictions');
+Route::get('/matches/{match}/wall', [PredictionController::class, 'matchWall'])->name('matches.wall');
+Route::post('/matches/{match}/wall', [PredictionController::class, 'storeMatchComment'])->name('matches.wall.store');
+Route::delete('/matches/{match}/wall/{comment}', [PredictionController::class, 'destroyMatchComment'])->name('matches.wall.destroy');
 Route::post('/predictions/{prediction}/like', [PredictionController::class, 'toggleLike'])->name('predictions.like');
 Route::post('/predictions/{prediction}/comments', [PredictionController::class, 'storeComment'])->name('predictions.comments.store');
 Route::delete('/predictions/{prediction}/comments/{comment}', [PredictionController::class, 'destroyComment'])->name('predictions.comments.destroy');

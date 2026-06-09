@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\PointsService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
@@ -32,7 +33,10 @@ class HomeController extends Controller
         $senegalTeam = Team::where('iso_code', 'sn')->first();
 
         // Afficher tous les matchs à venir dont les équipes sont définies
+        $hasComments = Schema::hasTable('match_comments');
+
         $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
+            ->when($hasComments, fn ($q) => $q->withCount('comments'))
             ->where('status', '!=', 'finished')
             ->where('match_date', '>=', now())
             ->whereNotNull('home_team_id')
@@ -45,6 +49,22 @@ class HomeController extends Controller
 
         // Limiter à 4 matchs pour la page d'accueil
         $upcomingMatches = $upcomingMatches->take(4);
+
+        // Tendance des pronostics (agrégée et anonyme) pour les matchs affichés
+        $matchIds = $upcomingMatches->pluck('id');
+        $predictionTrends = [];
+        foreach ($matchIds as $id) {
+            $predictionTrends[$id] = ['home' => 0, 'draw' => 0, 'away' => 0, 'total' => 0];
+        }
+        $trendRows = Prediction::whereIn('match_id', $matchIds)
+            ->selectRaw('match_id, predicted_winner, COUNT(*) as c')
+            ->groupBy('match_id', 'predicted_winner')
+            ->get();
+        foreach ($trendRows as $row) {
+            $w = in_array($row->predicted_winner, ['home', 'draw', 'away'], true) ? $row->predicted_winner : 'draw';
+            $predictionTrends[$row->match_id][$w] += $row->c;
+            $predictionTrends[$row->match_id]['total'] += $row->c;
+        }
 
         // Fetch top 3 users for leaderboard
         // En cas d'égalité : celui qui a fait son premier pronostic en premier gagne
@@ -70,7 +90,7 @@ class HomeController extends Controller
         // indépendant des matchs test ajoutés avant le coup d'envoi.
         $worldCupStart = \Carbon\Carbon::parse(config('game.world_cup_start', '2026-06-11 19:00:00'));
 
-        return view('welcome', compact('upcomingMatches', 'nextMatch', 'topUsers', 'venueCount', 'selectedVenue', 'siteSettings', 'worldCupStart'));
+        return view('welcome', compact('upcomingMatches', 'nextMatch', 'topUsers', 'venueCount', 'selectedVenue', 'siteSettings', 'worldCupStart', 'predictionTrends'));
     }
 
     public function venues()
@@ -88,6 +108,7 @@ class HomeController extends Controller
     {
         // Récupérer tous les matchs futurs dont les équipes sont définies
         $allMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
+            ->when(Schema::hasTable('match_comments'), fn ($q) => $q->withCount('comments'))
             ->where('status', '!=', 'finished')
             ->where('match_date', '>=', now())
             ->whereNotNull('home_team_id')
@@ -103,6 +124,22 @@ class HomeController extends Controller
         $groupStageByGroup = collect();
         if (isset($matchesByPhase['group_stage'])) {
             $groupStageByGroup = $matchesByPhase['group_stage']->groupBy('group_name')->sortKeys();
+        }
+
+        // Tendance des pronostics par match (agrégée et anonyme) — 1 seule requête
+        $matchIds = $allMatches->pluck('id');
+        $predictionTrends = [];
+        foreach ($matchIds as $id) {
+            $predictionTrends[$id] = ['home' => 0, 'draw' => 0, 'away' => 0, 'total' => 0];
+        }
+        $trendRows = Prediction::whereIn('match_id', $matchIds)
+            ->selectRaw('match_id, predicted_winner, COUNT(*) as c')
+            ->groupBy('match_id', 'predicted_winner')
+            ->get();
+        foreach ($trendRows as $row) {
+            $w = in_array($row->predicted_winner, ['home', 'draw', 'away'], true) ? $row->predicted_winner : 'draw';
+            $predictionTrends[$row->match_id][$w] += $row->c;
+            $predictionTrends[$row->match_id]['total'] += $row->c;
         }
 
         // Récupérer les pronostics de l'utilisateur connecté
@@ -130,7 +167,7 @@ class HomeController extends Controller
             'final' => 'Finale',
         ];
 
-        return view('matches', compact('matchesByPhase', 'groupStageByGroup', 'userPredictions', 'favoriteTeamId', 'phaseOrder', 'tournamentEnded'));
+        return view('matches', compact('matchesByPhase', 'groupStageByGroup', 'userPredictions', 'predictionTrends', 'favoriteTeamId', 'phaseOrder', 'tournamentEnded'));
     }
 
     public function leaderboard(Request $request)

@@ -65,6 +65,16 @@ class MatchGame extends Model
     }
 
     /**
+     * Get the public comments (wall) for this match.
+     */
+    public function comments()
+    {
+        return $this->hasMany(MatchComment::class, 'match_id')
+            ->where('is_moderated', false)
+            ->orderByDesc('created_at');
+    }
+
+    /**
      * Get the animations (venue assignments) for this match.
      */
     public function animations()

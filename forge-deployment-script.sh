@@ -1,57 +1,38 @@
 #!/bin/bash
+set -e
 
 # ==========================================
-# SCRIPT DE DÉPLOIEMENT FORGE - PRODUCTION
-# SOBOA FOOT TIME
+# DÉPLOIEMENT FORGE — SOBOA FOOT TIME
+# CODE + MIGRATIONS (ne touche PAS aux données existantes)
 # ==========================================
 
 $CREATE_RELEASE()
-
 cd $FORGE_RELEASE_DIRECTORY
 
-echo "📦 Installation des dépendances PHP..."
+echo "📦 Dépendances PHP..."
 $FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
-echo "🎨 Installation et build du frontend (avec responsive fixes)..."
+echo "🎨 Build frontend..."
 npm ci
 npm run build
 
-# ==========================================
-# MIGRATIONS (SANS --seed global!)
-# ==========================================
-
-echo "🔄 Running migrations..."
+echo "🔄 Migrations..."
 $FORGE_PHP artisan migrate --force
 
-# ==========================================
-# FRESH DEPLOYMENT SEEDING (WITH CSV DATA)
-# ==========================================
-# Uses FreshDeploymentSeeder to import fresh data from venues.csv
-# ✅ Preserves: users (user data intact)
-# 🔄 Refreshes: teams, matches, venues, animations from CSV
-# ⚠️  Note: Predictions will be reset for new matches
+# ⚠️ NE JAMAIS mettre season:reset ou db:seed ici (wipe à chaque deploy).
+# FreshDeploymentSeeder / deploy-production.sh truncate matches => détruisent
+# pronostics ET commentaires. Reset compétition = UNE fois, manuellement.
 
-echo "🌱 Running FRESH DEPLOYMENT seeders (with CSV import)..."
-$FORGE_PHP artisan db:seed --class=FreshDeploymentSeeder --force
+echo "🧹 Clear caches..."
+$FORGE_PHP artisan optimize:clear
 
-echo "🔧 Optimizing application..."
+echo "🔧 Optimize..."
 $FORGE_PHP artisan optimize
 
-echo "🔗 Creating storage link..."
-$FORGE_PHP artisan storage:link
-
-# ==========================================
-# CACHE CLEARING (FIX 404 error!)
-# ==========================================
-
-echo "🧹 Clearing caches..."
-$FORGE_PHP artisan config:clear
-$FORGE_PHP artisan cache:clear
-$FORGE_PHP artisan view:clear
-$FORGE_PHP artisan route:clear  # ← CRITICAL: Fixes 404 on "modifier" link
+echo "🔗 Storage link..."
+$FORGE_PHP artisan storage:link || true
 
 $ACTIVATE_RELEASE()
-
 $RESTART_QUEUES()
 
-echo "✅ Deployment completed successfully!"
+echo "✅ Déploiement terminé."

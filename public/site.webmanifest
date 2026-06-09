@@ -4,7 +4,7 @@
   "description": "Pronostiquez les scores des matchs et gagnez des cadeaux exclusifs!",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait",
   "theme_color": "#FFD700",
   "background_color": "#121212",
   "icons": [

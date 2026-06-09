@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bar;
+use App\Models\MatchComment;
 use App\Models\MatchGame;
 use App\Models\Prediction;
 use App\Models\PredictionComment;
 use App\Models\PredictionLike;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Services\ContentModerationService;
 use App\Services\WhatsAppService;
 use App\Services\PointsService;
 use Illuminate\Http\Request;
@@ -155,6 +157,10 @@ class PredictionController extends Controller
                     'message' => $successMessage,
                     'success' => true,
                     'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
+                    'match_id' => $match->id,
+                    'score_a' => (int) $request->score_a,
+                    'score_b' => (int) $request->score_b,
+                    'trend' => $this->matchTrend($match),
                     'venue' => $venue ? $venue->name : null,
                     'venue_bonus_points' => $venuePointsAwarded,
                     'user_points_total' => $user->points_total
@@ -214,6 +220,10 @@ class PredictionController extends Controller
                 'message' => $successMessage,
                 'success' => true,
                 'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
+                'match_id' => $match->id,
+                'score_a' => (int) $request->score_a,
+                'score_b' => (int) $request->score_b,
+                'trend' => $this->matchTrend($match),
                 'venue' => $venue ? $venue->name : null,
                 'venue_bonus_points' => $venuePointsAwarded,
                 'user_points_total' => $user->points_total
@@ -237,37 +247,109 @@ class PredictionController extends Controller
     }
 
     /**
-     * Liste publique des pronostics d'un match (pour la fenêtre modale + likes).
+     * Tendance agrégée d'un match : pourcentages home / nul / away.
      */
-    public function matchPredictions(MatchGame $match)
+    private function matchTrend(MatchGame $match): array
+    {
+        $preds = $match->predictions()->get(['predicted_winner']);
+        $total = $preds->count();
+        $pct = fn ($n) => $total > 0 ? (int) round($n / $total * 100) : 0;
+
+        return [
+            'total' => $total,
+            'home'  => $pct($preds->where('predicted_winner', 'home')->count()),
+            'draw'  => $pct($preds->where('predicted_winner', 'draw')->count()),
+            'away'  => $pct($preds->where('predicted_winner', 'away')->count()),
+        ];
+    }
+
+    /**
+     * Mur de commentaires public d'un match (feed type fil d'actualité).
+     */
+    public function matchWall(MatchGame $match)
     {
         $userId = session('user_id');
 
-        $predictions = $match->predictions()
+        $comments = $match->comments()
             ->with('user:id,name')
-            ->withCount('likes')
             ->get()
-            ->map(function ($p) use ($userId) {
-                return [
-                    'id'            => $p->id,
-                    'user_name'     => $p->user->name ?? 'Anonyme',
-                    'score_a'       => (int) $p->score_a,
-                    'score_b'       => (int) $p->score_b,
-                    'points_earned' => (int) $p->points_earned,
-                    'likes_count'   => (int) $p->likes_count,
-                    'liked'         => $userId ? $p->isLikedBy((int) $userId) : false,
-                    'is_mine'       => $userId ? ((int) $p->user_id === (int) $userId) : false,
-                ];
-            })
-            ->sortByDesc('likes_count')
+            ->map(fn ($c) => [
+                'id'         => $c->id,
+                'user_name'  => $c->user->name ?? 'Anonyme',
+                'body'       => $c->body,
+                'created_at' => $c->created_at->diffForHumans(),
+                'is_mine'    => $userId ? ((int) $c->user_id === (int) $userId) : false,
+            ])
             ->values();
 
         return response()->json([
-            'match'       => $match->display_label,
-            'count'       => $predictions->count(),
-            'auth'        => (bool) $userId,
-            'predictions' => $predictions,
+            'match'    => $match->display_label,
+            'count'    => $comments->count(),
+            'auth'     => (bool) $userId,
+            'comments' => $comments,
         ]);
+    }
+
+    public function storeMatchComment(Request $request, MatchGame $match)
+    {
+        if (!session('user_id')) {
+            return response()->json(['message' => 'Non connecté'], 401);
+        }
+
+        $request->validate(['body' => 'required|string|min:1|max:500']);
+
+        $body = strip_tags($request->body);
+
+        // Modération : liste noire de mots interdits.
+        $moderation = app(ContentModerationService::class);
+        $held = false;
+        if (!$moderation->isClean($body)) {
+            if (config('moderation.action', 'reject') === 'reject') {
+                return response()->json(['message' => config('moderation.message')], 422);
+            }
+            $held = true; // mise en attente de modération
+        }
+
+        $comment = MatchComment::create([
+            'match_id'     => $match->id,
+            'user_id'      => session('user_id'),
+            'body'         => $body,
+            'is_moderated' => $held,
+        ]);
+
+        if ($held) {
+            return response()->json([
+                'held'    => true,
+                'message' => 'Votre commentaire sera publié après validation par un modérateur.',
+            ], 202);
+        }
+
+        return response()->json([
+            'id'         => $comment->id,
+            'user_name'  => User::find(session('user_id'))->name,
+            'body'       => $comment->body,
+            'created_at' => $comment->created_at->diffForHumans(),
+            'is_mine'    => true,
+            'count'      => $match->comments()->count(),
+        ], 201);
+    }
+
+    public function destroyMatchComment(Request $request, MatchGame $match, MatchComment $comment)
+    {
+        $userId = session('user_id');
+        $user = User::find($userId);
+
+        if (!$userId) {
+            return response()->json(['message' => 'Non connecté'], 401);
+        }
+
+        if ($comment->user_id !== (int) $userId && !($user->is_admin ?? false)) {
+            return response()->json(['message' => 'Interdit'], 403);
+        }
+
+        $comment->delete();
+
+        return response()->json(['count' => $match->comments()->count()]);
     }
 
     public function toggleLike(Request $request, Prediction $prediction)
@@ -303,10 +385,18 @@ class PredictionController extends Controller
 
         $request->validate(['body' => 'required|string|min:1|max:500']);
 
+        $body = strip_tags($request->body);
+
+        // Modération : liste noire de mots interdits.
+        if (!app(ContentModerationService::class)->isClean($body)
+            && config('moderation.action', 'reject') === 'reject') {
+            return response()->json(['message' => config('moderation.message')], 422);
+        }
+
         $comment = PredictionComment::create([
             'user_id'       => session('user_id'),
             'prediction_id' => $prediction->id,
-            'body'          => strip_tags($request->body),
+            'body'          => $body,
         ]);
 
         return response()->json([

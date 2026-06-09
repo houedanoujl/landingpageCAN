@@ -1,8 +1,16 @@
-@props(['match'])
+@props(['match', 'trend' => null])
 
 @php
     $homeTeam = $match->homeTeam ?? null;
     $awayTeam = $match->awayTeam ?? null;
+    $homeName = $homeTeam ? $homeTeam->name : $match->team_a;
+    $awayName = $awayTeam ? $awayTeam->name : $match->team_b;
+
+    // Tendance des pronostics (agrégée et anonyme)
+    $trendTotal = $trend['total'] ?? 0;
+    $pctHome = $trendTotal > 0 ? (int) round(($trend['home'] / $trendTotal) * 100) : 0;
+    $pctDraw = $trendTotal > 0 ? (int) round(($trend['draw'] / $trendTotal) * 100) : 0;
+    $pctAway = $trendTotal > 0 ? (int) round(($trend['away'] / $trendTotal) * 100) : 0;
     $homeFlag = $homeTeam ? "https://flagicons.lipis.dev/flags/4x3/{$homeTeam->iso_code}.svg" : null;
     $awayFlag = $awayTeam ? "https://flagicons.lipis.dev/flags/4x3/{$awayTeam->iso_code}.svg" : null;
 
@@ -156,6 +164,45 @@
                     </h3>
                 </div>
             </div>
+        @endif
+
+        <!-- Tendance des pronostics (agrégée, anonyme) -->
+        @if(!$isTbd && $trendTotal > 0)
+            <div class="mb-5">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Tendance des pronostics</span>
+                    <span class="text-[11px] text-gray-400 font-medium">{{ $trendTotal }} {{ $trendTotal > 1 ? 'pronostics' : 'pronostic' }}</span>
+                </div>
+                <div class="flex h-7 rounded-lg overflow-hidden text-white text-[11px] font-black">
+                    @if($pctHome > 0)
+                        <div class="bg-soboa-blue flex items-center justify-center min-w-0" style="width: {{ $pctHome }}%" title="{{ $homeName }} : {{ $pctHome }}%">{{ $pctHome }}%</div>
+                    @endif
+                    @if($pctDraw > 0)
+                        <div class="bg-gray-400 flex items-center justify-center min-w-0" style="width: {{ $pctDraw }}%" title="Nul : {{ $pctDraw }}%">{{ $pctDraw }}%</div>
+                    @endif
+                    @if($pctAway > 0)
+                        <div class="bg-soboa-orange flex items-center justify-center min-w-0" style="width: {{ $pctAway }}%" title="{{ $awayName }} : {{ $pctAway }}%">{{ $pctAway }}%</div>
+                    @endif
+                </div>
+                <div class="flex justify-between text-[11px] font-bold mt-1.5 gap-2">
+                    <span class="text-soboa-blue truncate">{{ $homeName }}</span>
+                    <span class="text-gray-500 flex-shrink-0">Nul</span>
+                    <span class="text-soboa-orange truncate text-right">{{ $awayName }}</span>
+                </div>
+            </div>
+        @endif
+
+        <!-- Mur de commentaires public -->
+        @if(!$isTbd)
+            <button type="button"
+                    onclick="window.dispatchEvent(new CustomEvent('open-match-wall', { detail: { matchId: {{ $match->id }} } }))"
+                    class="w-full inline-flex items-center justify-center gap-2 text-sm font-bold text-soboa-blue hover:text-white hover:bg-soboa-blue ring-1 ring-soboa-blue/20 py-2.5 mb-3 rounded-xl transition-colors">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                Commentaires
+                @if(($match->comments_count ?? 0) > 0)
+                    <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-soboa-orange text-white text-[11px] font-black">{{ $match->comments_count }}</span>
+                @endif
+            </button>
         @endif
 
         <!-- Action Button -->

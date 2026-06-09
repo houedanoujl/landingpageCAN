@@ -165,6 +165,7 @@
                                 @foreach($groupMatches as $match)
                                     <x-match-row :match="$match"
                                                  :userPrediction="$userPredictions[$match->id] ?? null"
+                                                 :trend="$predictionTrends[$match->id] ?? null"
                                                  :favoriteTeamId="$favoriteTeamId"
                                                  :tournamentEnded="$tournamentEnded" />
                                 @endforeach
@@ -175,6 +176,7 @@
                             @foreach($matchesByPhase[$phaseKey] as $match)
                                 <x-match-row :match="$match"
                                              :userPrediction="$userPredictions[$match->id] ?? null"
+                                             :trend="$predictionTrends[$match->id] ?? null"
                                              :favoriteTeamId="$favoriteTeamId"
                                              :tournamentEnded="$tournamentEnded" />
                             @endforeach
@@ -402,6 +404,23 @@
             },
 
             init() {
+                // Restaurer l'onglet phase + groupe actif après un rechargement
+                // (sinon validation d'un pronostic renvoie toujours au Groupe A).
+                const savedPhase = sessionStorage.getItem('matches_active_phase');
+                const savedGroup = sessionStorage.getItem('matches_active_group');
+                if (savedPhase) this.activePhase = savedPhase;
+                if (savedGroup) this.activeGroup = savedGroup;
+                this.$watch('activePhase', v => sessionStorage.setItem('matches_active_phase', v));
+                this.$watch('activeGroup', v => sessionStorage.setItem('matches_active_group', v));
+
+                // Bouton "Modifier" injecté après un pronostic (délégation d'évènement)
+                this.$el.addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-reopen]');
+                    if (!btn) return;
+                    const payload = this._payloads?.[btn.dataset.reopen];
+                    if (payload) this.openPrediction(payload);
+                });
+
                 setTimeout(() => this.detectGeolocation(), 1500);
             },
 
@@ -410,6 +429,7 @@
             },
 
             openPrediction(payload) {
+                (this._payloads ||= {})[payload.id] = payload;
                 this.modal.match = payload;
                 this.modal.scoreA = payload.existing?.scoreA ?? '';
                 this.modal.scoreB = payload.existing?.scoreB ?? '';
@@ -427,6 +447,48 @@
             closePrediction() {
                 this.modal.open = false;
                 document.body.style.overflow = '';
+            },
+
+            // Met à jour la carte du match après un pronostic (sans recharger la page).
+            applyPredictionUpdate(d) {
+                if (!d || !d.match_id) return;
+
+                // 1. Barre de tendance
+                if (d.trend) {
+                    const wrap = document.getElementById('trend-wrap-' + d.match_id);
+                    if (wrap) {
+                        wrap.style.display = '';
+                        const t = d.trend;
+                        const setBar = (sel, pct) => {
+                            const el = wrap.querySelector(sel);
+                            if (el) { el.style.width = pct + '%'; el.textContent = pct > 0 ? pct + '%' : ''; }
+                        };
+                        setBar('[data-trend-home]', t.home);
+                        setBar('[data-trend-draw]', t.draw);
+                        setBar('[data-trend-away]', t.away);
+                        const label = wrap.querySelector('[data-trend-label]');
+                        if (label) label.textContent = t.total + ' ' + (t.total > 1 ? 'pronostics' : 'pronostic');
+                    }
+                }
+
+                // 2. Pied de carte : afficher le pronostic enregistré + bouton Modifier
+                const footer = document.getElementById('match-footer-' + d.match_id);
+                const payload = this._payloads?.[d.match_id];
+                if (payload) {
+                    payload.existing = { ...(payload.existing || {}), scoreA: d.score_a, scoreB: d.score_b };
+                }
+                if (footer) {
+                    footer.innerHTML =
+                        '<div class="flex items-center justify-between gap-3">' +
+                            '<div class="flex items-center gap-2">' +
+                                '<div class="w-9 h-9 rounded-full bg-green-100 text-green-700 flex items-center justify-center"><i data-lucide="check-circle-2" class="w-5 h-5"></i></div>' +
+                                '<div><p class="text-xs text-gray-500 leading-tight">Votre pronostic</p>' +
+                                '<p class="text-base font-black text-soboa-text-dark leading-tight">' + d.score_a + ' - ' + d.score_b + '</p></div>' +
+                            '</div>' +
+                            '<button type="button" data-reopen="' + d.match_id + '" class="btn btn-ghost btn-sm"><i data-lucide="pencil" class="w-4 h-4"></i>Modifier</button>' +
+                        '</div>';
+                    this.$nextTick(() => window.lucide && window.lucide.createIcons());
+                }
             },
 
             async submitPrediction() {
@@ -476,13 +538,9 @@
                     document.querySelectorAll('[data-user-points]').forEach(el => el.textContent = totalPoints);
                     sessionStorage.setItem('user_points', totalPoints);
 
+                    // Mise à jour live de la carte (tendance + pronostic) — sans rechargement
+                    this.applyPredictionUpdate(data);
                     this.closePrediction();
-
-                    // Reload after recap close to refresh server-rendered cards
-                    setTimeout(() => {
-                        sessionStorage.setItem('prediction_success_message', data.message || 'Pronostic enregistré');
-                        window.location.reload();
-                    }, 2500);
                 } catch (err) {
                     console.error('[SOBOA FOOT TIME]', err);
                     this.modal.error = 'Erreur de connexion. Réessayez.';

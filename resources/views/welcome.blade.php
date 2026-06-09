@@ -434,7 +434,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 @forelse($upcomingMatches as $match)
-                    <x-match-card :match="$match" />
+                    <x-match-card :match="$match" :trend="$predictionTrends[$match->id] ?? null" />
                 @empty
                     <div class="col-span-full text-center py-section-md bg-white rounded-2xl shadow-elev-1">
                         <div class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">

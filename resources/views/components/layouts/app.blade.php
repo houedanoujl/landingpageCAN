@@ -137,13 +137,16 @@
                 let timer = null;
                 return () => {
                     clearTimeout(timer);
-                    timer = setTimeout(renderLucideIcons, 50);
+                    // Coalesce les rafales de mutations (Alpine) en un seul rendu d'icônes.
+                    timer = setTimeout(renderLucideIcons, 150);
                 };
             })();
             const observer = new MutationObserver((mutations) => {
                 for (const m of mutations) {
                     for (const node of m.addedNodes) {
                         if (node.nodeType !== 1) continue;
+                        // Ignore le SVG produit par Lucide lui-même (évite l'auto-déclenchement).
+                        if (node.tagName === 'svg' || node.tagName === 'SVG') continue;
                         if (node.matches?.('[data-lucide]') || node.querySelector?.('[data-lucide]')) {
                             debouncedRender();
                             return;
@@ -968,65 +971,114 @@
     </script>
     @endauth
 
-    {{-- Modal GLOBAL UNIQUE : pronostics d'un match + likes.
-         Ouvert via $dispatch('open-match-predictions', {matchId}) depuis x-match-row. --}}
-    <div x-data="matchPredictionsModal()"
-         @open-match-predictions.window="open($event.detail.matchId)"
+    {{-- Modal GLOBAL : mur de commentaires public d'un match (fil d'actualité).
+         Ouvert via $dispatch('open-match-wall', {matchId}). --}}
+    <div x-data="matchWallModal()"
+         @open-match-wall.window="open($event.detail.matchId)"
          x-show="isOpen" x-cloak style="display:none;"
          @keydown.escape.window="close()"
+         @click.self="close()"
          class="modal-backdrop">
-        <div class="modal-panel p-0 overflow-hidden" @click.outside="close()">
-            <header class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light text-white px-5 py-4 flex items-center justify-between">
+        <div class="modal-panel p-0 overflow-hidden flex flex-col w-full max-w-2xl min-h-[50vh] max-h-[85vh]" @click.stop>
+            <header class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light text-white px-5 py-4 flex items-center justify-between flex-shrink-0">
                 <div class="min-w-0">
-                    <h3 class="font-black text-lg leading-tight">Pronostics</h3>
+                    <h3 class="font-black text-lg leading-tight">Mur du match</h3>
                     <p class="text-xs text-white/80 truncate" x-text="title"></p>
                 </div>
                 <button @click="close()" class="modal-close" aria-label="Fermer">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </header>
-            <div class="max-h-[60vh] overflow-y-auto p-4 space-y-2">
+
+            {{-- Compose --}}
+            <template x-if="auth">
+                <form @submit.prevent="post()" class="flex gap-2 p-4 border-b border-gray-100 flex-shrink-0">
+                    <input x-model="body" type="text" maxlength="500" placeholder="Écrivez un commentaire public…"
+                           class="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-soboa-orange/40 focus:border-soboa-orange transition">
+                    <button type="submit" :disabled="!body.trim() || submitting"
+                            class="px-4 py-2 bg-soboa-orange text-white text-sm font-bold rounded-xl disabled:opacity-40 hover:bg-soboa-orange-secondary transition">
+                        <span x-show="!submitting">Publier</span>
+                        <span x-show="submitting">…</span>
+                    </button>
+                </form>
+            </template>
+            <template x-if="!auth && !loading">
+                <p class="text-center text-xs text-gray-400 p-4 border-b border-gray-100 flex-shrink-0">
+                    <a href="/login" class="text-soboa-orange font-bold">Connectez-vous</a> pour commenter.
+                </p>
+            </template>
+
+            {{-- Notice (modération / rejet) --}}
+            <div x-show="notice" x-cloak class="mx-4 mt-3 rounded-lg px-3 py-2 text-sm flex items-start gap-2 flex-shrink-0"
+                 :class="noticeType === 'error' ? 'bg-red-50 ring-1 ring-red-200 text-red-700' : 'bg-amber-50 ring-1 ring-amber-200 text-amber-700'">
+                <i data-lucide="shield-alert" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                <span x-text="notice"></span>
+            </div>
+
+            {{-- Feed --}}
+            <div class="overflow-y-auto p-4 space-y-3">
+                {{-- Skeleton de chargement --}}
                 <template x-if="loading">
-                    <p class="text-center text-gray-500 py-6">Chargement…</p>
-                </template>
-                <template x-if="!loading && items.length === 0">
-                    <p class="text-center text-gray-500 py-6">Aucun pronostic pour ce match.</p>
-                </template>
-                <template x-for="p in items" :key="p.id">
-                    <div class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
-                        <div class="min-w-0">
-                            <p class="font-bold text-sm text-soboa-text-dark truncate" x-text="p.user_name + (p.is_mine ? ' (vous)' : '')"></p>
-                            <p class="text-xs text-gray-500">
-                                Pronostic : <span class="font-black text-soboa-blue" x-text="p.score_a + ' - ' + p.score_b"></span>
-                                <span x-show="p.points_earned > 0" class="text-soboa-orange font-bold" x-text="'· +' + p.points_earned + ' pts'"></span>
-                            </p>
-                        </div>
-                        <button type="button" @click="toggleLike(p)" :disabled="!auth || p.is_mine"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                :class="p.liked ? 'bg-red-100 text-red-600' : 'bg-white text-gray-500 ring-1 ring-gray-200 hover:bg-gray-100'">
-                            <i data-lucide="heart" class="w-4 h-4" :class="p.liked ? 'fill-current' : ''"></i>
-                            <span x-text="p.likes_count"></span>
-                        </button>
+                    <div class="space-y-3">
+                        <template x-for="i in 4" :key="i">
+                            <div class="flex gap-3">
+                                <div class="skeleton skeleton-circle w-9 h-9 flex-shrink-0"></div>
+                                <div class="flex-1 space-y-2">
+                                    <div class="bg-gray-100 rounded-2xl px-4 py-2 space-y-2">
+                                        <div class="skeleton skeleton-text w-24"></div>
+                                        <div class="skeleton skeleton-text w-full"></div>
+                                        <div class="skeleton skeleton-text w-2/3"></div>
+                                    </div>
+                                    <div class="skeleton skeleton-text w-16 ml-3"></div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </template>
-                <p x-show="!auth && !loading" class="text-center text-xs text-gray-400 pt-2">
-                    <a href="/login" class="text-soboa-blue font-bold">Connectez-vous</a> pour liker.
-                </p>
+                <template x-if="!loading && comments.length === 0">
+                    <p class="text-center text-gray-500 py-6">Aucun commentaire. Lancez la discussion !</p>
+                </template>
+                <template x-for="(c, idx) in comments" :key="c.id">
+                    <div class="flex gap-3 group">
+                        <div class="w-9 h-9 rounded-full bg-soboa-blue flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                            <span x-text="c.user_name ? c.user_name[0].toUpperCase() : '?'"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="bg-gray-100 rounded-2xl px-4 py-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-sm font-black text-soboa-text-dark" x-text="c.user_name + (c.is_mine ? ' (vous)' : '')"></span>
+                                    <button x-show="c.is_mine" @click="remove(c.id, idx)"
+                                            class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition focus:outline-none flex-shrink-0">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-700 break-words" x-text="c.body"></p>
+                            </div>
+                            <span class="text-[11px] text-gray-400 ml-3" x-text="c.created_at"></span>
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
     <script>
-        function matchPredictionsModal() {
+        function matchWallModal() {
             return {
                 isOpen: false,
                 loading: false,
-                items: [],
+                comments: [],
                 title: '',
                 auth: false,
+                body: '',
+                submitting: false,
+                notice: null,
+                noticeType: 'error',
                 matchId: null,
                 open(matchId) {
                     this.matchId = matchId;
                     this.isOpen = true;
+                    this.body = '';
+                    this.notice = null;
                     document.body.style.overflow = 'hidden';
                     this.load();
                 },
@@ -1036,38 +1088,114 @@
                 },
                 async load() {
                     this.loading = true;
-                    this.items = [];
+                    this.comments = [];
                     try {
-                        const r = await fetch(`/matches/${this.matchId}/predictions`, { headers: { 'Accept': 'application/json' } });
+                        const r = await fetch(`/matches/${this.matchId}/wall`, { headers: { 'Accept': 'application/json' } });
                         const d = await r.json();
-                        this.items = d.predictions || [];
+                        this.comments = d.comments || [];
                         this.title = d.match || '';
                         this.auth = !!d.auth;
                     } catch (e) {
-                        this.items = [];
+                        this.comments = [];
                     }
                     this.loading = false;
                     this.$nextTick(() => window.lucide && window.lucide.createIcons());
                 },
-                async toggleLike(p) {
-                    if (!this.auth || p.is_mine) return;
+                async post() {
+                    if (!this.auth) { window.location.href = '/login'; return; }
+                    if (!this.body.trim() || this.submitting) return;
+                    this.submitting = true;
+                    this.notice = null;
                     try {
-                        const r = await fetch(`/predictions/${p.id}/like`, {
+                        const r = await fetch(`/matches/${this.matchId}/wall`, {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'Accept': 'application/json'
-                            }
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ body: this.body })
                         });
                         if (r.status === 401) { window.location.href = '/login'; return; }
                         const d = await r.json();
-                        p.liked = d.liked;
-                        p.likes_count = d.count;
-                        this.$nextTick(() => window.lucide && window.lucide.createIcons());
-                    } catch (e) {}
+                        if (r.status === 201) {
+                            this.comments.unshift({ id: d.id, user_name: d.user_name, body: d.body, created_at: d.created_at, is_mine: true });
+                            this.body = '';
+                            this.$nextTick(() => window.lucide && window.lucide.createIcons());
+                        } else if (r.status === 202) {
+                            // En attente de modération
+                            this.body = '';
+                            this.noticeType = 'info';
+                            this.notice = d.message || 'Commentaire en attente de modération.';
+                        } else {
+                            // Rejeté (modération ou validation)
+                            this.noticeType = 'error';
+                            this.notice = d.message || 'Commentaire refusé.';
+                        }
+                    } finally {
+                        this.submitting = false;
+                    }
+                },
+                async remove(commentId, idx) {
+                    if (!confirm('Supprimer ce commentaire ?')) return;
+                    await fetch(`/matches/${this.matchId}/wall/${commentId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    this.comments.splice(idx, 1);
                 }
             };
         }
+    </script>
+
+    {{-- Placeholder shimmer pour toutes les images jusqu'à leur chargement (site entier + DOM dynamique). --}}
+    <script>
+        (function imagePlaceholders() {
+            function tag(img) {
+                if (img.dataset.skelBound) return;
+                img.dataset.skelBound = '1';
+                if (img.complete && img.naturalWidth > 0) return; // déjà chargée
+                img.classList.add('img-loading');
+                const done = () => img.classList.remove('img-loading');
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', done, { once: true });
+            }
+            function scan(root) {
+                if (root.querySelectorAll) root.querySelectorAll('img').forEach(tag);
+            }
+            const run = () => scan(document);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', run);
+            } else {
+                run();
+            }
+            // Images injectées dynamiquement (modaux, listes asynchrones)
+            const startObserver = () => new MutationObserver((muts) => {
+                muts.forEach((m) => m.addedNodes.forEach((n) => {
+                    if (n.nodeType !== 1) return;
+                    if (n.tagName === 'IMG') tag(n);
+                    // Évite de scanner le SVG généré par Lucide (aucune <img> dedans).
+                    else if (n.tagName !== 'svg' && n.tagName !== 'SVG') scan(n);
+                }));
+            }).observe(document.body, { childList: true, subtree: true });
+            if (document.body) startObserver();
+            else document.addEventListener('DOMContentLoaded', startObserver);
+        })();
+    </script>
+
+    {{-- Verrouiller l'orientation portrait (PWA standalone / navigateurs compatibles).
+         Côté wrapper natif Flutter, compléter avec SystemChrome.setPreferredOrientations([portraitUp]). --}}
+    <script>
+        (function lockPortrait() {
+            try {
+                if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                    screen.orientation.lock('portrait').catch(() => {});
+                }
+            } catch (e) { /* non supporté : le manifeste portrait prend le relais */ }
+        })();
     </script>
 </body>
 

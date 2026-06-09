@@ -1,4 +1,4 @@
-@props(['match', 'userPrediction' => null, 'favoriteTeamId' => null, 'tournamentEnded' => false])
+@props(['match', 'userPrediction' => null, 'trend' => null, 'favoriteTeamId' => null, 'tournamentEnded' => false])
 
 @php
     $homeTeam = $match->homeTeam ?? null;
@@ -29,6 +29,12 @@
             'createdAt' => $userPrediction->created_at->format('d/m/Y H:i'),
         ] : null,
     ];
+
+    // Tendance des pronostics (agrégée et anonyme)
+    $trendTotal = $trend['total'] ?? 0;
+    $pctHome = $trendTotal > 0 ? (int) round(($trend['home'] / $trendTotal) * 100) : 0;
+    $pctDraw = $trendTotal > 0 ? (int) round(($trend['draw'] / $trendTotal) * 100) : 0;
+    $pctAway = $trendTotal > 0 ? (int) round(($trend['away'] / $trendTotal) * 100) : 0;
 @endphp
 
 <article id="match-{{ $match->id }}"
@@ -123,8 +129,26 @@
         </div>
     @endif
 
+    {{-- Tendance des pronostics (agrégée, anonyme) --}}
+    <div id="trend-wrap-{{ $match->id }}" class="px-4 pb-3" @style(['display:none' => $trendTotal === 0])>
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Tendance</span>
+            <span class="text-[10px] text-gray-400 font-medium" data-trend-label>{{ $trendTotal }} {{ $trendTotal > 1 ? 'pronostics' : 'pronostic' }}</span>
+        </div>
+        <div class="flex h-6 rounded-md overflow-hidden text-white text-[10px] font-black bg-gray-100">
+            <div data-trend-home class="bg-soboa-blue flex items-center justify-center min-w-0" style="width: {{ $pctHome }}%">{{ $pctHome > 0 ? $pctHome.'%' : '' }}</div>
+            <div data-trend-draw class="bg-gray-400 flex items-center justify-center min-w-0" style="width: {{ $pctDraw }}%">{{ $pctDraw > 0 ? $pctDraw.'%' : '' }}</div>
+            <div data-trend-away class="bg-soboa-orange flex items-center justify-center min-w-0" style="width: {{ $pctAway }}%">{{ $pctAway > 0 ? $pctAway.'%' : '' }}</div>
+        </div>
+        <div class="flex justify-between text-[10px] font-bold mt-1 gap-2">
+            <span class="text-soboa-blue truncate">{{ $homeName }}</span>
+            <span class="text-gray-500 flex-shrink-0">Nul</span>
+            <span class="text-soboa-orange truncate text-right">{{ $awayName }}</span>
+        </div>
+    </div>
+
     {{-- Action footer --}}
-    <footer class="px-4 pb-4 pt-1 border-t border-gray-100 mt-1">
+    <footer id="match-footer-{{ $match->id }}" class="px-4 pb-4 pt-1 border-t border-gray-100 mt-1">
         @if($tournamentEnded)
             <div class="text-center text-sm text-gray-500 py-2">Pronostics fermés</div>
         @elseif($isFinished)
@@ -177,13 +201,16 @@
         @endif
     </footer>
 
-    {{-- Pronostics des autres + likes (ouvre le modal global unique) --}}
+    {{-- Mur de commentaires public (modal global) --}}
     <div class="px-4 pb-4 -mt-1">
         <button type="button"
-                @click="$dispatch('open-match-predictions', { matchId: {{ $match->id }} })"
-                class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold text-soboa-blue hover:text-soboa-blue-dark py-2 rounded-lg hover:bg-soboa-blue/5 transition-colors">
-            <i data-lucide="users" class="w-3.5 h-3.5"></i>
-            Voir les pronostics
+                @click="$dispatch('open-match-wall', { matchId: {{ $match->id }} })"
+                class="w-full inline-flex items-center justify-center gap-2 text-xs font-bold text-soboa-blue hover:text-white hover:bg-soboa-blue ring-1 ring-soboa-blue/20 py-2 rounded-lg transition-colors">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+            Commentaires
+            @if(($match->comments_count ?? 0) > 0)
+                <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-soboa-orange text-white text-[10px] font-black">{{ $match->comments_count }}</span>
+            @endif
         </button>
     </div>
 </article>
