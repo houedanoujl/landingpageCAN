@@ -11,7 +11,7 @@
     $isLive = $match->status === 'live';
     $isLocked = \Carbon\Carbon::parse($match->match_date)->isPast();
     $isFavorite = $favoriteTeamId && ($match->home_team_id == $favoriteTeamId || $match->away_team_id == $favoriteTeamId);
-    $isKnockout = in_array($match->phase, ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final']);
+    $isKnockout = $match->is_knockout; // accessor modèle : tout sauf group_stage (pas de nul possible)
 
     $payload = [
         'id' => $match->id,

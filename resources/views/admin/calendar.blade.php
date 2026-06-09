@@ -111,6 +111,7 @@
                                                         @php
                                                             $phaseBadges = [
                                                                 'group_stage' => ['text' => 'Poules', 'color' => 'blue'],
+                                                                'round_of_32' => ['text' => '1/16', 'color' => 'teal'],
                                                                 'round_of_16' => ['text' => '1/8', 'color' => 'purple'],
                                                                 'quarter_final' => ['text' => '1/4', 'color' => 'indigo'],
                                                                 'semi_final' => ['text' => '1/2', 'color' => 'pink'],
@@ -240,6 +241,24 @@
                 
                 <div class="space-y-8">
                     
+                    <!-- 1/16 de Finale -->
+                    @if(isset($knockoutMatches['round_of_32']) && $knockoutMatches['round_of_32']->count() > 0)
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-teal-600 to-teal-800 px-6 py-4">
+                            <h3 class="text-xl font-black text-white flex items-center gap-2">
+                                <span>🏟️</span> Seizièmes de Finale
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                @foreach($knockoutMatches['round_of_32'] as $match)
+                                    @include('admin.partials.bracket-match', ['match' => $match])
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- 1/8 de Finale -->
                     @if(isset($knockoutMatches['round_of_16']) && $knockoutMatches['round_of_16']->count() > 0)
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -329,7 +348,7 @@
                         @endif
                     </div>
 
-                    @if((!isset($knockoutMatches['round_of_16']) || $knockoutMatches['round_of_16']->count() == 0) && (!isset($knockoutMatches['quarter_final']) || $knockoutMatches['quarter_final']->count() == 0) && (!isset($knockoutMatches['semi_final']) || $knockoutMatches['semi_final']->count() == 0) && (!isset($knockoutMatches['final']) || $knockoutMatches['final']->count() == 0))
+                    @if($knockoutMatches->flatten()->isEmpty())
                         <div class="bg-white rounded-xl shadow-lg p-8 text-center">
                         <span class="text-6xl mb-4 block">📭</span>
                             <p class="text-xl font-bold text-gray-500">Les phases finales n'ont pas encore commencé</p>

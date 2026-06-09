@@ -34,10 +34,14 @@
             @endif
 
             <!-- Statistiques des phases -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
                 <div class="bg-white p-4 rounded-xl shadow text-center border-l-4 border-blue-500">
                     <div class="text-3xl font-bold text-blue-600">{{ $phaseStats['group_stage'] }}</div>
                     <div class="text-sm text-gray-600 font-medium">Phase de poules</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow text-center border-l-4 border-teal-500">
+                    <div class="text-3xl font-bold text-teal-600">{{ $phaseStats['round_of_32'] ?? 0 }}</div>
+                    <div class="text-sm text-gray-600 font-medium">1/16e de finale</div>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow text-center border-l-4 border-purple-500">
                     <div class="text-3xl font-bold text-purple-600">{{ $phaseStats['round_of_16'] }}</div>
@@ -72,6 +76,14 @@
                         <div class="font-bold text-blue-900">Phase de poules</div>
                         <div class="text-sm text-blue-700 mt-1">{{ $phaseStats['group_stage'] }} matchs</div>
                         <div class="text-xs text-blue-600 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Voir et gérer →</div>
+                    </a>
+
+                    <a href="{{ route('admin.phase-matches', 'round_of_32') }}"
+                        class="bg-teal-100 hover:bg-teal-200 p-4 rounded-lg text-center transition-colors border-2 border-teal-300 group">
+                        <div class="text-3xl mb-2">🏟️</div>
+                        <div class="font-bold text-teal-900">1/16e de finale</div>
+                        <div class="text-sm text-teal-700 mt-1">{{ $phaseStats['round_of_32'] ?? 0 }} matchs</div>
+                        <div class="text-xs text-teal-600 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Voir et gérer →</div>
                     </a>
 
                     <a href="{{ route('admin.phase-matches', 'round_of_16') }}"

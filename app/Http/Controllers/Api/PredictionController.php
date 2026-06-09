@@ -39,6 +39,8 @@ class PredictionController extends Controller
             'score_b' => 'required|integer|min:0|max:20',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
+            'predict_draw' => 'nullable',
+            'penalty_winner' => 'nullable|in:home,away',
         ]);
 
         // Check if venue geofencing is required
@@ -82,12 +84,36 @@ class PredictionController extends Controller
             ], 422);
         }
 
-        // Derive predicted_winner from scores
+        // Même règle que Web/PredictionController : pas de match nul en phase
+        // à élimination directe, le vainqueur aux tirs au but est obligatoire.
+        $predictDraw = filter_var($request->predict_draw, FILTER_VALIDATE_BOOLEAN);
+        $penaltyWinner = $request->penalty_winner;
+
+        if ($match->is_knockout) {
+            if ((int) $request->score_a === (int) $request->score_b
+                && !in_array($penaltyWinner, ['home', 'away'], true)) {
+                return response()->json([
+                    'error' => 'Pas de match nul en phase à élimination directe : indique le vainqueur aux tirs au but.',
+                ], 422);
+            }
+
+            if ((int) $request->score_a === (int) $request->score_b) {
+                $predictDraw = true;
+            }
+        } else {
+            // Phase de poules : un nul est un vrai nul, jamais de TAB.
+            $predictDraw = false;
+            $penaltyWinner = null;
+        }
+
+        // Derive predicted_winner from scores (vainqueur TAB si égalité en knockout)
         $predictedWinner = 'draw';
         if ($request->score_a > $request->score_b) {
             $predictedWinner = 'home';
         } elseif ($request->score_b > $request->score_a) {
             $predictedWinner = 'away';
+        } elseif ($predictDraw && $penaltyWinner) {
+            $predictedWinner = $penaltyWinner;
         }
 
         $prediction = Prediction::updateOrCreate(
@@ -99,6 +125,8 @@ class PredictionController extends Controller
                 'predicted_winner' => $predictedWinner,
                 'score_a' => $request->score_a,
                 'score_b' => $request->score_b,
+                'predict_draw' => $predictDraw,
+                'penalty_winner' => $penaltyWinner,
             ]
         );
 
@@ -133,10 +161,10 @@ class PredictionController extends Controller
                 'venue_bonus' => $venuePointsAwarded
             ],
             'user_points_total' => $user->points_total,
-            'venue' => [
+            'venue' => $nearbyVenue ? [
                 'id' => $nearbyVenue->id,
                 'name' => $nearbyVenue->name,
-            ],
+            ] : null,
         ]);
     }
 }

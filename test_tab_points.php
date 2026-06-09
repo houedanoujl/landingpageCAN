@@ -20,10 +20,16 @@ use App\Jobs\ProcessMatchPoints;
 // Test 1: Simuler un match avec TAB
 echo "=== TEST TIRS AU BUT ===\n\n";
 
-// Créer un match test
+// Créer un match test (équipes réelles de la base pour respecter la FK)
+$teams = \App\Models\Team::take(2)->pluck('id');
+if ($teams->count() < 2) {
+    echo "❌ Moins de 2 équipes en base\n";
+    exit(1);
+}
+
 $match = MatchGame::create([
-    'home_team_id' => 1,
-    'away_team_id' => 2,
+    'home_team_id' => $teams[0],
+    'away_team_id' => $teams[1],
     'team_a' => 'Test A',
     'team_b' => 'Test B',
     'match_date' => now(),

@@ -120,6 +120,28 @@ class PredictionController extends Controller
             return back()->with('error', 'Les pronostics sont fermés au début du match.');
         }
 
+        // Phase à élimination directe : pas de match nul possible.
+        // Une prédiction de scores égaux doit désigner un vainqueur aux tirs au but.
+        if ($match->is_knockout) {
+            if ((int) $request->score_a === (int) $request->score_b
+                && !in_array($request->penalty_winner, ['home', 'away'], true)) {
+                $message = 'Pas de match nul en phase à élimination directe : indique le vainqueur aux tirs au but.';
+                if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->with('error', $message);
+            }
+
+            // Égalité + vainqueur TAB valide : garantir la dérivation via penalty_winner,
+            // même si le client n'a pas envoyé le flag predict_draw.
+            if ((int) $request->score_a === (int) $request->score_b) {
+                $request->merge(['predict_draw' => true]);
+            }
+        } else {
+            // Phase de poules : un nul est un vrai nul, jamais de TAB.
+            $request->merge(['predict_draw' => false, 'penalty_winner' => null]);
+        }
+
         // Déterminer le gagnant prédit
         $predictedWinner = 'draw';
         // Convertir predict_draw en boolean (peut être string '0'/'1' depuis le formulaire)

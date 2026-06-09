@@ -633,7 +633,7 @@ class HomeController extends Controller
 
         // ===== PHASES FINALES (BRACKET) =====
         $knockoutMatches = MatchGame::with(['homeTeam', 'awayTeam'])
-            ->whereIn('phase', ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'])
+            ->whereIn('phase', ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'])
             ->orderBy('match_date')
             ->get()
             ->groupBy('phase');

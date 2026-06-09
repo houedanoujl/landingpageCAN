@@ -145,6 +145,7 @@ class MatchGame extends Model
     {
         $phases = [
             'group_stage' => 'Phase de poules',
+            'round_of_32' => '1/16e de finale',
             'round_of_16' => '1/8e de finale',
             'quarter_final' => 'Quart de finale',
             'semi_final' => 'Demi-finale',
@@ -153,6 +154,23 @@ class MatchGame extends Model
         ];
 
         return $phases[$this->phase] ?? $this->phase;
+    }
+
+    /**
+     * Phase à élimination directe : tout sauf la phase de poules.
+     * Un match nul y est impossible (tirs au but obligatoires).
+     */
+    public function getIsKnockoutAttribute(): bool
+    {
+        return $this->phase !== 'group_stage';
+    }
+
+    /**
+     * Le match nul n'est un pronostic valide qu'en phase de poules.
+     */
+    public function getAllowsDrawAttribute(): bool
+    {
+        return $this->phase === 'group_stage';
     }
 
     /**

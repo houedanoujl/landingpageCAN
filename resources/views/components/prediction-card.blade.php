@@ -127,8 +127,8 @@
             </div>
             
             @php
-                $knockoutPhases = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
-                $isKnockoutPhase = in_array($match->phase, $knockoutPhases);
+                // Accessor modèle : le nul n'est autorisé qu'en phase de poules.
+                $isKnockoutPhase = !$match->allows_draw;
             @endphp
             
             @if($isKnockoutPhase)

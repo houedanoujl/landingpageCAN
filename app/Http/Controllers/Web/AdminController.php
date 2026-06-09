@@ -113,31 +113,44 @@ class AdminController extends Controller
             return redirect('/')->with('error', 'Accès non autorisé.');
         }
 
+        // Filtres communs (recherche + statut), appliqués à la liste ET aux compteurs d'onglets
+        $applyFilters = function ($q) use ($request) {
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('team_a', 'like', "%{$search}%")
+                        ->orWhere('team_b', 'like', "%{$search}%")
+                        ->orWhere('group_name', 'like', "%{$search}%")
+                        ->orWhere('stadium', 'like', "%{$search}%")
+                        ->orWhereDate('match_date', 'like', "%{$search}%");
+                });
+            }
+            if ($request->filled('status')) {
+                $q->where('status', $request->status);
+            }
+        };
+
         $query = MatchGame::with(['homeTeam', 'awayTeam', 'animations']);
+        $applyFilters($query);
 
-        // Filtre par recherche (équipe, groupe, date)
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('team_a', 'like', "%{$search}%")
-                    ->orWhere('team_b', 'like', "%{$search}%")
-                    ->orWhere('group_name', 'like', "%{$search}%")
-                    ->orWhere('stadium', 'like', "%{$search}%")
-                    ->orWhereDate('match_date', 'like', "%{$search}%");
-            });
-        }
-
-        // Filtre par statut
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        // Filtre par phase (onglets)
+        $validPhases = ['group_stage', 'round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
+        if ($request->filled('phase') && in_array($request->phase, $validPhases, true)) {
+            $query->where('phase', $request->phase);
         }
 
         $matches = $query->orderBy('match_date', 'asc')->paginate(30)->withQueryString();
-        
+
+        // Compteurs par phase pour les badges d'onglets (hors pagination)
+        $phaseCounts = tap(MatchGame::query(), $applyFilters)
+            ->selectRaw('phase, COUNT(*) as total')
+            ->groupBy('phase')
+            ->pluck('total', 'phase');
+
         // Récupérer toutes les équipes pour les sélecteurs
         $teams = Team::orderBy('name')->get();
 
-        return view('admin.matches', compact('matches', 'teams'));
+        return view('admin.matches', compact('matches', 'teams', 'phaseCounts'));
     }
 
     /**
@@ -2600,8 +2613,8 @@ class AdminController extends Controller
             $service = app(\App\Services\TournamentService::class);
             $bracket = $service->createKnockoutBracket();
 
-            return back()->with('success', 'Tableau à élimination directe créé avec succès ! ' .
-                '8 matchs de 1/8e, 4 quarts, 2 demis, 1 finale et 1 match pour la 3e place.');
+            return back()->with('success', 'Tableau Coupe du Monde 2026 créé avec succès ! ' .
+                '16 matchs de 1/16e, 8 huitièmes, 4 quarts, 2 demies, match pour la 3e place et finale (n°73 à 104).');
 
         } catch (\Exception $e) {
             return back()->with('error', 'Erreur : ' . $e->getMessage());

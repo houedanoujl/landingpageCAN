@@ -58,7 +58,21 @@
       "Bash(grep -n '{{ $team->name }}' resources/views/admin/matches.blade.php)",
       "Bash(sed -i 's/{{ \\\\$team->name }}/{{ \\\\$team->display_name }}/g' resources/views/admin/matches.blade.php)",
       "Bash(sed -i 's/\\\\$nextMatch->homeTeam->name/\\\\$nextMatch->home_name_fr/g; s/\\\\$nextMatch->awayTeam->name/\\\\$nextMatch->away_name_fr/g' resources/views/welcome.blade.php)",
-      "Bash(sed -i 's/\\\\$match->homeTeam->name ?? \\\\$match->team_a ?? '\\\\''?'\\\\''/\\\\$match->home_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->awayTeam->name ?? \\\\$match->team_b ?? '\\\\''?'\\\\''/\\\\$match->away_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->homeTeam->name ?? '\\\\''?'\\\\''/\\\\$match->home_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->awayTeam->name ?? '\\\\''?'\\\\''/\\\\$match->away_name_fr ?? '\\\\''?'\\\\''/g' resources/views/calendar.blade.php)"
+      "Bash(sed -i 's/\\\\$match->homeTeam->name ?? \\\\$match->team_a ?? '\\\\''?'\\\\''/\\\\$match->home_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->awayTeam->name ?? \\\\$match->team_b ?? '\\\\''?'\\\\''/\\\\$match->away_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->homeTeam->name ?? '\\\\''?'\\\\''/\\\\$match->home_name_fr ?? '\\\\''?'\\\\''/g; s/\\\\$match->awayTeam->name ?? '\\\\''?'\\\\''/\\\\$match->away_name_fr ?? '\\\\''?'\\\\''/g' resources/views/calendar.blade.php)",
+      "Bash(php -l app/Models/MatchGame.php)",
+      "Bash(php -l app/Http/Controllers/Api/PredictionController.php)",
+      "Bash(php -l app/Http/Controllers/Web/PredictionController.php)",
+      "Bash(php -l test_knockout_draw_rule.php)",
+      "Bash(php test_knockout_draw_rule.php)",
+      "Bash(MSYS_NO_PATHCONV=1 docker compose exec -T laravel.test php /app/test_knockout_draw_rule.php)",
+      "Bash(MSYS_NO_PATHCONV=1 docker compose exec -T laravel.test php /app/test_tab_points.php)",
+      "Bash(MSYS_NO_PATHCONV=1 docker compose exec -T laravel.test php -r ' *)",
+      "Bash(php -l app/Http/Controllers/Web/AdminController.php)",
+      "Bash(php -l app/Http/Controllers/Web/HomeController.php)",
+      "Bash(php -l app/Services/TournamentService.php)",
+      "Bash(php -l app/Observers/MatchObserver.php)",
+      "Bash(MSYS_NO_PATHCONV=1 docker compose exec -T laravel.test php /app/test_bracket_propagation.php)",
+      "Bash(php -l config/game.php)"
     ]
   }
 }

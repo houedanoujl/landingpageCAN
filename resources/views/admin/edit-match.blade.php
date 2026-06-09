@@ -59,6 +59,7 @@
                         <select name="phase" required onchange="checkForPenalties()" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                             <option value="">Sélectionner...</option>
                             <option value="group_stage" {{ old('phase', $match->phase) === 'group_stage' ? 'selected' : '' }}>Phase de poules</option>
+                            <option value="round_of_32" {{ old('phase', $match->phase) === 'round_of_32' ? 'selected' : '' }}>1/16e de finale</option>
                             <option value="round_of_16" {{ old('phase', $match->phase) === 'round_of_16' ? 'selected' : '' }}>1/8e de finale</option>
                             <option value="quarter_final" {{ old('phase', $match->phase) === 'quarter_final' ? 'selected' : '' }}>1/4 de finale</option>
                             <option value="semi_final" {{ old('phase', $match->phase) === 'semi_final' ? 'selected' : '' }}>1/2 finale (Demi-finales)</option>
@@ -369,7 +370,7 @@
             const penaltiesSection = document.getElementById('penaltiesSection');
 
             // Les TAB ne sont possibles que dans les phases à élimination directe
-            const knockoutPhases = ['round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
+            const knockoutPhases = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
             const isKnockoutPhase = knockoutPhases.includes(phase);
 
             // Afficher la section TAB si : égalité ET phase à élimination directe

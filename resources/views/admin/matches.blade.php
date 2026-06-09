@@ -153,6 +153,40 @@
                 @endif
             </div>
 
+            <!-- Onglets par phase -->
+            @php
+                $tabPhases = [
+                    null => 'Toutes',
+                    'group_stage' => 'Poules',
+                    'round_of_32' => '1/16e',
+                    'round_of_16' => '1/8e',
+                    'quarter_final' => '1/4',
+                    'semi_final' => '1/2',
+                    'third_place' => '3e place',
+                    'final' => 'Finale',
+                ];
+                $currentPhase = request('phase');
+                $baseParams = array_filter(['search' => request('search'), 'status' => request('status')]);
+                $totalCount = $phaseCounts->sum();
+            @endphp
+            <div class="bg-white rounded-xl shadow-md p-2 mb-6 flex flex-wrap gap-1">
+                @foreach($tabPhases as $phaseKey => $label)
+                    @php
+                        $isActive = $currentPhase === $phaseKey || (!$currentPhase && $phaseKey === null);
+                        $count = $phaseKey === null ? $totalCount : ($phaseCounts[$phaseKey] ?? 0);
+                        $params = $phaseKey ? array_merge($baseParams, ['phase' => $phaseKey]) : $baseParams;
+                    @endphp
+                    <a href="{{ route('admin.matches', $params) }}"
+                       class="px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2
+                              {{ $isActive ? 'bg-soboa-blue text-white shadow' : 'text-gray-600 hover:bg-gray-100' }}">
+                        {{ $label }}
+                        <span class="text-xs px-2 py-0.5 rounded-full {{ $isActive ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
+                            {{ $count }}
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+
             <!-- Bulk Delete Section -->
             <form id="bulkDeleteForm" action="{{ route('admin.bulk-delete-matches') }}" method="POST" class="mb-6">
                 @csrf
@@ -184,6 +218,7 @@
                     // Noms des phases
                     $phaseNames = [
                         'group_stage' => 'Phase de Poules',
+                        'round_of_32' => 'Seizièmes de finale',
                         'round_of_16' => 'Huitièmes de finale',
                         'quarter_final' => 'Quarts de finale',
                         'semi_final' => 'Demi-finales',

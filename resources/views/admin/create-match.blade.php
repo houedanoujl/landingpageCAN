@@ -63,6 +63,7 @@
                             <select name="phase" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                                 <option value="">Sélectionner...</option>
                                 <option value="group_stage" {{ old('phase') === 'group_stage' ? 'selected' : '' }}>Phase de poules</option>
+                                <option value="round_of_32" {{ old('phase') === 'round_of_32' ? 'selected' : '' }}>1/16e de finale</option>
                                 <option value="round_of_16" {{ old('phase') === 'round_of_16' ? 'selected' : '' }}>1/8e de finale</option>
                                 <option value="quarter_final" {{ old('phase') === 'quarter_final' ? 'selected' : '' }}>1/4 de finale</option>
                                 <option value="semi_final" {{ old('phase') === 'semi_final' ? 'selected' : '' }}>1/2 finale (Demi-finales)</option>

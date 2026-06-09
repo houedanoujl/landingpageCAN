@@ -70,6 +70,7 @@
                     <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold">
                         {{ match($match->phase) {
                             'group_stage' => 'Phase de poules',
+                            'round_of_32' => '1/16e de finale',
                             'round_of_16' => '1/8e de finale',
                             'quarter_final' => 'Quart de finale',
                             'semi_final' => 'Demi-finale',

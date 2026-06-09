@@ -18,11 +18,15 @@ class TournamentService
         try {
             DB::beginTransaction();
 
-            // Récupérer tous les groupes
+            // Récupérer les groupes officiels (A-L pour la Coupe du Monde 2026,
+            // en excluant les groupes de test type "TEST")
             $groups = MatchGame::where('phase', 'group_stage')
                 ->whereNotNull('group_name')
                 ->distinct()
-                ->pluck('group_name');
+                ->pluck('group_name')
+                ->filter(fn ($g) => preg_match('/^[A-L]$/', $g))
+                ->sort()
+                ->values();
 
             $qualifiedTeams = [];
 
@@ -30,23 +34,38 @@ class TournamentService
                 // Calculer le classement du groupe
                 $groupStandings = $this->calculateGroupStandings($groupName);
 
-                // Les 2 premiers de chaque groupe se qualifient (CAN = 6 groupes de 4)
-                // Total: 12 équipes qualifiées + 4 meilleurs 3èmes = 16 équipes
+                // Coupe du Monde 2026 : 12 groupes de 4, les 2 premiers se qualifient
+                // (24 équipes) + les 8 meilleurs 3èmes = 32 équipes en 1/16e de finale
                 if (count($groupStandings) >= 2) {
                     $qualifiedTeams[$groupName] = [
                         'first' => $groupStandings[0],
                         'second' => $groupStandings[1],
                         'third' => $groupStandings[2] ?? null,
                     ];
+
+                    // Remplir automatiquement les slots "1X" / "2X" du bracket
+                    // (uniquement si la propagation auto est activée ET que
+                    // tous les matchs du groupe sont terminés). Par défaut
+                    // l'admin place les équipes à la main.
+                    if (config('game.auto_bracket_propagation', false) && $this->isGroupFinished($groupName)) {
+                        $this->fillBracketSlot('1' . $groupName, $groupStandings[0]['team_id']);
+                        $this->fillBracketSlot('2' . $groupName, $groupStandings[1]['team_id']);
+                    }
                 }
             }
 
-            // Sélectionner les 4 meilleurs 3èmes
+            // Sélectionner les 8 meilleurs 3èmes (critères FIFA : points,
+            // différence de buts, buts marqués). Leur affectation aux slots
+            // "3X/Y/Z" du bracket suit la table officielle FIFA et reste
+            // à faire manuellement par l'admin (bouton "Qualifier une équipe").
             $thirdPlaceTeams = collect($qualifiedTeams)
                 ->pluck('third')
                 ->filter()
-                ->sortByDesc('points')
-                ->take(4)
+                ->sort(function ($a, $b) {
+                    return [$b['points'], $b['goal_difference'], $b['goals_for']]
+                        <=> [$a['points'], $a['goal_difference'], $a['goals_for']];
+                })
+                ->take(8)
                 ->values();
 
             Log::info('Équipes qualifiées', [
@@ -187,8 +206,87 @@ class TournamentService
     }
 
     /**
+     * Indique si tous les matchs d'un groupe sont terminés.
+     */
+    public function isGroupFinished(string $groupName): bool
+    {
+        return !MatchGame::where('phase', 'group_stage')
+            ->where('group_name', $groupName)
+            ->where('status', '!=', 'finished')
+            ->exists();
+    }
+
+    /**
+     * Remplit un slot du bracket identifié par son code FIFA
+     * ("1A", "2B", "W73", "L101", ...) avec l'équipe donnée.
+     * Ne touche que les matchs à élimination directe dont le slot
+     * porte encore le code (jamais d'écrasement d'une équipe déjà placée).
+     */
+    public function fillBracketSlot(string $code, int $teamId): void
+    {
+        $team = Team::find($teamId);
+        if (!$team) {
+            return;
+        }
+
+        $knockoutPhases = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'];
+
+        MatchGame::whereIn('phase', $knockoutPhases)
+            ->where('team_a', $code)
+            ->get()
+            ->each(function (MatchGame $m) use ($teamId, $team, $code) {
+                $m->update(['home_team_id' => $teamId, 'team_a' => $team->name]);
+                Log::info('Slot bracket rempli (home)', ['code' => $code, 'match_id' => $m->id, 'team' => $team->name]);
+            });
+
+        MatchGame::whereIn('phase', $knockoutPhases)
+            ->where('team_b', $code)
+            ->get()
+            ->each(function (MatchGame $m) use ($teamId, $team, $code) {
+                $m->update(['away_team_id' => $teamId, 'team_b' => $team->name]);
+                Log::info('Slot bracket rempli (away)', ['code' => $code, 'match_id' => $m->id, 'team' => $team->name]);
+            });
+    }
+
+    /**
+     * Détermine le vainqueur et le perdant d'un match terminé,
+     * en tenant compte des tirs au but (colonne `winner` si score égal).
+     *
+     * @return array{0:int|null,1:int|null} [winnerTeamId, loserTeamId]
+     */
+    public function resolveWinnerLoser(MatchGame $match): array
+    {
+        if ($match->score_a === null || $match->score_b === null) {
+            return [null, null];
+        }
+
+        if ($match->score_a > $match->score_b) {
+            return [$match->home_team_id, $match->away_team_id];
+        }
+        if ($match->score_b > $match->score_a) {
+            return [$match->away_team_id, $match->home_team_id];
+        }
+
+        // Égalité => le vainqueur des tirs au but est dans `winner`
+        if ($match->winner === 'home') {
+            return [$match->home_team_id, $match->away_team_id];
+        }
+        if ($match->winner === 'away') {
+            return [$match->away_team_id, $match->home_team_id];
+        }
+
+        return [null, null];
+    }
+
+    /**
      * Mettre à jour l'équipe dans un match à élimination directe
      * quand son match parent est terminé.
+     *
+     * Deux mécanismes :
+     *  1. Codes FIFA "W{n}" / "L{n}" (n = match_number) présents dans les
+     *     slots team_a/team_b du bracket importé (Coupe du Monde 2026).
+     *     Couvre aussi le match pour la 3e place (perdants des demies).
+     *  2. Liens parent_match_1_id / parent_match_2_id (mécanisme historique).
      */
     public function updateKnockoutMatchTeams(MatchGame $finishedMatch)
     {
@@ -196,12 +294,22 @@ class TournamentService
             return;
         }
 
-        $winnerId = $finishedMatch->winner_team_id;
+        [$winnerId, $loserId] = $this->resolveWinnerLoser($finishedMatch);
+
         if (!$winnerId) {
-            Log::warning('Match terminé sans gagnant (égalité?)', ['match_id' => $finishedMatch->id]);
+            Log::warning('Match terminé sans gagnant (égalité sans vainqueur TAB ?)', ['match_id' => $finishedMatch->id]);
             return;
         }
 
+        // 1. Propagation par codes FIFA (W73, L101, ...)
+        if ($finishedMatch->match_number) {
+            $this->fillBracketSlot('W' . $finishedMatch->match_number, $winnerId);
+            if ($loserId) {
+                $this->fillBracketSlot('L' . $finishedMatch->match_number, $loserId);
+            }
+        }
+
+        // 2. Mécanisme historique par liens parents
         $winner = Team::find($winnerId);
         if (!$winner) {
             return;
@@ -239,150 +347,115 @@ class TournamentService
     }
 
     /**
-     * Créer le tableau complet du tournoi à élimination directe.
+     * Tableau officiel Coupe du Monde 2026 (matchs n°73 à 104).
+     * Slots au format FIFA :
+     *  - "1A"/"2A"        : 1er / 2e du groupe A (remplis par qualifyTeamsFromGroupStage)
+     *  - "3C/D/E/F"       : meilleur 3e parmi ces groupes (affectation manuelle admin)
+     *  - "W73" / "L101"   : vainqueur / perdant du match n°73 / n°101 (propagation auto)
+     */
+    private const WORLD_CUP_BRACKET = [
+        'round_of_32' => [
+            73 => ['2A', '2B'],
+            74 => ['1E', '3A/B/C/D/F'],
+            75 => ['1F', '2C'],
+            76 => ['1C', '2F'],
+            77 => ['1I', '3C/D/F/G/H'],
+            78 => ['2E', '2I'],
+            79 => ['1A', '3C/E/F/H/I'],
+            80 => ['1L', '3E/H/I/J/K'],
+            81 => ['1D', '3B/E/F/I/J'],
+            82 => ['1G', '3A/E/H/I/J'],
+            83 => ['2K', '2L'],
+            84 => ['1H', '2J'],
+            85 => ['1B', '3E/F/G/I/J'],
+            86 => ['1J', '2H'],
+            87 => ['1K', '3D/E/I/J/L'],
+            88 => ['2D', '2G'],
+        ],
+        'round_of_16' => [
+            89 => ['W74', 'W77'],
+            90 => ['W73', 'W75'],
+            91 => ['W76', 'W78'],
+            92 => ['W79', 'W80'],
+            93 => ['W83', 'W84'],
+            94 => ['W81', 'W82'],
+            95 => ['W86', 'W88'],
+            96 => ['W85', 'W87'],
+        ],
+        'quarter_final' => [
+            97 => ['W89', 'W90'],
+            98 => ['W93', 'W94'],
+            99 => ['W91', 'W92'],
+            100 => ['W95', 'W96'],
+        ],
+        'semi_final' => [
+            101 => ['W97', 'W98'],
+            102 => ['W99', 'W100'],
+        ],
+        'third_place' => [
+            103 => ['L101', 'L102'],
+        ],
+        'final' => [
+            104 => ['W101', 'W102'],
+        ],
+    ];
+
+    /**
+     * Créer le tableau complet du tournoi à élimination directe
+     * (format Coupe du Monde 2026 : 1/16e -> finale, matchs n°73 à 104).
+     *
+     * Refuse de s'exécuter si un bracket existe déjà (anti-duplication).
      */
     public function createKnockoutBracket()
     {
+        $knockoutPhases = array_keys(self::WORLD_CUP_BRACKET);
+
+        if (MatchGame::whereIn('phase', $knockoutPhases)->exists()) {
+            throw new \Exception(
+                'Un tableau à élimination directe existe déjà. ' .
+                'Supprimez les matchs des phases finales avant d\'en régénérer un.'
+            );
+        }
+
         DB::beginTransaction();
 
         try {
-            // 1. Créer la FINALE
-            $final = MatchGame::create([
-                'phase' => 'final',
-                'match_number' => 1,
-                'bracket_position' => 1,
-                'display_order' => 100,
-                'team_a' => 'À déterminer',
-                'team_b' => 'À déterminer',
-                'stadium' => 'À définir',
-                'match_date' => now()->addDays(45), // À ajuster
-                'status' => 'scheduled',
-            ]);
+            $created = [];
+            // Décalage de date indicatif par phase (à ajuster ensuite dans l'admin)
+            $daysOffset = [
+                'round_of_32' => 17,
+                'round_of_16' => 22,
+                'quarter_final' => 27,
+                'semi_final' => 31,
+                'third_place' => 34,
+                'final' => 35,
+            ];
 
-            // 2. Créer le match pour la 3e place
-            $thirdPlace = MatchGame::create([
-                'phase' => 'third_place',
-                'match_number' => 1,
-                'bracket_position' => 1,
-                'display_order' => 99,
-                'team_a' => 'À déterminer',
-                'team_b' => 'À déterminer',
-                'stadium' => 'À définir',
-                'match_date' => now()->addDays(44), // Avant la finale
-                'status' => 'scheduled',
-            ]);
-
-            // 3. Créer les DEMI-FINALES
-            $semi1 = MatchGame::create([
-                'phase' => 'semi_final',
-                'match_number' => 1,
-                'bracket_position' => 1,
-                'display_order' => 51,
-                'team_a' => 'À déterminer',
-                'team_b' => 'À déterminer',
-                'stadium' => 'À définir',
-                'match_date' => now()->addDays(40),
-                'status' => 'scheduled',
-                'winner_goes_to' => 'home',
-            ]);
-
-            $semi2 = MatchGame::create([
-                'phase' => 'semi_final',
-                'match_number' => 2,
-                'bracket_position' => 2,
-                'display_order' => 52,
-                'team_a' => 'À déterminer',
-                'team_b' => 'À déterminer',
-                'stadium' => 'À définir',
-                'match_date' => now()->addDays(40),
-                'status' => 'scheduled',
-                'winner_goes_to' => 'away',
-            ]);
-
-            // Lier les demi-finales à la finale
-            $final->update([
-                'parent_match_1_id' => $semi1->id,
-                'parent_match_2_id' => $semi2->id,
-            ]);
-
-            // Lier les perdants des demi-finales au match pour la 3e place
-            // Note: Cela nécessiterait une logique supplémentaire pour les perdants
-
-            // 4. Créer les QUARTS DE FINALE (4 matchs)
-            $quarters = [];
-            for ($i = 1; $i <= 4; $i++) {
-                $quarters[$i] = MatchGame::create([
-                    'phase' => 'quarter_final',
-                    'match_number' => $i,
-                    'bracket_position' => $i,
-                    'display_order' => 40 + $i,
-                    'team_a' => 'À déterminer',
-                    'team_b' => 'À déterminer',
-                    'stadium' => 'À définir',
-                    'match_date' => now()->addDays(35),
-                    'status' => 'scheduled',
-                ]);
+            foreach (self::WORLD_CUP_BRACKET as $phase => $matches) {
+                $position = 1;
+                foreach ($matches as $number => [$slotA, $slotB]) {
+                    $created[$phase][] = MatchGame::create([
+                        'phase' => $phase,
+                        'match_number' => $number,
+                        'bracket_position' => $position,
+                        'display_order' => $number,
+                        'team_a' => $slotA,
+                        'team_b' => $slotB,
+                        'stadium' => 'À définir',
+                        'match_date' => now()->addDays($daysOffset[$phase])->addHours($position),
+                        'status' => 'scheduled',
+                    ]);
+                    $position++;
+                }
             }
-
-            // Lier les quarts aux demi-finales
-            $semi1->update([
-                'parent_match_1_id' => $quarters[1]->id,
-                'parent_match_2_id' => $quarters[2]->id,
-            ]);
-
-            $semi2->update([
-                'parent_match_1_id' => $quarters[3]->id,
-                'parent_match_2_id' => $quarters[4]->id,
-            ]);
-
-            // 5. Créer les 1/8e DE FINALE (8 matchs)
-            $roundOf16 = [];
-            for ($i = 1; $i <= 8; $i++) {
-                $roundOf16[$i] = MatchGame::create([
-                    'phase' => 'round_of_16',
-                    'match_number' => $i,
-                    'bracket_position' => $i,
-                    'display_order' => 30 + $i,
-                    'team_a' => 'À déterminer',
-                    'team_b' => 'À déterminer',
-                    'stadium' => 'À définir',
-                    'match_date' => now()->addDays(30),
-                    'status' => 'scheduled',
-                ]);
-            }
-
-            // Lier les 1/8e aux quarts
-            $quarters[1]->update([
-                'parent_match_1_id' => $roundOf16[1]->id,
-                'parent_match_2_id' => $roundOf16[2]->id,
-            ]);
-
-            $quarters[2]->update([
-                'parent_match_1_id' => $roundOf16[3]->id,
-                'parent_match_2_id' => $roundOf16[4]->id,
-            ]);
-
-            $quarters[3]->update([
-                'parent_match_1_id' => $roundOf16[5]->id,
-                'parent_match_2_id' => $roundOf16[6]->id,
-            ]);
-
-            $quarters[4]->update([
-                'parent_match_1_id' => $roundOf16[7]->id,
-                'parent_match_2_id' => $roundOf16[8]->id,
-            ]);
 
             DB::commit();
 
-            Log::info('Tableau à élimination directe créé avec succès');
+            Log::info('Tableau Coupe du Monde 2026 créé', [
+                'matchs' => collect($created)->map(fn ($m) => count($m)),
+            ]);
 
-            return [
-                'final' => $final,
-                'third_place' => $thirdPlace,
-                'semi_finals' => [$semi1, $semi2],
-                'quarter_finals' => $quarters,
-                'round_of_16' => $roundOf16,
-            ];
+            return $created;
 
         } catch (\Exception $e) {
             DB::rollBack();

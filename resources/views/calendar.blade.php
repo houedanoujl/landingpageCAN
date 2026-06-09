@@ -304,6 +304,24 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
 
 <div class="max-w-7xl mx-auto space-y-6">
     
+    {{-- 1/16 de Finale --}}
+    @if(isset($knockoutMatches['round_of_32']) && $knockoutMatches['round_of_32']->count() > 0)
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-teal-600 to-teal-800 px-4 py-3">
+            <h3 class="text-lg font-black text-white flex items-center gap-2">
+                <span></span> Seizièmes de Finale
+            </h3>
+        </div>
+        <div class="p-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                @foreach($knockoutMatches['round_of_32'] as $match)
+                    @include('partials.bracket-match-public', ['match' => $match])
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- 1/8 de Finale --}}
     @if(isset($knockoutMatches['round_of_16']) && $knockoutMatches['round_of_16']->count() > 0)
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -393,7 +411,7 @@ $dayNames = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'D
         @endif
     </div>
 
-    @if((!isset($knockoutMatches['round_of_16']) || $knockoutMatches['round_of_16']->count() == 0) && (!isset($knockoutMatches['quarter_final']) || $knockoutMatches['quarter_final']->count() == 0) && (!isset($knockoutMatches['semi_final']) || $knockoutMatches['semi_final']->count() == 0) && (!isset($knockoutMatches['final']) || $knockoutMatches['final']->count() == 0))
+    @if($knockoutMatches->flatten()->isEmpty())
         <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center">
             <span class="text-6xl mb-4 block"></span>
             <p class="text-xl font-bold text-white">Les phases finales n'ont pas encore commencé</p>

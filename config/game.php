@@ -35,6 +35,16 @@ return [
     'require_venue_geofencing' => env('REQUIRE_VENUE_GEOFENCING', false),
 
     /**
+     * Propagation automatique du bracket (Coupe du Monde 2026).
+     *
+     * false = l'admin place lui-même les équipes des phases finales à la main
+     *         (slots W{n}/L{n}/1X/2X jamais remplis automatiquement)
+     * true  = le vainqueur d'un match terminé remplit automatiquement le slot
+     *         du tour suivant, et la qualification remplit les slots 1X/2X
+     */
+    'auto_bracket_propagation' => env('AUTO_BRACKET_PROPAGATION', false),
+
+    /**
      * Bonus points awarded for making predictions from a partner venue
      * 
      * Default: 4 points per day
