@@ -13,8 +13,28 @@ use Illuminate\Support\Facades\DB;
 class PointsService
 {
     /**
+     * Sources qui comptent toutes pour le SEUL point "connexion quotidienne".
+     * 'login' = connexion explicite, 'daily_activity' = première activité du jour
+     * pour les sessions qui ne se reconnectent jamais. Elles partagent le même
+     * plafond : +1 point par jour calendaire, jamais 2.
+     */
+    private const DAILY_POINT_SOURCES = ['login', 'daily_activity'];
+
+    /**
+     * Indique si l'utilisateur a déjà reçu son point quotidien aujourd'hui,
+     * quelle que soit la source (login OU activité).
+     */
+    private function hasDailyPointToday(User $user): bool
+    {
+        return PointLog::where('user_id', $user->id)
+            ->whereIn('source', self::DAILY_POINT_SOURCES)
+            ->whereDate('created_at', Carbon::today())
+            ->exists();
+    }
+
+    /**
      * Award daily login points.
-     * Limit 1x/day.
+     * Limit 1x/day (partagé avec daily_activity).
      */
     public function awardDailyLoginPoints(User $user): void
     {
@@ -23,17 +43,10 @@ class PointsService
             return;
         }
 
-        $today = Carbon::today();
-
-        // Check if user already logged in today and got points
-        $alreadyAwarded = PointLog::where('user_id', $user->id)
-            ->where('source', 'login')
-            ->whereDate('created_at', $today)
-            ->exists();
-
-        if (!$alreadyAwarded) {
+        if (!$this->hasDailyPointToday($user)) {
             DB::transaction(function () use ($user) {
                 $user->increment('points_total', 1);
+                $user->update(['last_daily_reward_at' => Carbon::today()]);
                 PointLog::create([
                     'user_id' => $user->id,
                     'source' => 'login',
@@ -44,8 +57,31 @@ class PointsService
     }
 
     /**
+     * Sources qui comptent toutes pour le SEUL bonus venue de +4/jour.
+     * RÈGLE MÉTIER : les 4 points "visite lieu partenaire" exigent un check-in
+     * + un pronostic (attribués via awardPredictionVenuePoints). Le plafond est
+     * partagé entre les deux sources historiques pour interdire tout cumul +8.
+     */
+    private const VENUE_BONUS_SOURCES = ['venue_visit', 'bar_visit'];
+
+    /**
+     * Indique si l'utilisateur a déjà reçu son bonus venue (+4) aujourd'hui,
+     * quelle que soit la source historique.
+     */
+    private function hasVenueBonusToday(User $user): bool
+    {
+        return PointLog::where('user_id', $user->id)
+            ->whereIn('source', self::VENUE_BONUS_SOURCES)
+            ->whereDate('created_at', Carbon::today())
+            ->exists();
+    }
+
+    /**
      * Award points for bar visit (geofencing).
-     * Limit 1x/day.
+     *
+     * DÉPRÉCIÉ pour l'attribution directe : la règle métier exige check-in
+     * + pronostic (voir awardPredictionVenuePoints). Conservé pour l'API
+     * historique, mais partage le même plafond quotidien de +4.
      *
      * @param int|null $barId The ID of the bar visited
      * @return int Points awarded (0 if already awarded today)
@@ -57,14 +93,7 @@ class PointsService
             return 0;
         }
 
-        $today = Carbon::today();
-
-        $alreadyAwarded = PointLog::where('user_id', $user->id)
-            ->where('source', 'bar_visit')
-            ->whereDate('created_at', $today)
-            ->exists();
-
-        if (!$alreadyAwarded) {
+        if (!$this->hasVenueBonusToday($user)) {
              DB::transaction(function () use ($user, $barId) {
                 $user->increment('points_total', 4);
                 PointLog::create([
@@ -110,14 +139,8 @@ class PointsService
             return 0;
         }
 
-        $today = Carbon::today();
-
-        $alreadyAwarded = PointLog::where('user_id', $user->id)
-            ->where('source', 'venue_visit')
-            ->whereDate('created_at', $today)
-            ->exists();
-
-        if (!$alreadyAwarded) {
+        // Plafond quotidien partagé avec bar_visit : max +4/jour toutes sources venue.
+        if (!$this->hasVenueBonusToday($user)) {
             DB::transaction(function () use ($user, $barId, $matchId) {
                 $user->increment('points_total', 4);
                 PointLog::create([
@@ -198,13 +221,8 @@ class PointsService
 
         $today = Carbon::today();
 
-        // Double-check to avoid race conditions
-        $alreadyAwarded = PointLog::where('user_id', $user->id)
-            ->where('source', 'daily_activity')
-            ->whereDate('created_at', $today)
-            ->exists();
-
-        if ($alreadyAwarded) {
+        // Plafond partagé avec 'login' : pas de double point quotidien.
+        if ($this->hasDailyPointToday($user)) {
             return [
                 'awarded' => false,
                 'points' => 0,

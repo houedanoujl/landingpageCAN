@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\PointsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class DailyRewardController extends Controller
 {
@@ -18,6 +18,17 @@ class DailyRewardController extends Controller
     }
 
     /**
+     * Résout l'utilisateur courant via la session applicative (session('user_id')),
+     * cohérent avec le reste de l'app (l'auth Laravel n'est pas utilisée).
+     */
+    private function currentUser(): ?User
+    {
+        $userId = session('user_id');
+
+        return $userId ? User::find($userId) : null;
+    }
+
+    /**
      * Heartbeat endpoint - called by frontend on visibility change or periodic check.
      * Awards daily points if eligible.
      * 
@@ -26,14 +37,15 @@ class DailyRewardController extends Controller
      */
     public function heartbeat(Request $request): JsonResponse
     {
-        if (!Auth::check()) {
+        $user = $this->currentUser();
+
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Non authentifié',
             ], 401);
         }
 
-        $user = Auth::user();
         $result = $this->pointsService->awardDailyActivityPoints($user);
 
         return response()->json([
@@ -55,14 +67,15 @@ class DailyRewardController extends Controller
      */
     public function checkEligibility(): JsonResponse
     {
-        if (!Auth::check()) {
+        $user = $this->currentUser();
+
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'eligible' => false,
             ], 401);
         }
 
-        $user = Auth::user();
         $eligible = $this->pointsService->isEligibleForDailyReward($user);
 
         return response()->json([

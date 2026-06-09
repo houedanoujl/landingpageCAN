@@ -15,10 +15,21 @@ use App\Models\User;
 use App\Services\PointsService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
+    /**
+     * Présence de la table match_comments, mise en cache pour éviter une
+     * requête de métadonnées (information_schema) à chaque chargement de page.
+     * Le cache admin (clearCache) la réinitialise après une migration.
+     */
+    private function hasCommentsTable(): bool
+    {
+        return Cache::remember('schema.has_match_comments', now()->addHours(6), fn () => Schema::hasTable('match_comments'));
+    }
+
     public function index()
     {
         // Récupérer le lieu sélectionné par l'utilisateur (pour affichage uniquement)
@@ -33,7 +44,7 @@ class HomeController extends Controller
         $senegalTeam = Team::where('iso_code', 'sn')->first();
 
         // Afficher tous les matchs à venir dont les équipes sont définies
-        $hasComments = Schema::hasTable('match_comments');
+        $hasComments = $this->hasCommentsTable();
 
         $upcomingMatches = MatchGame::with(['homeTeam', 'awayTeam'])
             ->when($hasComments, fn ($q) => $q->withCount('comments'))
@@ -108,7 +119,7 @@ class HomeController extends Controller
     {
         // Récupérer tous les matchs futurs dont les équipes sont définies
         $allMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
-            ->when(Schema::hasTable('match_comments'), fn ($q) => $q->withCount('comments'))
+            ->when($this->hasCommentsTable(), fn ($q) => $q->withCount('comments'))
             ->where('status', '!=', 'finished')
             ->where('match_date', '>=', now())
             ->whereNotNull('home_team_id')
@@ -380,8 +391,15 @@ class HomeController extends Controller
             // Les 4 points de visite seront attribués UNIQUEMENT lors de la soumission d'un pronostic
             // via PredictionController::store() -> awardPredictionVenuePoints()
 
-            // Stocker le bar sélectionné en session pour valider les pronostics
-            session(['selected_venue_id' => $foundBar->id]);
+            // Stocker le check-in vérifié en session (mêmes clés que /api/venue/select) :
+            // le bonus venue au pronostic exige un check-in du jour pour ce point de vente.
+            session([
+                'selected_venue_id' => $foundBar->id,
+                'selected_venue_name' => $foundBar->name,
+                'venue_verified_at' => now(),
+                'user_latitude' => (float) $userLat,
+                'user_longitude' => (float) $userLng,
+            ]);
 
             $message = "Lieu confirmé : {$foundBar->name} ! Vous pouvez maintenant faire vos pronostics.";
 

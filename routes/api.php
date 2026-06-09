@@ -35,8 +35,12 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:web')->group(function () {
     Route::post('/check-in', [CheckInController::class, 'store']);
     Route::post('/check-in/status', [CheckInController::class, 'checkStatus']);
-    
-    // Daily reward heartbeat - triggered by frontend on activity/visibility change
+});
+
+// Daily reward : déclenché par le frontend (activité / changement de visibilité).
+// L'app authentifie via session('user_id'), pas le guard Auth -> pas de middleware
+// auth:web ici (sinon 401 systématique). Le contrôleur vérifie la session lui-même.
+Route::middleware('throttle:60,1')->group(function () {
     Route::post('/daily-reward/heartbeat', [DailyRewardController::class, 'heartbeat']);
     Route::get('/daily-reward/check', [DailyRewardController::class, 'checkEligibility']);
 });

@@ -12,6 +12,7 @@ use App\Models\PredictionLike;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Services\ContentModerationService;
+use App\Services\GeolocationService;
 use App\Services\WhatsAppService;
 use App\Services\PointsService;
 use Illuminate\Http\Request;
@@ -20,7 +21,8 @@ class PredictionController extends Controller
 {
     public function __construct(
         protected WhatsAppService $whatsAppService,
-        protected PointsService $pointsService
+        protected PointsService $pointsService,
+        protected GeolocationService $geolocationService
     ) {
     }
 
@@ -48,6 +50,8 @@ class PredictionController extends Controller
             'score_a' => 'required|integer|min:0|max:20',
             'score_b' => 'required|integer|min:0|max:20',
             'venue_id' => 'nullable|exists:bars,id', // Venue is now optional
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'predict_draw' => 'nullable',
             'penalty_winner' => 'nullable|in:home,away',
         ]);
@@ -55,6 +59,9 @@ class PredictionController extends Controller
         // Check if venue geofencing is required
         $requireVenue = config('game.require_venue_geofencing', false);
         $venue = null;
+        // Le bonus venue n'est accordé que si la proximité est vérifiée côté serveur.
+        // On ne fait jamais confiance au seul venue_id envoyé par le client.
+        $venueVerified = false;
 
         if ($request->venue_id) {
             // User provided a venue - validate it
@@ -65,6 +72,18 @@ class PredictionController extends Controller
                     return response()->json(['message' => 'Le point de vente sélectionné n\'est pas valide.'], 422);
                 }
                 return back()->with('error', 'Le point de vente sélectionné n\'est pas valide.');
+            }
+
+            // Vérification serveur de la proximité : les coordonnées du client doivent
+            // tomber dans le rayon configuré autour du point de vente déclaré.
+            $venueVerified = $this->isVenueProximityVerified($request, $venue);
+
+            if (!$venueVerified && $requireVenue) {
+                $message = 'Vous devez faire un check-in au point de vente (être sur place) avant de pronostiquer.';
+                if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                    return response()->json(['message' => $message], 422);
+                }
+                return back()->with('error', $message);
             }
         } elseif ($requireVenue) {
             // Venue is required but not provided
@@ -138,7 +157,7 @@ class PredictionController extends Controller
 
             // Award bonus points if prediction made from a venue (optional)
             $venuePointsAwarded = 0;
-            if ($venue) {
+            if ($venue && $venueVerified) {
                 $venuePointsAwarded = $this->pointsService->awardPredictionVenuePoints($user, $match->id, $venue->id);
             }
 
@@ -247,19 +266,71 @@ class PredictionController extends Controller
     }
 
     /**
+     * Règle des +4 points venue : l'utilisateur doit avoir fait un CHECK-IN du
+     * jour pour ce point de vente (via /check-in sur la map ou /api/venue/select,
+     * qui vérifient et stockent la position en session), PUIS soumettre un
+     * pronostic. Un venue_id envoyé seul ne suffit jamais (anti-triche).
+     *
+     * Conditions cumulatives :
+     *  1. Check-in du jour en session pour CE point de vente.
+     *  2. Proximité GPS revérifiée côté serveur (Haversine, rayon config) :
+     *     coordonnées envoyées avec le pronostic, sinon celles du check-in.
+     */
+    private function isVenueProximityVerified(Request $request, Bar $venue): bool
+    {
+        // 1. Check-in du jour requis pour ce point de vente.
+        if ((int) session('selected_venue_id') !== (int) $venue->id) {
+            return false;
+        }
+
+        $verifiedAt = session('venue_verified_at');
+        if (!$verifiedAt || !\Illuminate\Support\Carbon::parse($verifiedAt)->isToday()) {
+            return false;
+        }
+
+        // 2. Proximité revérifiée serveur : coordonnées de la requête en priorité,
+        //    sinon celles enregistrées lors du check-in.
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            return $this->geolocationService->isWithinRadius(
+                (float) $request->latitude,
+                (float) $request->longitude,
+                $venue
+            );
+        }
+
+        $lat = session('user_latitude');
+        $lng = session('user_longitude');
+
+        if ($lat !== null && $lng !== null) {
+            return $this->geolocationService->isWithinRadius((float) $lat, (float) $lng, $venue);
+        }
+
+        return false;
+    }
+
+    /**
      * Tendance agrégée d'un match : pourcentages home / nul / away.
      */
     private function matchTrend(MatchGame $match): array
     {
-        $preds = $match->predictions()->get(['predicted_winner']);
-        $total = $preds->count();
+        // Agrégation en SQL (GROUP BY) plutôt que de charger toutes les prédictions en PHP.
+        $counts = $match->predictions()
+            ->selectRaw('predicted_winner, COUNT(*) as c')
+            ->groupBy('predicted_winner')
+            ->pluck('c', 'predicted_winner');
+
+        $home  = (int) ($counts['home'] ?? 0);
+        $draw  = (int) ($counts['draw'] ?? 0);
+        $away  = (int) ($counts['away'] ?? 0);
+        $total = $home + $draw + $away;
+
         $pct = fn ($n) => $total > 0 ? (int) round($n / $total * 100) : 0;
 
         return [
             'total' => $total,
-            'home'  => $pct($preds->where('predicted_winner', 'home')->count()),
-            'draw'  => $pct($preds->where('predicted_winner', 'draw')->count()),
-            'away'  => $pct($preds->where('predicted_winner', 'away')->count()),
+            'home'  => $pct($home),
+            'draw'  => $pct($draw),
+            'away'  => $pct($away),
         ];
     }
 
@@ -310,9 +381,10 @@ class PredictionController extends Controller
             $held = true; // mise en attente de modération
         }
 
+        $userId = session('user_id');
         $comment = MatchComment::create([
             'match_id'     => $match->id,
-            'user_id'      => session('user_id'),
+            'user_id'      => $userId,
             'body'         => $body,
             'is_moderated' => $held,
         ]);
@@ -326,7 +398,7 @@ class PredictionController extends Controller
 
         return response()->json([
             'id'         => $comment->id,
-            'user_name'  => User::find(session('user_id'))->name,
+            'user_name'  => User::find($userId)->name,
             'body'       => $comment->body,
             'created_at' => $comment->created_at->diffForHumans(),
             'is_mine'    => true,
@@ -417,7 +489,7 @@ class PredictionController extends Controller
             return response()->json(['message' => 'Non connecté'], 401);
         }
 
-        if ($comment->user_id !== $userId && !($user->is_admin ?? false)) {
+        if ((int) $comment->user_id !== (int) $userId && !($user->is_admin ?? false)) {
             return response()->json(['message' => 'Interdit'], 403);
         }
 

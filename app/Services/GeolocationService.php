@@ -9,7 +9,21 @@ class GeolocationService
     /**
      * Radius in kilometers for venue proximity check.
      */
-    protected float $proximityRadius = 0.2; // 200 meters
+    protected float $proximityRadius;
+
+    public function __construct()
+    {
+        // Rayon configurable (km). Défaut : 0.2 km = 200 m.
+        $this->proximityRadius = (float) config('game.venue_proximity_radius', 0.2);
+    }
+
+    /**
+     * Rayon de proximité en kilomètres.
+     */
+    public function getProximityRadiusKm(): float
+    {
+        return $this->proximityRadius;
+    }
 
     /**
      * Check if user coordinates are within proximity of any active venue.

@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use App\Models\User;
 use App\Services\PointsService;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,12 +26,18 @@ class DailyRewardMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check()) {
-            $user = Auth::user();
+        // L'app authentifie via session('user_id') (pas le guard Auth de Laravel).
+        // RefreshUserPoints, exécuté avant, restaure cette session depuis le cookie
+        // remember_token le cas échéant.
+        $userId = session('user_id');
+
+        if ($userId) {
+            $user = User::find($userId);
             $today = Carbon::today();
-            
-            // Compare dates: if last_daily_reward_at is null or before today, award points
-            if (is_null($user->last_daily_reward_at) || $user->last_daily_reward_at->lt($today)) {
+
+            // Première activité du jour : on tente le point quotidien.
+            // Le plafond partagé (login/daily_activity) évite tout double comptage.
+            if ($user && (is_null($user->last_daily_reward_at) || $user->last_daily_reward_at->lt($today))) {
                 $this->pointsService->awardDailyActivityPoints($user);
             }
         }

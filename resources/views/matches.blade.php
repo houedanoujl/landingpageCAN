@@ -407,6 +407,8 @@
             venueState: 'unknown',
             nearbyVenue: null,
             closestVenues: [],
+            userLat: null,
+            userLng: null,
             modal: {
                 open: false,
                 match: null,
@@ -436,6 +438,7 @@
                 if (savedGroup) this.activeGroup = savedGroup;
                 this.$watch('activePhase', v => sessionStorage.setItem('matches_active_phase', v));
                 this.$watch('activeGroup', v => sessionStorage.setItem('matches_active_group', v));
+                this.$watch('search', () => this.applySearch());
 
                 // Bouton "Modifier" injecté après un pronostic (délégation d'évènement)
                 this.$el.addEventListener('click', (e) => {
@@ -454,12 +457,12 @@
 
             // Recherche d'un match par nom d'équipe (toutes phases/groupes confondus)
             applySearch() {
-                const norm = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+                const norm = (s) => (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
                 const q = norm(this.search);
-                const cards = this.$el.querySelectorAll('article[id^="match-"]');
+                const cards = document.querySelectorAll('article[id^="match-"]');
                 let shown = 0;
                 cards.forEach((c) => {
-                    // Recherche sur les noms d'équipe (data-attrs) + texte visible de la carte (robuste)
+                    // Recherche sur les noms d'équipe (data-attrs) + texte visible de la carte
                     const hay = norm((c.dataset.homeTeam || '') + ' ' + (c.dataset.awayTeam || '') + ' ' + c.textContent);
                     const ok = q === '' || hay.includes(q);
                     c.style.display = ok ? '' : 'none';
@@ -549,7 +552,14 @@
                 fd.append('score_b', this.modal.scoreB);
                 fd.append('predict_draw', this.isDraw() ? '1' : '0');
                 if (this.modal.penaltyWinner) fd.append('penalty_winner', this.modal.penaltyWinner);
-                if (this.nearbyVenue?.id) fd.append('venue_id', this.nearbyVenue.id);
+                if (this.nearbyVenue?.id) {
+                    fd.append('venue_id', this.nearbyVenue.id);
+                    // Coordonnées pour la vérification serveur de la proximité (anti-triche).
+                    if (this.userLat != null && this.userLng != null) {
+                        fd.append('latitude', this.userLat);
+                        fd.append('longitude', this.userLng);
+                    }
+                }
 
                 try {
                     const res = await fetch(@json(route('predictions.store')), {
@@ -591,6 +601,9 @@
             async detectGeolocation() {
                 if (!navigator.geolocation) return;
                 navigator.geolocation.getCurrentPosition(async (pos) => {
+                    // Mémoriser la position pour la vérification serveur lors du pronostic.
+                    this.userLat = pos.coords.latitude;
+                    this.userLng = pos.coords.longitude;
                     try {
                         const res = await fetch('/api/geolocation/venues', {
                             method: 'POST',
