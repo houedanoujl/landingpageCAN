@@ -21,4 +21,14 @@ class PredictionComment extends Model
     {
         return $this->belongsTo(Prediction::class);
     }
+
+    public function likes()
+    {
+        return $this->morphMany(CommentLike::class, 'comment');
+    }
+
+    public function reports()
+    {
+        return $this->morphMany(CommentReport::class, 'comment');
+    }
 }

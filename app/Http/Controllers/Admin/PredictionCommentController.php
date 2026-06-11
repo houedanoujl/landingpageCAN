@@ -10,11 +10,17 @@ class PredictionCommentController extends Controller
 {
     public function index()
     {
+        // Les commentaires signalés remontent en tête : c'est la meilleure
+        // source pour découvrir les termes qui échappent à la liste noire.
         $comments = PredictionComment::with(['user', 'prediction.match'])
+            ->withCount('reports')
+            ->orderByDesc('reports_count')
             ->orderByDesc('created_at')
             ->paginate(30, ['*'], 'pc_page');
 
         $matchComments = MatchComment::with(['user', 'match'])
+            ->withCount('reports')
+            ->orderByDesc('reports_count')
             ->orderByDesc('created_at')
             ->paginate(30, ['*'], 'mc_page');
 

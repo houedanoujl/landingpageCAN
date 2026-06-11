@@ -21,4 +21,14 @@ class MatchComment extends Model
     {
         return $this->belongsTo(MatchGame::class, 'match_id');
     }
+
+    public function likes()
+    {
+        return $this->morphMany(CommentLike::class, 'comment');
+    }
+
+    public function reports()
+    {
+        return $this->morphMany(CommentReport::class, 'comment');
+    }
 }

@@ -367,13 +367,35 @@ class PredictionController extends Controller
 
         $comments = $match->comments()
             ->with('user:id,name')
-            ->get()
+            ->withCount('likes')
+            ->get();
+
+        // Likes et signalements déjà posés par l'utilisateur connecté (2 requêtes)
+        $morphClass = (new MatchComment)->getMorphClass();
+        $likedIds = collect();
+        $reportedIds = collect();
+        if ($userId && $comments->isNotEmpty()) {
+            $ids = $comments->pluck('id');
+            $likedIds = \App\Models\CommentLike::where('user_id', $userId)
+                ->where('comment_type', $morphClass)
+                ->whereIn('comment_id', $ids)
+                ->pluck('comment_id')->flip();
+            $reportedIds = \App\Models\CommentReport::where('user_id', $userId)
+                ->where('comment_type', $morphClass)
+                ->whereIn('comment_id', $ids)
+                ->pluck('comment_id')->flip();
+        }
+
+        $comments = $comments
             ->map(fn ($c) => [
                 'id'         => $c->id,
                 'user_name'  => $c->user->name ?? 'Anonyme',
                 'body'       => $c->body,
                 'created_at' => $c->created_at->diffForHumans(),
                 'is_mine'    => $userId ? ((int) $c->user_id === (int) $userId) : false,
+                'likes'      => (int) $c->likes_count,
+                'liked'      => $likedIds->has($c->id),
+                'reported'   => $reportedIds->has($c->id),
             ])
             ->values();
 
@@ -395,15 +417,13 @@ class PredictionController extends Controller
 
         $body = strip_tags($request->body);
 
-        // Modération : liste noire de mots interdits.
-        $moderation = app(ContentModerationService::class);
-        $held = false;
-        if (!$moderation->isClean($body)) {
-            if (config('moderation.action', 'reject') === 'reject') {
-                return response()->json(['message' => config('moderation.message')], 422);
-            }
-            $held = true; // mise en attente de modération
+        // Modération : 'block' = refus immédiat (invitation à la modération),
+        // 'review' = terme ambigu, publication après validation humaine.
+        $level = app(ContentModerationService::class)->check($body);
+        if ($level === ContentModerationService::LEVEL_BLOCK) {
+            return response()->json(['message' => config('moderation.message')], 422);
         }
+        $held = $level === ContentModerationService::LEVEL_REVIEW;
 
         $userId = session('user_id');
         $comment = MatchComment::create([
@@ -416,7 +436,7 @@ class PredictionController extends Controller
         if ($held) {
             return response()->json([
                 'held'    => true,
-                'message' => 'Votre commentaire sera publié après validation par un modérateur.',
+                'message' => config('moderation.message_review', 'Votre commentaire sera publié après validation par un modérateur.'),
             ], 202);
         }
 
@@ -483,17 +503,27 @@ class PredictionController extends Controller
 
         $body = strip_tags($request->body);
 
-        // Modération : liste noire de mots interdits.
-        if (!app(ContentModerationService::class)->isClean($body)
-            && config('moderation.action', 'reject') === 'reject') {
+        // Modération : 'block' = refus immédiat (invitation à la modération),
+        // 'review' = terme ambigu, publication après validation humaine.
+        $level = app(ContentModerationService::class)->check($body);
+        if ($level === ContentModerationService::LEVEL_BLOCK) {
             return response()->json(['message' => config('moderation.message')], 422);
         }
+        $held = $level === ContentModerationService::LEVEL_REVIEW;
 
         $comment = PredictionComment::create([
             'user_id'       => session('user_id'),
             'prediction_id' => $prediction->id,
             'body'          => $body,
+            'is_moderated'  => $held,
         ]);
+
+        if ($held) {
+            return response()->json([
+                'held'    => true,
+                'message' => config('moderation.message_review', 'Votre commentaire sera publié après validation par un modérateur.'),
+            ], 202);
+        }
 
         return response()->json([
             'id'         => $comment->id,
@@ -531,7 +561,7 @@ class PredictionController extends Controller
         $userId = session('user_id');
         $user = User::find($userId);
 
-        $allPredictions = Prediction::with(['match', 'likes', 'comments.user'])
+        $allPredictions = Prediction::with(['match', 'likes', 'comments.user', 'comments.likes', 'comments.reports'])
             ->where('user_id', $userId)
             ->get();
 

@@ -81,7 +81,16 @@
       "PowerShell(php -l app\\\\Http\\\\Controllers\\\\Admin\\\\PredictionCommentController.php)",
       "PowerShell(php artisan view:clear)",
       "PowerShell(php artisan view:cache 2>&1)",
-      "PowerShell(php artisan route:list --name=match-comments 2>$null)"
+      "PowerShell(php artisan route:list --name=match-comments 2>$null)",
+      "PowerShell(php -l app\\\\Services\\\\ContentModerationService.php)",
+      "PowerShell(php -l config\\\\moderation.php)",
+      "PowerShell(php artisan migrate --force)",
+      "PowerShell(php -l app\\\\Http\\\\Controllers\\\\Web\\\\CommentInteractionController.php)",
+      "PowerShell(php -l app\\\\Services\\\\TisaneModerationService.php)",
+      "PowerShell(php artisan route:list --path=comments 2>$null)",
+      "PowerShell(docker compose exec laravel.test php /app/artisan migrate --force)",
+      "PowerShell(docker compose exec laravel.test php /app/artisan tinker --execute=\"echo \\\\App\\\\Models\\\\MatchGame::orderBy\\('match_date'\\)->value\\('id'\\);\")",
+      "PowerShell(curl.exe -s -o - -w \"`nHTTP %{http_code}`n\" http://localhost/matches/106/wall -H \"Accept: application/json\")"
     ]
   }
 }

@@ -1006,9 +1006,14 @@
                     </button>
                 </form>
             </template>
-            <template x-if="!auth && !loading">
+            <template x-if="!auth && !loading && !loadError">
                 <p class="text-center text-xs text-gray-400 p-4 border-b border-gray-100 flex-shrink-0">
                     <a href="/login" class="text-soboa-orange font-bold">Connectez-vous</a> pour commenter.
+                </p>
+            </template>
+            <template x-if="loadError && !loading">
+                <p class="text-center text-xs text-red-500 p-4 border-b border-gray-100 flex-shrink-0">
+                    Impossible de charger les commentaires. <button @click="load()" class="font-bold underline">Réessayer</button>
                 </p>
             </template>
 
@@ -1058,7 +1063,21 @@
                                 </div>
                                 <p class="text-sm text-gray-700 break-words" x-text="c.body"></p>
                             </div>
-                            <span class="text-[11px] text-gray-400 ml-3" x-text="c.created_at"></span>
+                            <div class="flex items-center gap-3 ml-3 mt-0.5">
+                                <span class="text-[11px] text-gray-400" x-text="c.created_at"></span>
+                                <button @click="like(c)"
+                                        class="inline-flex items-center gap-1 text-[11px] font-bold transition focus:outline-none"
+                                        :class="c.liked ? 'text-soboa-orange' : 'text-gray-400 hover:text-soboa-orange'">
+                                    <i data-lucide="heart" class="w-3.5 h-3.5" :class="c.liked ? 'fill-current' : ''"></i>
+                                    <span x-text="c.likes > 0 ? c.likes : ''"></span>
+                                </button>
+                                <button x-show="!c.is_mine" @click="report(c)" :disabled="c.reported"
+                                        class="inline-flex items-center gap-1 text-[11px] font-bold transition focus:outline-none"
+                                        :class="c.reported ? 'text-red-400 cursor-default' : 'text-gray-400 hover:text-red-500'">
+                                    <i data-lucide="flag" class="w-3.5 h-3.5"></i>
+                                    <span x-text="c.reported ? 'Signalé' : 'Signaler'"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -1070,6 +1089,7 @@
             return {
                 isOpen: false,
                 loading: false,
+                loadError: false,
                 comments: [],
                 title: '',
                 auth: false,
@@ -1092,15 +1112,18 @@
                 },
                 async load() {
                     this.loading = true;
+                    this.loadError = false;
                     this.comments = [];
                     try {
                         const r = await fetch(`/matches/${this.matchId}/wall`, { headers: { 'Accept': 'application/json' } });
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
                         const d = await r.json();
                         this.comments = d.comments || [];
                         this.title = d.match || '';
                         this.auth = !!d.auth;
                     } catch (e) {
                         this.comments = [];
+                        this.loadError = true;
                     }
                     this.loading = false;
                     this.$nextTick(() => window.lucide && window.lucide.createIcons());
@@ -1150,6 +1173,44 @@
                         }
                     });
                     this.comments.splice(idx, 1);
+                },
+                async like(c) {
+                    if (!this.auth) { window.location.href = '/login'; return; }
+                    const prev = { liked: c.liked, likes: c.likes };
+                    c.liked = !c.liked;
+                    c.likes += c.liked ? 1 : -1;
+                    try {
+                        const r = await fetch(`/comments/wall/${c.id}/like`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const d = await r.json();
+                        if (r.ok) { c.liked = d.liked; c.likes = d.count; }
+                        else { c.liked = prev.liked; c.likes = prev.likes; }
+                    } catch (e) { c.liked = prev.liked; c.likes = prev.likes; }
+                },
+                async report(c) {
+                    if (!this.auth) { window.location.href = '/login'; return; }
+                    if (c.reported) return;
+                    if (!confirm('Signaler ce commentaire comme inapproprié ?')) return;
+                    try {
+                        const r = await fetch(`/comments/wall/${c.id}/report`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const d = await r.json();
+                        if (r.ok) {
+                            c.reported = true;
+                            this.noticeType = 'info';
+                            this.notice = d.message || 'Commentaire signalé.';
+                        }
+                    } catch (e) {}
                 }
             };
         }

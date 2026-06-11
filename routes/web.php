@@ -77,6 +77,20 @@ Route::post('/predictions/{prediction}/comments', [PredictionController::class, 
     ->name('predictions.comments.store');
 Route::delete('/predictions/{prediction}/comments/{comment}', [PredictionController::class, 'destroyComment'])->name('predictions.comments.destroy');
 
+// Likes et signalements de commentaires (requiert authentification)
+Route::post('/comments/wall/{comment}/like', [\App\Http\Controllers\Web\CommentInteractionController::class, 'likeMatchComment'])
+    ->middleware('throttle:60,1')
+    ->name('comments.wall.like');
+Route::post('/comments/wall/{comment}/report', [\App\Http\Controllers\Web\CommentInteractionController::class, 'reportMatchComment'])
+    ->middleware('throttle:10,1')
+    ->name('comments.wall.report');
+Route::post('/comments/prediction/{comment}/like', [\App\Http\Controllers\Web\CommentInteractionController::class, 'likePredictionComment'])
+    ->middleware('throttle:60,1')
+    ->name('comments.prediction.like');
+Route::post('/comments/prediction/{comment}/report', [\App\Http\Controllers\Web\CommentInteractionController::class, 'reportPredictionComment'])
+    ->middleware('throttle:10,1')
+    ->name('comments.prediction.report');
+
 // Check-in (requiert authentification)
 Route::post('/check-in', [HomeController::class, 'checkIn'])->name('check-in');
 

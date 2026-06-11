@@ -42,6 +42,15 @@ return [
         'api_token' => env('GREENAPI_API_TOKEN'),
     ],
 
+    'tisane' => [
+        // Modération de contenu via Tisane.ai (couche complémentaire à la
+        // liste noire locale). Laisser TISANE_API_KEY vide pour désactiver.
+        'key' => env('TISANE_API_KEY'),
+        'endpoint' => env('TISANE_ENDPOINT', 'https://api.tisane.ai/parse'),
+        'language' => env('TISANE_LANGUAGE', 'fr'),
+        'timeout' => env('TISANE_TIMEOUT', 3),
+    ],
+
     'twilio' => [
         'account_sid' => env('TWILIO_ACCOUNT_SID'),
         'auth_token' => env('TWILIO_AUTH_TOKEN'),

@@ -44,6 +44,7 @@
                                 <th class="px-4 py-3 text-left">Commentaire</th>
                                 <th class="px-4 py-3 text-left">Pronostic (match)</th>
                                 <th class="px-4 py-3 text-center">Date</th>
+                                <th class="px-4 py-3 text-center">🚩</th>
                                 <th class="px-4 py-3 text-center">Statut</th>
                                 <th class="px-4 py-3 text-right">Actions</th>
                             </tr>
@@ -61,6 +62,13 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $comment->created_at->diffForHumans() }}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        @if(($comment->reports_count ?? 0) > 0)
+                                            <span class="px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-600">🚩 {{ $comment->reports_count }}</span>
+                                        @else
+                                            <span class="text-gray-300 text-xs">—</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-center">
                                         <span class="px-2 py-1 text-xs font-bold rounded-full {{ $comment->is_moderated ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700' }}">
                                             {{ $comment->is_moderated ? 'Masqué' : 'Visible' }}
@@ -102,6 +110,7 @@
                                 <th class="px-4 py-3 text-left">Commentaire</th>
                                 <th class="px-4 py-3 text-left">Match</th>
                                 <th class="px-4 py-3 text-center">Date</th>
+                                <th class="px-4 py-3 text-center">🚩</th>
                                 <th class="px-4 py-3 text-center">Statut</th>
                                 <th class="px-4 py-3 text-right">Actions</th>
                             </tr>
@@ -119,6 +128,13 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $comment->created_at->diffForHumans() }}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        @if(($comment->reports_count ?? 0) > 0)
+                                            <span class="px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-600">🚩 {{ $comment->reports_count }}</span>
+                                        @else
+                                            <span class="text-gray-300 text-xs">—</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-center">
                                         <span class="px-2 py-1 text-xs font-bold rounded-full {{ $comment->is_moderated ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700' }}">
                                             {{ $comment->is_moderated ? 'Masqué' : 'Visible' }}

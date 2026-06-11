@@ -14,7 +14,16 @@
         commentCount: {{ $commentCount }},
         showComments: false,
         commentBody: '',
-        comments: {{ $prediction->comments->map(fn($c) => ['id' => $c->id, 'user_name' => $c->user->name, 'body' => $c->body, 'created_at' => $c->created_at->diffForHumans(), 'is_mine' => $c->user_id == $userId])->toJson() }},
+        comments: {{ $prediction->comments->map(fn($c) => [
+            'id' => $c->id,
+            'user_name' => $c->user->name,
+            'body' => $c->body,
+            'created_at' => $c->created_at->diffForHumans(),
+            'is_mine' => $c->user_id == $userId,
+            'likes' => $c->likes->count(),
+            'liked' => $userId ? $c->likes->where('user_id', $userId)->isNotEmpty() : false,
+            'reported' => $userId ? $c->reports->where('user_id', $userId)->isNotEmpty() : false,
+        ])->toJson() }},
         submitting: false,
         async toggleLike() {
             @if(!$userId)
@@ -56,9 +65,16 @@
                 });
                 const data = await res.json();
                 if (res.status === 201) {
-                    this.comments.push({ id: data.id, user_name: data.user_name, body: data.body, created_at: data.created_at, is_mine: true });
+                    this.comments.push({ id: data.id, user_name: data.user_name, body: data.body, created_at: data.created_at, is_mine: true, likes: 0, liked: false, reported: false });
                     this.commentCount = data.count;
                     this.commentBody = '';
+                } else if (res.status === 202) {
+                    // En attente de modération humaine
+                    this.commentBody = '';
+                    alert(data.message || 'Commentaire en attente de modération.');
+                } else if (data && data.message) {
+                    // Rejeté (liste noire) : inviter à la modération
+                    alert(data.message);
                 }
             } finally { this.submitting = false; }
         },
@@ -70,6 +86,43 @@
             });
             this.comments.splice(idx, 1);
             this.commentCount = Math.max(0, this.commentCount - 1);
+        },
+        async likeComment(comment) {
+            @if(!$userId)
+                window.location = '{{ route('login') }}';
+                return;
+            @endif
+            const prev = { liked: comment.liked, likes: comment.likes };
+            comment.liked = !comment.liked;
+            comment.likes += comment.liked ? 1 : -1;
+            try {
+                const res = await fetch(`/comments/prediction/${comment.id}/like`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok) { comment.liked = data.liked; comment.likes = data.count; }
+                else { comment.liked = prev.liked; comment.likes = prev.likes; }
+            } catch(e) { comment.liked = prev.liked; comment.likes = prev.likes; }
+        },
+        async reportComment(comment) {
+            @if(!$userId)
+                window.location = '{{ route('login') }}';
+                return;
+            @endif
+            if (comment.reported) return;
+            if (!confirm('Signaler ce commentaire comme inapproprié ?')) return;
+            try {
+                const res = await fetch(`/comments/prediction/${comment.id}/report`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    comment.reported = true;
+                    alert(data.message || 'Commentaire signalé.');
+                }
+            } catch(e) {}
         }
     }"
     class="{{ $cardClass }} bg-white rounded-xl shadow-sm p-5 border-l-4 {{ $borderClass }} hover:shadow-md transition-shadow"
@@ -162,6 +215,21 @@
                             <span class="text-[10px] text-gray-400" x-text="comment.created_at"></span>
                         </div>
                         <p class="text-sm text-gray-700 mt-0.5" x-text="comment.body"></p>
+                        <div class="flex items-center gap-3 mt-1">
+                            <button @click="likeComment(comment)"
+                                    class="inline-flex items-center gap-1 text-[10px] font-bold transition focus:outline-none"
+                                    :class="comment.liked ? 'text-soboa-orange' : 'text-gray-400 hover:text-soboa-orange'">
+                                <svg class="w-3 h-3" :fill="comment.liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                                <span x-text="comment.likes > 0 ? comment.likes : ''"></span>
+                            </button>
+                            <button x-show="!comment.is_mine" @click="reportComment(comment)" :disabled="comment.reported"
+                                    class="text-[10px] font-bold transition focus:outline-none"
+                                    :class="comment.reported ? 'text-red-400 cursor-default' : 'text-gray-400 hover:text-red-500'">
+                                <span x-text="comment.reported ? '🚩 Signalé' : '🚩 Signaler'"></span>
+                            </button>
+                        </div>
                     </div>
                     <button
                         x-show="comment.is_mine"
