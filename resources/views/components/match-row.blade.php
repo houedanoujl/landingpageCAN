@@ -39,6 +39,7 @@
 
 <article id="match-{{ $match->id }}"
          data-phase="{{ $match->phase }}"
+         data-group="{{ $match->group_name }}"
          data-home-team="{{ $homeName }}"
          data-away-team="{{ $awayName }}"
          class="group relative bg-white rounded-2xl shadow-elev-1 hover:shadow-elev-2 transition-all duration-base overflow-hidden border border-gray-100 {{ $isFavorite ? 'ring-2 ring-soboa-orange' : '' }}">

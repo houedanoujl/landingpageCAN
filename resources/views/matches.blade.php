@@ -440,6 +440,12 @@
                 this.$watch('activeGroup', v => sessionStorage.setItem('matches_active_group', v));
                 this.$watch('search', () => this.applySearch());
 
+                // Navigation directe vers un match via l'ancre (#match-12) :
+                // activer la bonne phase + le bon groupe avant de scroller,
+                // sinon la carte reste cachée derrière les onglets Alpine.
+                this.goToHashMatch();
+                window.addEventListener('hashchange', () => this.goToHashMatch());
+
                 // Bouton "Modifier" injecté après un pronostic (délégation d'évènement)
                 this.$el.addEventListener('click', (e) => {
                     const btn = e.target.closest('[data-reopen]');
@@ -449,6 +455,20 @@
                 });
 
                 setTimeout(() => this.detectGeolocation(), 1500);
+            },
+
+            goToHashMatch() {
+                const hash = window.location.hash;
+                if (!/^#match-\d+$/.test(hash)) return;
+                const card = document.getElementById(hash.slice(1));
+                if (!card) return;
+                if (card.dataset.phase) this.activePhase = card.dataset.phase;
+                if (card.dataset.group) this.activeGroup = card.dataset.group;
+                this.$nextTick(() => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.classList.add('ring-2', 'ring-soboa-orange');
+                    setTimeout(() => card.classList.remove('ring-2', 'ring-soboa-orange'), 3000);
+                });
             },
 
             isDraw() {

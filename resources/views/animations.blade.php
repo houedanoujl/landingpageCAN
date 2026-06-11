@@ -2,7 +2,7 @@
     $animationsJson = $animations->map(function($anim) {
         return [
             'date' => \Carbon\Carbon::parse($anim->animation_date)->format('Y-m-d'),
-            'match' => ($anim->match->homeTeam ? $anim->match->homeTeam->name : $anim->match->team_a) . ' vs ' . ($anim->match->awayTeam ? $anim->match->awayTeam->name : $anim->match->team_b),
+            'match' => \App\Models\Team::fr($anim->match->homeTeam ? $anim->match->homeTeam->name : $anim->match->team_a) . ' vs ' . \App\Models\Team::fr($anim->match->awayTeam ? $anim->match->awayTeam->name : $anim->match->team_b),
             'matchId' => $anim->match->id,
             'time' => \Carbon\Carbon::parse($anim->match->match_date)->format('H:i'),
             'venue' => $anim->bar->name,

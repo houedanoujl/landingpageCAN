@@ -88,7 +88,7 @@
     {{-- Score --}}
     <div class="flex items-center justify-between mb-3">
         <div class="flex-1 text-center">
-            <span class="font-black text-gray-800 text-sm">{{ $prediction->match->team_a }}</span>
+            <span class="font-black text-gray-800 text-sm">{{ \App\Models\Team::fr($prediction->match->team_a) }}</span>
         </div>
         <div class="px-4 text-center min-w-[120px]">
             <div class="text-xl font-black text-soboa-orange">
@@ -108,7 +108,7 @@
             @endif
         </div>
         <div class="flex-1 text-center">
-            <span class="font-black text-gray-800 text-sm">{{ $prediction->match->team_b }}</span>
+            <span class="font-black text-gray-800 text-sm">{{ \App\Models\Team::fr($prediction->match->team_b) }}</span>
         </div>
     </div>
 

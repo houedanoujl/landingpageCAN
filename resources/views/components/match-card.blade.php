@@ -208,7 +208,7 @@
         <!-- Action Button -->
         @if(!$isFinished)
             @if(session('user_id'))
-                <a href="/matches"
+                <a href="/matches#match-{{ $match->id }}"
                    class="block w-full bg-gradient-to-r from-soboa-orange to-soboa-orange-secondary hover:from-soboa-orange-secondary hover:to-soboa-orange text-white font-black py-4 rounded-xl text-center transition-all duration-base transform hover:scale-105 hover:shadow-elev-3 flex items-center justify-center gap-2 group/button focus:outline-none focus:ring-2 focus:ring-soboa-orange focus:ring-offset-2">
                     <i data-lucide="star" class="w-5 h-5 group-hover/button:rotate-12 transition-transform"></i>
                     <span class="text-lg">Pronostiquer maintenant</span>

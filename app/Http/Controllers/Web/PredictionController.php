@@ -197,7 +197,7 @@ class PredictionController extends Controller
                 return response()->json([
                     'message' => $successMessage,
                     'success' => true,
-                    'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
+                    'teams' => \App\Models\Team::fr($match->team_a) . " " . $request->score_a . " - " . $request->score_b . " " . \App\Models\Team::fr($match->team_b),
                     'match_id' => $match->id,
                     'score_a' => (int) $request->score_a,
                     'score_b' => (int) $request->score_b,
@@ -208,7 +208,7 @@ class PredictionController extends Controller
                 ], 200);
             }
 
-            $description = $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
+            $description = \App\Models\Team::fr($match->team_a) . " " . $request->score_a . " - " . $request->score_b . " " . \App\Models\Team::fr($match->team_b);
             if ($venue) {
                 $description .= ' (depuis ' . $venue->name . ')';
             }
@@ -252,7 +252,7 @@ class PredictionController extends Controller
         // Update session with new points
         session(['user_points' => $user->points_total]);
 
-        $successMessage = 'Pronostic enregistré ! 🎯 ' . $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
+        $successMessage = 'Pronostic enregistré ! 🎯 ' . \App\Models\Team::fr($match->team_a) . " " . $request->score_a . " - " . $request->score_b . " " . \App\Models\Team::fr($match->team_b);
 
         // WhatsApp désactivé - plus de notifications pour les pronostics
 
@@ -260,7 +260,7 @@ class PredictionController extends Controller
             return response()->json([
                 'message' => $successMessage,
                 'success' => true,
-                'teams' => $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b,
+                'teams' => \App\Models\Team::fr($match->team_a) . " " . $request->score_a . " - " . $request->score_b . " " . \App\Models\Team::fr($match->team_b),
                 'match_id' => $match->id,
                 'score_a' => (int) $request->score_a,
                 'score_b' => (int) $request->score_b,
@@ -271,7 +271,7 @@ class PredictionController extends Controller
             ], 200);
         }
 
-        $description = $match->team_a . ' ' . $request->score_a . ' - ' . $request->score_b . ' ' . $match->team_b;
+        $description = \App\Models\Team::fr($match->team_a) . " " . $request->score_a . " - " . $request->score_b . " " . \App\Models\Team::fr($match->team_b);
         if ($venue) {
             $description .= ' (depuis ' . $venue->name . ')';
         }

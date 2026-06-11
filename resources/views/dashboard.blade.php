@@ -444,10 +444,10 @@
                                                     <span class="text-gray-400">Match:</span>
                                                     <span class="font-semibold">
                                                         @if($log->match->homeTeam && $log->match->awayTeam)
-                                                            {{ $log->match->homeTeam->name }} vs {{ $log->match->awayTeam->name }}
+                                                            {{ \App\Models\Team::fr($log->match->homeTeam->name) }} vs {{ \App\Models\Team::fr($log->match->awayTeam->name) }}
                                                         @else
-                                                            {{ $log->match->team_a ?? 'Équipe A' }} vs
-                                                            {{ $log->match->team_b ?? 'Équipe B' }}
+                                                            {{ \App\Models\Team::fr($log->match->team_a) ?? 'Équipe A' }} vs
+                                                            {{ \App\Models\Team::fr($log->match->team_b) ?? 'Équipe B' }}
                                                         @endif
                                                     </span>
                                                 </p>
