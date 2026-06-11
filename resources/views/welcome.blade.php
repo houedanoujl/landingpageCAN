@@ -144,7 +144,7 @@
     <!-- Hero Section - Grande Fête du Foot Africain Celebration -->
     <section class="relative min-h-[calc(100dvh-150px)] flex items-center justify-center overflow-hidden" x-data="{
                  countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 },
-                 targetDate: new Date('{{ ($worldCupStart ?? \Carbon\Carbon::parse(config('game.world_cup_start', '2026-06-11 19:00:00')))->format('Y-m-d\TH:i:s') }}').getTime(),
+                 targetDate: new Date('{{ ($nextMatch && $nextMatch->match_date ? $nextMatch->match_date : ($worldCupStart ?? \Carbon\Carbon::parse(config('game.world_cup_start', '2026-06-11 19:00:00'))))->format('Y-m-d\TH:i:s') }}Z').getTime(),
                  scrollY: 0,
                  parallaxOffset: 0,
                  init() {
