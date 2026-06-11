@@ -90,7 +90,10 @@
       "PowerShell(php artisan route:list --path=comments 2>$null)",
       "PowerShell(docker compose exec laravel.test php /app/artisan migrate --force)",
       "PowerShell(docker compose exec laravel.test php /app/artisan tinker --execute=\"echo \\\\App\\\\Models\\\\MatchGame::orderBy\\('match_date'\\)->value\\('id'\\);\")",
-      "PowerShell(curl.exe -s -o - -w \"`nHTTP %{http_code}`n\" http://localhost/matches/106/wall -H \"Accept: application/json\")"
+      "PowerShell(curl.exe -s -o - -w \"`nHTTP %{http_code}`n\" http://localhost/matches/106/wall -H \"Accept: application/json\")",
+      "Bash(grep -oE '\"date\"[^,]*2026-[0-9]{2}-[0-9]{2}' public/db/worldcup.json)",
+      "Bash(python3 -c ' *)",
+      "Bash(php -l app/Models/WeeklyRanking.php)"
     ]
   }
 }

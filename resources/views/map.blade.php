@@ -535,6 +535,8 @@
             </div>
         </div>
 
+        {{-- Calendrier des animations masqué : grille figée déc. 2025 / janv. 2026 (obsolète, dates CAN). Assignations PDV-match gérées via l'admin. --}}
+        @if(false)
         <!-- Section Calendrier des Animations - GRILLE CLASSIQUE -->
         <div class="max-w-7xl mx-auto px-4 py-12" x-data="{
             selectedDay: null,
@@ -948,6 +950,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
     </div>
 
