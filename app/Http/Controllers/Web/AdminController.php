@@ -1044,10 +1044,11 @@ class AdminController extends Controller
         $isAdmin = $currentUser && $currentUser->role === 'admin';
         $isSoboa = $currentUser && $currentUser->role === 'soboa';
 
-        // Configuration Google Analytics
-        $gaPropertyId = 'G-PZ3EWMZ408';
-        
-        return view('admin.analytics', compact('gaPropertyId', 'isAdmin', 'isSoboa'));
+        // Configuration Google Analytics (ID + rapport Looker Studio intégré)
+        $gaPropertyId = config('services.google_analytics.id');
+        $gaEmbedUrl = config('services.google_analytics.embed_url');
+
+        return view('admin.analytics', compact('gaPropertyId', 'gaEmbedUrl', 'isAdmin', 'isSoboa'));
     }
 
     /**

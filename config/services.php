@@ -51,6 +51,15 @@ return [
         'api_key_secret' => env('TWILIO_API_KEY_SECRET'),
     ],
 
+    // Google Analytics 4 — tag public + rapport intégré dans l'admin.
+    // 'embed_url' : URL d'un rapport Looker Studio partagé (mode intégration)
+    // branché sur la propriété GA ci-dessous, affiché dans Admin > Analytics.
+    'google_analytics' => [
+        'id' => env('GOOGLE_ANALYTICS_ID', 'G-PZ3EWMZ408'),
+        'tag_id' => env('GOOGLE_TAG_ID', 'GT-P36Z7M8B'),
+        'embed_url' => env('GOOGLE_ANALYTICS_EMBED_URL', 'https://lookerstudio.google.com/embed/reporting/51e6fb8a-ffbc-4e6a-8582-5366f4f14643/page/p_kx1rbu54bd'),
+    ],
+
     // football-data.org — used by SyncMatchScores to auto-fetch live scores.
     // Free tier: 10 calls/min. Sync command throttles to ~1 call per run and
     // only runs when there are candidate matches in the live window.

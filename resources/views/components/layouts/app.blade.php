@@ -88,14 +88,18 @@
     <meta property="twitter:image" content="{{ asset('images/sen.webp') }}">
 
     <!-- Google tag (gtag.js) - Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PZ3EWMZ408"></script>
+    @if($gaId = config('services.google_analytics.id'))
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-        gtag('config', 'G-PZ3EWMZ408');
-        gtag('config', 'GT-P36Z7M8B');
+        gtag('config', @json($gaId));
+        @if($gtagId = config('services.google_analytics.tag_id'))
+        gtag('config', @json($gtagId));
+        @endif
     </script>
+    @endif
 
     <link rel="icon" type="image/jpeg" href="/images/logoSOBOA.png.webp">
     <!-- PWA Meta Tags -->
