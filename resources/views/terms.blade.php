@@ -7,11 +7,20 @@
             
             <p class="text-gray-600 text-center mb-8">
                 Jeu de pronostics SOBOA FOOT TIME<br>
-                <span class="text-sm">Dernière mise à jour : Janvier 2026</span>
+                <span class="text-sm">
+                    Dernière mise à jour :
+                    {{ ($siteSettings->terms_updated_at ?? null) ? $siteSettings->terms_updated_at->translatedFormat('F Y') : 'Janvier 2026' }}
+                </span>
             </p>
 
+            @if(!empty($siteSettings?->terms_content))
+                {{-- Contenu édité depuis l'admin (Conditions générales) --}}
+                <div class="space-y-8 text-gray-700 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-soboa-blue [&_h2]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:list-inside [&_ul]:ml-4 [&_ul]:space-y-1">
+                    {!! $siteSettings->terms_content !!}
+                </div>
+            @else
             <div class="space-y-8 text-gray-700">
-                
+
                 <!-- Article 1 -->
                 <section>
                     <h2 class="text-xl font-bold text-soboa-blue mb-3">Article 1 - Objet</h2>
@@ -151,6 +160,7 @@
                 </section>
 
             </div>
+            @endif
 
             <div class="mt-8 text-center">
                 <a href="/" class="inline-flex items-center gap-2 bg-soboa-blue hover:bg-soboa-blue-dark text-white font-bold py-3 px-6 rounded-xl transition">

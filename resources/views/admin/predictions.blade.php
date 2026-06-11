@@ -237,13 +237,12 @@
                                 {{ $prediction->created_at->format('d/m/Y H:i') }}
                             </td>
                             <td class="p-4 text-center">
-                                <form action="{{ route('admin.delete-prediction', $prediction->id) }}" method="POST" class="inline" onsubmit="return confirm('Supprimer ce pronostic ?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-sm transition-colors">
-                                        🗑️
-                                    </button>
-                                </form>
+                                {{-- Le formulaire DELETE est rendu hors du formulaire bulk (forms imbriqués
+                                     = HTML invalide qui cassait les deux suppressions) ; le bouton y est
+                                     relié via l'attribut form. --}}
+                                <button type="submit" form="delete-pred-{{ $prediction->id }}" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-sm transition-colors">
+                                    🗑️
+                                </button>
                             </td>
                         </tr>
                         @empty
@@ -269,6 +268,18 @@
                 </table>
             </div>
             </form>
+
+            {{-- Formulaires de suppression individuelle, hors du formulaire bulk
+                 (jamais imbriqués). Reliés aux boutons 🗑️ du tableau via form="". --}}
+            @foreach($predictions as $prediction)
+                <form id="delete-pred-{{ $prediction->id }}"
+                      action="{{ route('admin.delete-prediction', $prediction->id) }}"
+                      method="POST" class="hidden"
+                      onsubmit="return confirm('Supprimer ce pronostic ?')">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endforeach
 
             <script>
                 function toggleAllPredictions() {

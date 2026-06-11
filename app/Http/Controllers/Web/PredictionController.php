@@ -174,14 +174,14 @@ class PredictionController extends Controller
 
             $user = User::find($userId);
 
-            // Award the +1 participation point immediately (idempotent per match)
+            // RÈGLE MÉTIER : la modification d'un pronostic ne rapporte AUCUN point.
+            // - Le +1 participation a déjà été accordé à la création (l'appel reste
+            //   idempotent : il ne ré-attribue jamais, il répare seulement un
+            //   éventuel pronostic historique sans point).
+            // - Le +4 PDV n'est PAS accordé sur modification : il s'obtient
+            //   uniquement à la création du pronostic ou via le check-in sur place.
             $this->pointsService->awardPredictionParticipationPoints($user, $match->id);
-
-            // Award bonus points if prediction made from a venue (optional)
             $venuePointsAwarded = 0;
-            if ($venue && $venueVerified) {
-                $venuePointsAwarded = $this->pointsService->awardPredictionVenuePoints($user, $match->id, $venue->id);
-            }
 
             // Refresh user to get updated points_total
             $user->refresh();

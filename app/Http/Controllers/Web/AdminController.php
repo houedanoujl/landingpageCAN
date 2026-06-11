@@ -2536,6 +2536,51 @@ class AdminController extends Controller
         return back()->with('success', $message);
     }
 
+    // ==================== CONDITIONS GÉNÉRALES ====================
+
+    /**
+     * Espace d'édition des Conditions Générales d'Utilisation.
+     */
+    public function terms()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $settings = SiteSetting::firstOrCreate([]);
+
+        return view('admin.terms', compact('settings'));
+    }
+
+    /**
+     * Met à jour le contenu des CGU. Contenu vide = retour à la version
+     * statique intégrée (resources/views/terms.blade.php).
+     */
+    public function updateTerms(Request $request)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $request->validate([
+            'terms_content' => 'nullable|string|max:200000',
+        ]);
+
+        $settings = SiteSetting::firstOrCreate([]);
+        $content = trim((string) $request->terms_content);
+
+        $settings->update([
+            'terms_content' => $content !== '' ? $content : null,
+            'terms_updated_at' => $content !== '' ? now() : null,
+        ]);
+
+        SiteSetting::clearCache();
+
+        return back()->with('success', $content !== ''
+            ? 'Conditions générales mises à jour.'
+            : 'Contenu personnalisé supprimé : la version statique est de nouveau affichée.');
+    }
+
     /**
      * Set tournament winner team
      */

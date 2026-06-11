@@ -19,7 +19,7 @@ Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard'
 Route::get('/animations', [HomeController::class, 'animations'])->name('animations');
 Route::get('/calendar', [HomeController::class, 'calendar'])->name('calendar');
 Route::get('/conditions', function () {
-    return view('terms');
+    return view('terms', ['siteSettings' => \App\Models\SiteSetting::getSettings()]);
 })->name('terms');
 
 // Authentification publique (login classique avec mot de passe)
@@ -189,6 +189,10 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     });
     
     // Paramètres
+    // Conditions générales (CGU)
+    Route::get('/terms', [AdminController::class, 'terms'])->name('terms.edit');
+    Route::put('/terms', [AdminController::class, 'updateTerms'])->name('terms.update');
+
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('/settings', [AdminController::class, 'updateSettings'])->name('update-settings');
     Route::post('/settings/toggle-tournament-ended', [AdminController::class, 'toggleTournamentEnded'])->name('toggle-tournament-ended');

@@ -134,6 +134,10 @@
                     <span class="text-3xl">📈</span>
                     <span class="font-bold text-sm text-center">Analytics</span>
                 </a>
+                <a href="{{ route('admin.terms.edit') }}" class="bg-slate-600 hover:bg-slate-700 text-white rounded-xl p-4 shadow-lg flex flex-col items-center gap-2 transition-all hover:scale-105">
+                    <span class="text-3xl">📜</span>
+                    <span class="font-bold text-sm text-center">Conditions générales</span>
+                </a>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">

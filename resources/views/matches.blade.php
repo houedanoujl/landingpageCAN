@@ -550,6 +550,7 @@
                 this.modal.penaltyWinner = payload.existing?.penaltyWinner ?? '';
                 this.modal.isEdit = !!payload.existing;
                 this.modal.error = null;
+                this.modal.submitting = false; // jamais bloqué par un envoi précédent
                 this.modal.open = true;
                 document.body.style.overflow = 'hidden';
                 this.$nextTick(() => {
@@ -662,6 +663,8 @@
                     // Mise à jour live de la carte (tendance + pronostic) — sans rechargement
                     this.applyPredictionUpdate(data);
                     this.closePrediction();
+                    // Réarmer le formulaire pour les modifications suivantes
+                    this.modal.submitting = false;
                 } catch (err) {
                     console.error('[SOBOA FOOT TIME]', err);
                     this.modal.error = 'Erreur de connexion. Réessayez.';

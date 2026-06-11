@@ -17,6 +17,8 @@ class SiteSetting extends Model
         'logo_path',
         'hero_image_path',
         'hero_promo_text',
+        'terms_content',
+        'terms_updated_at',
         'favorite_team_id',
         'geofencing_radius',
         'test_mode',
@@ -27,6 +29,7 @@ class SiteSetting extends Model
     protected $casts = [
         'tournament_ended' => 'boolean',
         'test_mode' => 'boolean',
+        'terms_updated_at' => 'datetime',
     ];
 
     /**
