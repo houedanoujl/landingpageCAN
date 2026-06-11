@@ -221,6 +221,23 @@
                     <span class="text-lg">Se connecter pour pronostiquer</span>
                 </a>
             @endif
+
+            {{-- Rappel du coup d'envoi : ajout au calendrier de l'utilisateur --}}
+            @if($isUpcoming && !$isTbd)
+                @php
+                    $calStart = $match->match_date->copy()->utc()->format('Ymd\THis\Z');
+                    $calEnd = $match->match_date->copy()->utc()->addHours(2)->format('Ymd\THis\Z');
+                    $calUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+                        . '&text=' . rawurlencode("⚽ {$homeName} vs {$awayName} — SOBOA FOOT TIME")
+                        . '&dates=' . $calStart . '/' . $calEnd
+                        . '&details=' . rawurlencode("Le match commence ! Pronostique avant le coup d'envoi : " . url('/matches') . '#match-' . $match->id);
+                @endphp
+                <a href="{{ $calUrl }}" target="_blank" rel="noopener"
+                   class="mt-2 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-soboa-blue bg-soboa-blue/5 hover:bg-soboa-blue/10 ring-1 ring-soboa-blue/20 transition-colors focus:outline-none focus:ring-2 focus:ring-soboa-blue">
+                    <i data-lucide="bell-ring" class="w-4 h-4"></i>
+                    Me rappeler le début du match
+                </a>
+            @endif
         @else
             <!-- Finished Match - Show result summary -->
             <div class="bg-gradient-to-r from-gray-100 to-gray-200 p-4 rounded-xl text-center">

@@ -15,52 +15,18 @@
             </div>
         </div>
 
-        <!-- Sélecteur de période -->
-        <div class="bg-white rounded-xl shadow-elev-1 p-4 border border-gray-100">
-            <div class="flex items-center gap-2 mb-3">
-                <i data-lucide="calendar-range" class="w-5 h-5 text-soboa-blue"></i>
-                <span class="font-bold text-soboa-text-dark">Période</span>
-            </div>
-            <div class="flex flex-wrap gap-2" role="tablist" aria-label="Périodes">
-                <a href="{{ route('leaderboard', ['period' => 'global']) }}"
-                   role="tab"
-                   aria-selected="{{ $selected_period === 'global' ? 'true' : 'false' }}"
-                   class="{{ $selected_period === 'global' ? 'bg-soboa-orange text-white shadow-elev-1' : 'bg-soboa-cream text-soboa-text-dark hover:bg-soboa-orange/10' }} px-4 py-2 rounded-full text-sm font-bold transition-all duration-base focus:outline-none focus:ring-2 focus:ring-soboa-orange focus:ring-offset-2">
-                    Général
-                </a>
-                @foreach($available_periods as $key => $period)
-                    <a href="{{ route('leaderboard', ['period' => $key]) }}"
-                       role="tab"
-                       aria-selected="{{ $selected_period === $key ? 'true' : 'false' }}"
-                       class="{{ $selected_period === $key ? 'bg-soboa-orange text-white shadow-elev-1' : 'bg-soboa-cream text-soboa-text-dark hover:bg-soboa-orange/10' }} px-4 py-2 rounded-full text-sm font-bold transition-all duration-base focus:outline-none focus:ring-2 focus:ring-soboa-orange focus:ring-offset-2">
-                        {{ $period['label'] }}
-                    </a>
-                @endforeach
-            </div>
-        </div>
-
-        <!-- Info sur les gains -->
-        @if(str_starts_with($selected_period, 'week_'))
-        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-4 text-white">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl"></span>
-                <div>
-                    <p class="font-bold">Classement Hebdomadaire - Top 15</p>
-                    <p class="text-sm text-white/90">Les 15 premiers de cette semaine sont gagnants !</p>
-                </div>
-            </div>
-        </div>
-        @elseif($selected_period === 'global')
+        {{-- Classement unique sur toute la compétition : pas de sélecteur de
+             période, pas de remise à zéro. Le cumul court du premier au
+             dernier match. --}}
         <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-dark rounded-xl shadow-lg p-4 text-white">
             <div class="flex items-center gap-3">
-                <span class="text-3xl"></span>
+                <i data-lucide="trophy" class="w-7 h-7 text-soboa-orange flex-shrink-0"></i>
                 <div>
                     <p class="font-bold">Classement National — Top 50</p>
-                    <p class="text-sm text-white/80">Les 50 meilleurs pronostiqueurs depuis le début de la compétition</p>
+                    <p class="text-sm text-white/80">Les 50 meilleurs pronostiqueurs sur toute la compétition</p>
                 </div>
             </div>
         </div>
-        @endif
 
         @php
             $isWeekly = str_starts_with($selected_period, 'week_');

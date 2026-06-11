@@ -415,6 +415,92 @@
     </section>
 
     @if(!$siteSettings || !$siteSettings->tournament_ended)
+    <!-- À gagner : lots à pronostiquer (Hidden when tournament ended) -->
+    <section class="relative py-16 md:py-20 overflow-hidden bg-soboa-text-dark">
+        <div class="absolute inset-0 z-0" aria-hidden="true">
+            <img src="{{ asset('images/sen.webp') }}" alt="" class="w-full h-full object-cover opacity-25" loading="lazy">
+            <div class="absolute inset-0 bg-gradient-to-b from-soboa-text-dark/90 via-soboa-blue/70 to-soboa-text-dark/95"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4">
+            <!-- Titre -->
+            <div class="text-center mb-12">
+                <h2 class="flex items-center justify-center gap-3 text-4xl md:text-5xl font-black text-soboa-orange uppercase tracking-tight">
+                    <i data-lucide="gift" class="w-9 h-9 md:w-11 md:h-11" stroke-width="2"></i>
+                    À gagner
+                </h2>
+                <p class="text-white/90 text-lg mt-3">Des prix incroyables pour célébrer le match !</p>
+                <div class="w-24 h-1 bg-soboa-orange rounded-full mx-auto mt-4"></div>
+            </div>
+
+            <!-- Lots -->
+            <div class="bg-white/10 backdrop-blur-md rounded-3xl border border-white/15 p-6 md:p-10 mb-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div class="flex justify-center">
+                        <img src="{{ asset('images/lots/lots.webp') }}"
+                             alt="Lots à gagner : Samsung Galaxy S25, PlayStation 5 et bons d'achat SOBOA"
+                             class="w-full max-w-md lg:max-w-lg object-contain drop-shadow-2xl"
+                             loading="lazy">
+                    </div>
+                    <div class="space-y-4">
+                        @php
+                            $lots = [
+                                ['rank' => '1er', 'badge' => 'bg-blue-600', 'name' => 'Samsung Galaxy S25', 'cat' => 'Smartphone', 'catColor' => 'text-cyan-300'],
+                                ['rank' => '2e', 'badge' => 'bg-purple-600', 'name' => 'PlayStation 5', 'cat' => 'Console', 'catColor' => 'text-purple-300'],
+                                ['rank' => '3e', 'badge' => 'bg-green-600', 'name' => "Bons d'achat", 'cat' => 'À dépenser', 'catColor' => 'text-green-300'],
+                            ];
+                        @endphp
+                        @foreach($lots as $lot)
+                            <div class="flex items-center gap-4 bg-white/5 rounded-2xl border border-white/10 px-5 py-4 transition-transform duration-base hover:translate-x-1">
+                                <span class="{{ $lot['badge'] }} text-white text-xs font-black uppercase leading-tight rounded-xl px-3 py-2 text-center shadow-elev-2 shrink-0">
+                                    {{ $lot['rank'] }}<br>Prix
+                                </span>
+                                <div>
+                                    <h3 class="text-white font-black text-xl md:text-2xl">{{ $lot['name'] }}</h3>
+                                    <p class="{{ $lot['catColor'] }} font-bold text-xs uppercase tracking-widest mt-0.5">{{ $lot['cat'] }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prochain match -->
+            @if(isset($nextMatch) && $nextMatch)
+                @php
+                    $nextHomeName = \App\Models\Team::fr($nextMatch->homeTeam?->name ?? $nextMatch->team_a);
+                    $nextAwayName = \App\Models\Team::fr($nextMatch->awayTeam?->name ?? $nextMatch->team_b);
+                    $nextDate = $nextMatch->match_date;
+                    $dateLabel = $nextDate->isToday() ? 'Match aujourd\'hui' : ($nextDate->isTomorrow() ? 'Match demain' : 'Match le ' . $nextDate->translatedFormat('d M'));
+                @endphp
+                <a href="{{ route('matches') }}#match-{{ $nextMatch->id }}"
+                   class="block rounded-2xl border border-soboa-orange/60 bg-white/5 backdrop-blur-md px-6 py-6 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-soboa-orange">
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+                        <div class="flex items-center gap-3">
+                            @if($nextMatch->homeTeam?->flag_url_80)
+                                <img src="{{ $nextMatch->homeTeam->flag_url_80 }}" alt="" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/30">
+                            @endif
+                            <span class="text-white font-black text-lg uppercase">{{ $nextHomeName }}</span>
+                        </div>
+                        <span class="text-soboa-orange font-black text-2xl italic">VS</span>
+                        <div class="flex items-center gap-3">
+                            @if($nextMatch->awayTeam?->flag_url_80)
+                                <img src="{{ $nextMatch->awayTeam->flag_url_80 }}" alt="" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/30">
+                            @endif
+                            <span class="text-white font-black text-lg uppercase">{{ $nextAwayName }}</span>
+                        </div>
+                    </div>
+                    <p class="flex items-center justify-center gap-2 text-white/80 font-bold mt-4 text-sm">
+                        <i data-lucide="calendar" class="w-4 h-4 text-soboa-orange"></i>
+                        <span class="uppercase">{{ $dateLabel }}</span>
+                        <span class="text-soboa-orange">•</span>
+                        {{ $nextDate->format('H:i') }}
+                    </p>
+                </a>
+            @endif
+        </div>
+    </section>
+
     <!-- Upcoming Matches Section (Hidden when tournament ended) -->
     <section class="py-16 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4">
@@ -432,19 +518,86 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                @forelse($upcomingMatches as $match)
-                    <x-match-card :match="$match" :trend="$predictionTrends[$match->id] ?? null" />
-                @empty
-                    <div class="col-span-full text-center py-section-md bg-white rounded-2xl shadow-elev-1">
-                        <div class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i data-lucide="calendar-x" class="w-9 h-9 text-soboa-orange"></i>
-                        </div>
-                        <p class="text-soboa-text-dark font-semibold">Aucun match programmé pour le moment.</p>
-                        <p class="text-gray-500 text-sm mt-2">Revenez bientôt pour voir le calendrier complet.</p>
+            @if($upcomingMatches->isEmpty())
+                <div class="text-center py-section-md bg-white rounded-2xl shadow-elev-1">
+                    <div class="w-20 h-20 bg-soboa-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="calendar-x" class="w-9 h-9 text-soboa-orange"></i>
                     </div>
-                @endforelse
-            </div>
+                    <p class="text-soboa-text-dark font-semibold">Aucun match programmé pour le moment.</p>
+                    <p class="text-gray-500 text-sm mt-2">Revenez bientôt pour voir le calendrier complet.</p>
+                </div>
+            @else
+                {{-- Carousel : 1 match par vue sur mobile, 2 sur desktop (scroll-snap natif) --}}
+                <div x-data="matchesCarousel()" x-init="init()" class="relative">
+                    <div x-ref="track"
+                         @scroll.debounce.100ms="syncPage()"
+                         class="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide pb-2"
+                         aria-label="Carousel des prochains matchs" tabindex="0"
+                         @keydown.arrow-left.prevent="prev()" @keydown.arrow-right.prevent="next()">
+                        @foreach($upcomingMatches as $match)
+                            <div class="snap-start shrink-0 w-full lg:w-[calc(50%-12px)]">
+                                <x-match-card :match="$match" :trend="$predictionTrends[$match->id] ?? null" />
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Flèches --}}
+                    <button type="button" @click="prev()" x-show="page > 0" x-cloak
+                            class="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 w-11 h-11 bg-white rounded-full shadow-elev-2 items-center justify-center text-soboa-blue hover:bg-soboa-blue hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-soboa-blue z-10"
+                            aria-label="Matchs précédents">
+                        <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                    </button>
+                    <button type="button" @click="next()" x-show="page < pageCount - 1" x-cloak
+                            class="hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 w-11 h-11 bg-white rounded-full shadow-elev-2 items-center justify-center text-soboa-blue hover:bg-soboa-blue hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-soboa-blue z-10"
+                            aria-label="Matchs suivants">
+                        <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                    </button>
+
+                    {{-- Points de pagination --}}
+                    <div class="flex justify-center gap-2 mt-5" x-show="pageCount > 1">
+                        <template x-for="i in pageCount" :key="i">
+                            <button type="button" @click="goTo(i - 1)"
+                                    class="h-2.5 rounded-full transition-all duration-base focus:outline-none focus:ring-2 focus:ring-soboa-orange"
+                                    :class="page === i - 1 ? 'w-7 bg-soboa-orange' : 'w-2.5 bg-gray-300 hover:bg-gray-400'"
+                                    :aria-label="'Aller à la page ' + i"></button>
+                        </template>
+                    </div>
+                </div>
+
+                <script>
+                    function matchesCarousel() {
+                        return {
+                            page: 0,
+                            pageCount: 1,
+                            init() {
+                                this.computePages();
+                                window.addEventListener('resize', () => this.computePages());
+                            },
+                            // 1 carte visible par page sur mobile, 2 sur desktop (lg = 1024px)
+                            perPage() {
+                                return window.matchMedia('(min-width: 1024px)').matches ? 2 : 1;
+                            },
+                            computePages() {
+                                const total = this.$refs.track.children.length;
+                                this.pageCount = Math.max(1, Math.ceil(total / this.perPage()));
+                                this.page = Math.min(this.page, this.pageCount - 1);
+                            },
+                            pageWidth() {
+                                return this.$refs.track.clientWidth + 24; /* gap-6 */
+                            },
+                            goTo(p) {
+                                this.page = Math.max(0, Math.min(p, this.pageCount - 1));
+                                this.$refs.track.scrollTo({ left: this.page * this.pageWidth(), behavior: 'smooth' });
+                            },
+                            prev() { this.goTo(this.page - 1); },
+                            next() { this.goTo(this.page + 1); },
+                            syncPage() {
+                                this.page = Math.round(this.$refs.track.scrollLeft / this.pageWidth());
+                            },
+                        };
+                    }
+                </script>
+            @endif
         </div>
     </section>
     @endif

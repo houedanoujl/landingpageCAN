@@ -395,6 +395,56 @@
         </div>
     </div>
 
+    {{-- ========== BOTTOM SHEET : PDV LE PLUS PROCHE ========== --}}
+    <div x-show="pdvSheet.open" x-cloak
+         x-transition:enter="transition ease-out duration-base"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="modal-backdrop-sheet"
+         @click.self="closePdvSheet()"
+         role="dialog" aria-modal="true" aria-labelledby="pdv-sheet-title">
+        <div x-show="pdvSheet.open" x-cloak
+             x-transition:enter="transition ease-out duration-base"
+             x-transition:enter-start="translate-y-full sm:translate-y-0 sm:scale-90 opacity-0"
+             x-transition:enter-end="translate-y-0 sm:scale-100 opacity-100"
+             class="modal-sheet-panel">
+            <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light p-5 text-center relative">
+                <button type="button" @click="closePdvSheet()" class="modal-close absolute top-3 right-3 text-white" aria-label="Fermer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center mb-2 p-1.5 shadow-elev-2 overflow-hidden">
+                    <img src="{{ asset('images/logoSOBOA.png.webp') }}" alt="SOBOA" class="w-full h-full object-cover rounded-full">
+                </div>
+                <h3 id="pdv-sheet-title" class="text-lg font-black text-white">
+                    <span x-show="pdvSheet.isNear">Vous êtes dans un PDV partenaire !</span>
+                    <span x-show="!pdvSheet.isNear">PDV partenaire le plus proche</span>
+                </h3>
+            </div>
+            <div class="p-5 space-y-3">
+                <div class="bg-soboa-cream rounded-xl p-4 text-center">
+                    <p class="text-xl font-black text-soboa-text-dark" x-text="pdvSheet.venue?.name"></p>
+                    <p x-show="pdvSheet.venue?.zone" class="text-xs text-gray-500 uppercase tracking-wide mt-0.5" x-text="pdvSheet.venue?.zone"></p>
+                    <p x-show="!pdvSheet.isNear && pdvSheet.venue?.distance_m != null" class="text-2xl font-black text-soboa-blue mt-2"
+                       x-text="pdvSheet.venue?.distance_m < 1000 ? pdvSheet.venue.distance_m + ' m' : pdvSheet.venue?.distance_km?.toFixed(1) + ' km'"></p>
+                </div>
+                <div class="flex items-center justify-between rounded-lg p-3"
+                     :class="pdvSheet.isNear ? 'bg-emerald-50' : 'bg-soboa-blue/5'">
+                    <span class="text-sm text-soboa-text-dark" x-text="pdvSheet.isNear ? 'Bonus PDV automatique sur vos pronostics' : 'Rendez-vous sur place pour le bonus PDV'"></span>
+                    <span class="font-black" :class="pdvSheet.isNear ? 'text-emerald-600' : 'text-soboa-blue'">+4 pts</span>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ route('map') }}" class="btn btn-ghost btn-md flex-1">
+                        <i data-lucide="map" class="w-4 h-4"></i>
+                        Voir la carte
+                    </a>
+                    <button type="button" @click="closePdvSheet()" class="btn btn-primary btn-md flex-1">
+                        Compris !
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -407,6 +457,7 @@
             venueState: 'unknown',
             nearbyVenue: null,
             closestVenues: [],
+            pdvSheet: { open: false, venue: null, isNear: false },
             userLat: null,
             userLng: null,
             modal: {
@@ -641,14 +692,29 @@
                             this.nearbyVenue = near;
                             this.venueState = 'near';
                             localStorage.setItem('detected_venue_id', near.id);
+                            this.showPdvSheet(near, true);
                         } else {
                             this.closestVenues = venues.slice(0, 3);
                             this.venueState = 'far';
+                            if (venues.length) this.showPdvSheet(venues[0], false);
                         }
                     } catch (e) {
                         console.warn('[SOBOA FOOT TIME] geo api', e);
                     }
                 }, () => {}, { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 });
+            },
+
+            // Bottom sheet "PDV le plus proche" : affiché une fois par session,
+            // sauf si un pronostic est en cours de saisie.
+            showPdvSheet(venue, isNear) {
+                if (sessionStorage.getItem('pdv_sheet_seen')) return;
+                if (this.modal.open || this.recap.open) return;
+                this.pdvSheet = { open: true, venue, isNear };
+            },
+
+            closePdvSheet() {
+                this.pdvSheet.open = false;
+                sessionStorage.setItem('pdv_sheet_seen', '1');
             },
         };
     }

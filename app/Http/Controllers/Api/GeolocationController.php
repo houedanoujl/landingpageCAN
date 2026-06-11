@@ -86,6 +86,7 @@ class GeolocationController extends Controller
                     'id' => $item['venue']->id,
                     'name' => $item['venue']->name,
                     'address' => $item['venue']->address,
+                    'zone' => $item['venue']->zone,
                     'latitude' => $item['venue']->latitude,
                     'longitude' => $item['venue']->longitude,
                     'distance_km' => $item['distance_km'],

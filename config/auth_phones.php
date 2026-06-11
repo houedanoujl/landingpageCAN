@@ -31,6 +31,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Compte SOBOA (rôle "soboa")
+    |--------------------------------------------------------------------------
+    |
+    | Compte avec accès admin restreint (statistiques + contenu
+    | « Animation SOBOA FOOT »). Créé via SoboaAdminSeeder.
+    |
+    */
+    'soboa_admin_phone' => env('SOBOA_ADMIN_PHONE'),
+    'soboa_admin_name' => env('SOBOA_ADMIN_NAME', 'Amadou (SOBOA)'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Indicatifs de pays autorisés
     |--------------------------------------------------------------------------
     |

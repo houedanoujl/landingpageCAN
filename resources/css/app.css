@@ -153,12 +153,12 @@ summary:focus-visible {
         @apply fixed inset-0 z-modal bg-soboa-text-dark/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4;
     }
     .modal-panel {
-        @apply bg-white rounded-2xl shadow-elev-modal w-full max-w-md max-h-[92vh] overflow-hidden flex flex-col;
+        @apply bg-white rounded-2xl shadow-elev-modal w-full max-w-md max-h-[92dvh] overflow-hidden flex flex-col;
     }
     .modal-panel-sm { @apply max-w-sm; }
     .modal-panel-lg { @apply max-w-lg; }
     .modal-sheet-panel {
-        @apply bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-elev-modal overflow-hidden max-h-[92vh] flex flex-col;
+        @apply bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-elev-modal overflow-hidden max-h-[92dvh] flex flex-col;
     }
     .modal-header {
         @apply px-5 py-4 bg-gradient-to-r from-soboa-blue to-soboa-blue-light text-white flex items-start justify-between gap-3;
@@ -289,6 +289,16 @@ summary:focus-visible {
     
     /* Hide some decorative elements to save space */
     .hero-gradient { min-height: auto !important; }
+
+    /* Sections plein écran : hauteur naturelle en paysage bas */
+    section[class*="min-h-"] { min-height: auto !important; }
+
+    /* Onglets sticky (page matchs) : la nav compacte mesure ~56px en paysage */
+    nav[aria-label="Phases du tournoi"] { top: 56px !important; }
+
+    /* Modales : toujours scrollables, jamais coupées par la barre d'URL */
+    .modal-panel, .modal-sheet-panel { max-height: 86dvh !important; }
+    .modal-panel form, .modal-sheet-panel form { overflow-y: auto; }
 }
 
 /* Landscape on tablets (height < 800px, width > 768px) */

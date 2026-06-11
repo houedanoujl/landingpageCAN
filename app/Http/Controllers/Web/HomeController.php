@@ -58,8 +58,8 @@ class HomeController extends Controller
         // Récupérer le prochain match pour le hero (premier match à venir avec équipes définies)
         $nextMatch = $upcomingMatches->first();
 
-        // Limiter à 4 matchs pour la page d'accueil
-        $upcomingMatches = $upcomingMatches->take(4);
+        // Limiter à 8 matchs pour le carousel de la page d'accueil
+        $upcomingMatches = $upcomingMatches->take(8);
 
         // Tendance des pronostics (agrégée et anonyme) pour les matchs affichés
         $matchIds = $upcomingMatches->pluck('id');
@@ -184,9 +184,10 @@ class HomeController extends Controller
     public function leaderboard(Request $request)
     {
         $leaderboardService = app(\App\Services\LeaderboardService::class);
-        
-        // Récupérer la période sélectionnée (par défaut: global)
-        $period = $request->get('period', 'global');
+
+        // Classement unique sur toute la compétition : pas de segmentation
+        // par semaine, pas de remise à zéro. Le paramètre ?period est ignoré.
+        $period = 'global';
         
         // Forcer rafraîchissement du cache si demandé
         if ($request->has('refresh')) {

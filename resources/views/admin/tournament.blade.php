@@ -138,7 +138,7 @@
                             <li>• Créez vos matchs manuellement via le bouton "Créer un match"</li>
                             <li>• Sélectionnez n'importe quelle équipe pour chaque match (pas de restriction)</li>
                             <li>• Les matchs s'affichent immédiatement aux utilisateurs</li>
-                            <li>• Les paris se ferment automatiquement 2 minutes avant le début du match</li>
+                            <li>• Les paris restent ouverts jusqu'à l'heure officielle du coup d'envoi, puis se ferment automatiquement</li>
                         </ul>
                     </div>
                 </div>

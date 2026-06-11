@@ -84,7 +84,8 @@
     @endif
     
     <!-- Prediction Form -->
-    @if($match->status !== 'finished' && $match->match_date > now()->addHour())
+    {{-- Pronostics ouverts jusqu'à l'heure officielle du coup d'envoi (aligné sur PredictionController::store) --}}
+    @if($match->status !== 'finished' && $match->status !== 'live' && $match->match_date->isFuture())
         @if(session('user_id'))
         <form action="{{ route('predictions.store') }}" method="POST" class="space-y-4 border-t pt-4">
             @csrf
@@ -205,7 +206,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
             </svg>
-            Pronostics fermés (moins de 20 min avant le match)
+            Pronostics fermés (le match a commencé)
         </div>
     </div>
     @endif
