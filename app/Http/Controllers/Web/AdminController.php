@@ -1709,6 +1709,13 @@ class AdminController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $existing = Bar::where('dedup_key', Bar::makeDedupKey($request->name, $request->address))->first();
+        if ($existing) {
+            return back()
+                ->with('error', "Un point de vente identique existe déjà : \"{$existing->name}\" ({$existing->address}).")
+                ->withInput();
+        }
+
         Bar::create([
             'name' => $request->name,
             'address' => $request->address,
@@ -1754,6 +1761,16 @@ class AdminController extends Controller
         ]);
 
         $bar = Bar::findOrFail($id);
+
+        $existing = Bar::where('dedup_key', Bar::makeDedupKey($request->name, $request->address))
+            ->where('id', '!=', $bar->id)
+            ->first();
+        if ($existing) {
+            return back()
+                ->with('error', "Un autre point de vente identique existe déjà : \"{$existing->name}\" ({$existing->address}).")
+                ->withInput();
+        }
+
         $bar->update([
             'name' => $request->name,
             'address' => $request->address,
@@ -1961,8 +1978,9 @@ class AdminController extends Controller
                 // Vérifier si les coordonnées sont valides (peuvent être vides)
                 $hasValidCoords = !empty($latitude) && !empty($longitude) && is_numeric($latitude) && is_numeric($longitude);
 
-                // Vérifier les doublons (même nom et même adresse) - Mise à jour au lieu d'ignorer
-                $existingBar = Bar::where('name', $name)->where('address', $address)->first();
+                // Vérifier les doublons via la clé normalisée (insensible à la casse,
+                // aux accents, à la ponctuation et aux espaces) - Mise à jour au lieu d'ignorer
+                $existingBar = Bar::where('dedup_key', Bar::makeDedupKey($name, $address))->first();
 
                 // Gérer le type PDV
                 $typePdv = null;
@@ -2107,6 +2125,40 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Erreur lors de l\'importation : ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Assign all matches to a bar (creates the missing animations)
+     */
+    public function assignAllMatchesToBar($id)
+    {
+        if (!$this->checkAdminOrSoboa()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $bar = Bar::findOrFail($id);
+
+        $existingMatchIds = Animation::where('bar_id', $bar->id)->pluck('match_id');
+        $matches = MatchGame::whereNotIn('id', $existingMatchIds)->get();
+
+        $created = 0;
+        foreach ($matches as $match) {
+            Animation::create([
+                'bar_id' => $bar->id,
+                'match_id' => $match->id,
+                'animation_date' => $match->match_date ? $match->match_date->format('Y-m-d') : now()->format('Y-m-d'),
+                'animation_time' => $match->match_date ? $match->match_date->format('H:i:s') : '00:00:00',
+                'is_active' => true,
+            ]);
+            $created++;
+        }
+
+        $message = "{$created} match(s) assigné(s) à \"{$bar->name}\".";
+        if ($existingMatchIds->count() > 0) {
+            $message .= " {$existingMatchIds->count()} déjà assigné(s), ignoré(s).";
+        }
+
+        return back()->with('success', $message);
     }
 
     // ==================== TEAMS ====================

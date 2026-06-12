@@ -245,6 +245,14 @@
                                         📅 Animations
                                     </a>
                                     <span class="text-gray-300">|</span>
+                                    <form action="{{ route('admin.assign-all-matches', $bar->id) }}" method="POST" class="inline"
+                                          onsubmit="return confirm('Assigner tous les matchs à ce point de vente ?')">
+                                        @csrf
+                                        <button type="submit" class="text-green-600 hover:underline text-sm font-bold whitespace-nowrap">
+                                            ⚽ Tous les matchs
+                                        </button>
+                                    </form>
+                                    <span class="text-gray-300">|</span>
                                     <form action="{{ route('admin.toggle-bar', $bar->id) }}" method="POST" class="inline">
                                         @csrf
                                         <button type="submit" class="text-{{ $bar->is_active ? 'red' : 'green' }}-600 hover:underline text-sm font-bold whitespace-nowrap">

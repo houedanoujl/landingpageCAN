@@ -93,7 +93,12 @@
       "PowerShell(curl.exe -s -o - -w \"`nHTTP %{http_code}`n\" http://localhost/matches/106/wall -H \"Accept: application/json\")",
       "Bash(grep -oE '\"date\"[^,]*2026-[0-9]{2}-[0-9]{2}' public/db/worldcup.json)",
       "Bash(python3 -c ' *)",
-      "Bash(php -l app/Models/WeeklyRanking.php)"
+      "Bash(php -l app/Models/WeeklyRanking.php)",
+      "PowerShell(php -l app/Models/Bar.php)",
+      "PowerShell(php -l app/Http/Controllers/Web/AdminController.php)",
+      "PowerShell(php -l app/Console/Commands/DedupeBars.php)",
+      "PowerShell(php -l database/migrations/2026_06_12_000001_add_dedup_key_to_bars_table.php)",
+      "PowerShell(php -l routes/web.php)"
     ]
   }
 }

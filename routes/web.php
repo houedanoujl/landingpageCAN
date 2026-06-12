@@ -161,6 +161,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::delete('/bars/{id}', [AdminController::class, 'deleteBar'])->name('delete-bar');
     Route::get('/bars/template/download', [AdminController::class, 'downloadBarsTemplate'])->name('download-bars-template');
     Route::post('/bars/import', [AdminController::class, 'importBars'])->name('import-bars');
+    Route::post('/bars/{id}/assign-all-matches', [AdminController::class, 'assignAllMatchesToBar'])->name('assign-all-matches');
     Route::get('/bars/{barId}/animations', [AdminController::class, 'barAnimations'])->name('bar-animations');
 
     // Gestion segmentation PDV (nouvelle interface)
