@@ -105,31 +105,6 @@
         </div>
     </div>
 
-    {{-- Venues --}}
-    @if($match->animations && $match->animations->count() > 0)
-        <div class="px-4 pb-3">
-            <details class="group/details">
-                <summary class="cursor-pointer list-none flex items-center justify-between text-xs font-semibold text-gray-600 hover:text-soboa-blue py-1.5 focus:outline-none focus:ring-2 focus:ring-soboa-blue rounded">
-                    <span class="inline-flex items-center gap-1.5">
-                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                        Diffusé dans {{ $match->animations->count() }} PDV
-                    </span>
-                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-base group-open/details:rotate-180"></i>
-                </summary>
-                <div class="mt-2 flex flex-wrap gap-1.5">
-                    @foreach($match->animations as $animation)
-                        @php $bar = $animation->bar; @endphp
-                        @if($bar)
-                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-soboa-cream text-soboa-text-dark text-[11px] font-medium ring-1 ring-soboa-orange/20">
-                                {{ $bar->name }}@if($bar->zone)<span class="opacity-60">· {{ $bar->zone }}</span>@endif
-                            </span>
-                        @endif
-                    @endforeach
-                </div>
-            </details>
-        </div>
-    @endif
-
     {{-- Tendance des pronostics (agrégée, anonyme) --}}
     <div id="trend-wrap-{{ $match->id }}" class="px-4 pb-3" @style(['display:none' => $trendTotal === 0])>
         <div class="flex items-center justify-between mb-1">

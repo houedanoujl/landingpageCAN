@@ -551,7 +551,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main id="main-content" tabindex="-1" class="flex-grow pt-[100px]">
+    <main id="main-content" tabindex="-1" class="flex-grow pt-[100px] w-full max-w-7xl mx-auto px-3 fold:px-4 sm:px-6 lg:px-8">
         {{ $slot }}
     </main>
 
@@ -567,7 +567,7 @@
 
     <!-- Footer -->
     <footer class="bg-soboa-blue text-white py-8 mt-auto">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="max-w-7xl mx-auto px-3 fold:px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="text-center md:text-left">
                     <div class="flex items-center gap-3 mb-4 justify-center md:justify-start">

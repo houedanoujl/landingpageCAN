@@ -131,8 +131,8 @@
                     <p class="text-gray-600 text-sm mb-4">
                         Découvrez les animations dans les points de vente partenaires !
                     </p>
-                    <a href="/animations" class="inline-flex items-center gap-2 text-purple-600 font-bold text-sm hover:text-purple-700 transition-colors">
-                        Voir le calendrier <span>→</span>
+                    <a href="/map" class="inline-flex items-center gap-2 text-purple-600 font-bold text-sm hover:text-purple-700 transition-colors">
+                        Voir la carte des PDV <span>→</span>
                     </a>
                 </div>
             </div>

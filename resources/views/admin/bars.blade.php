@@ -14,6 +14,12 @@
                     <a href="{{ route('admin.dashboard') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg transition">
                         ← Retour
                     </a>
+                    @if($barsWithoutMatchesCount > 0)
+                    <button type="button" id="bulk-assign-btn" data-total="{{ $barsWithoutMatchesCount }}"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span>⚽</span> Matchs → {{ $barsWithoutMatchesCount }} PDV sans match
+                    </button>
+                    @endif
                     <button onclick="document.getElementById('import-modal').classList.remove('hidden')"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
                         <span>📥</span> Importer CSV
@@ -375,4 +381,65 @@ Le Djoloff,Corniche Ouest Dakar,14.716677,-17.481383</pre>
             </div>
         </div>
     </div>
+
+    <!-- Overlay progression assignation en masse -->
+    <div id="bulk-progress" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
+                <span>⚽</span> Assignation des matchs en cours…
+            </h3>
+            <p class="text-sm text-gray-500 mb-4">Traitement par lots de 25 points de vente.</p>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                <div id="bulk-progress-bar" class="bg-indigo-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="bulk-progress-text" class="text-sm font-bold text-gray-700 mt-3 text-center">Préparation…</p>
+            <p class="text-xs text-gray-400 mt-2 text-center">Ne fermez pas cette page pendant le traitement.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('bulk-assign-btn')?.addEventListener('click', async function () {
+            const total = parseInt(this.dataset.total, 10) || 0;
+            if (!confirm('Assigner tous les matchs aux ' + total + ' PDV sans match ? L\'opération se fait par lots et peut prendre quelques minutes.')) {
+                return;
+            }
+
+            const overlay = document.getElementById('bulk-progress');
+            const bar = document.getElementById('bulk-progress-bar');
+            const text = document.getElementById('bulk-progress-text');
+            overlay.classList.remove('hidden');
+            this.disabled = true;
+
+            try {
+                while (true) {
+                    const res = await fetch('{{ route('admin.assign-all-matches-bulk') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                    });
+                    if (!res.ok) {
+                        throw new Error('Erreur serveur (' + res.status + ')');
+                    }
+                    const data = await res.json();
+
+                    const done = total - data.remaining;
+                    const pct = total > 0 ? Math.min(100, Math.round(done / total * 100)) : 100;
+                    bar.style.width = pct + '%';
+                    text.textContent = done + ' / ' + total + ' PDV traités (' + pct + '%)';
+
+                    if (data.remaining <= 0 || data.processed === 0) {
+                        break;
+                    }
+                }
+                bar.style.width = '100%';
+                text.textContent = 'Terminé ! Rechargement de la page…';
+                setTimeout(() => window.location.reload(), 800);
+            } catch (e) {
+                alert('Erreur pendant l\'assignation : ' + e.message + '\nLes lots déjà traités sont conservés — relancez pour reprendre.');
+                window.location.reload();
+            }
+        });
+    </script>
 </x-layouts.app>

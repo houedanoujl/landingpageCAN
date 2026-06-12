@@ -16,6 +16,7 @@ use App\Models\AdminOtpLog;
 use App\Models\Animation;
 use App\Models\WeeklyRanking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -1676,7 +1677,10 @@ class AdminController extends Controller
         // Get type PDV options
         $typePdvOptions = Bar::getTypePdvOptions();
 
-        return view('admin.bars', compact('bars', 'zones', 'typePdvOptions'));
+        // PDV sans aucun match assigné (pour le bouton d'assignation en masse)
+        $barsWithoutMatchesCount = Bar::doesntHave('animations')->count();
+
+        return view('admin.bars', compact('bars', 'zones', 'typePdvOptions', 'barsWithoutMatchesCount'));
     }
 
     /**
@@ -2159,6 +2163,53 @@ class AdminController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * Assign all matches to bars without any match — one batch per request.
+     * Called repeatedly by the admin UI (AJAX) until remaining = 0, so each
+     * request stays short and production never hits a timeout.
+     */
+    public function assignAllMatchesToBarsWithoutMatches()
+    {
+        if (!$this->checkAdminOrSoboa()) {
+            return response()->json(['error' => 'Accès non autorisé.'], 403);
+        }
+
+        $matches = MatchGame::orderBy('match_date')->get(['id', 'match_date']);
+        if ($matches->isEmpty()) {
+            return response()->json(['error' => 'Aucun match en base.'], 422);
+        }
+
+        // 25 PDV × ~106 matchs = ~2 650 lignes par requête (~2 s)
+        $batchSize = 25;
+        $barIds = Bar::doesntHave('animations')->orderBy('id')->limit($batchSize)->pluck('id');
+
+        $now = now();
+        $rows = [];
+        foreach ($barIds as $barId) {
+            foreach ($matches as $match) {
+                $rows[] = [
+                    'bar_id' => $barId,
+                    'match_id' => $match->id,
+                    'animation_date' => ($match->match_date ?? $now)->format('Y-m-d H:i:s'),
+                    'animation_time' => $match->match_date ? $match->match_date->format('H:i:s') : '00:00:00',
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        if ($rows) {
+            DB::table('animations')->insert($rows);
+        }
+
+        return response()->json([
+            'processed' => $barIds->count(),
+            'created' => count($rows),
+            'remaining' => Bar::doesntHave('animations')->count(),
+        ]);
     }
 
     // ==================== TEAMS ====================

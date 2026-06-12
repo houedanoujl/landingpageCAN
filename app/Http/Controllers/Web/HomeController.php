@@ -123,7 +123,9 @@ class HomeController extends Controller
     public function matches(Request $request)
     {
         // Récupérer tous les matchs futurs dont les équipes sont définies
-        $allMatches = MatchGame::with(['homeTeam', 'awayTeam', 'animations.bar'])
+        // (pas d'eager load des animations : tous les PDV diffusent tous les
+        // matchs, la liste des diffuseurs n'est plus affichée ici)
+        $allMatches = MatchGame::with(['homeTeam', 'awayTeam'])
             ->when($this->hasCommentsTable(), fn ($q) => $q->withCount('comments'))
             ->where('status', '!=', 'finished')
             ->where('match_date', '>=', now())
@@ -221,28 +223,36 @@ class HomeController extends Controller
 
     public function map()
     {
-        $venues = Bar::with(['animations.match.homeTeam', 'animations.match.awayTeam'])
-            ->where('is_active', true)
+        $venues = Bar::where('is_active', true)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->orderBy('name')
             ->get();
-        
-        // Récupérer les animations groupées par date pour le calendrier
-        $animations = \App\Models\Animation::with(['bar', 'match.homeTeam', 'match.awayTeam'])
-            ->where('is_active', true)
-            ->whereHas('match')
-            ->orderBy('animation_date')
-            ->orderBy('animation_time')
+
+        // 3 prochaines diffusions par PDV via window function : évite de
+        // charger les ~80 000 animations (tous les PDV diffusent tous les matchs)
+        $upcomingRows = \Illuminate\Support\Facades\DB::select("
+            SELECT bar_id, animation_id, match_id, animation_date, animation_time FROM (
+                SELECT a.bar_id, a.id AS animation_id, a.match_id, a.animation_date, a.animation_time,
+                       ROW_NUMBER() OVER (PARTITION BY a.bar_id ORDER BY a.animation_date ASC, a.id ASC) AS rn
+                FROM animations a
+                INNER JOIN matches m ON m.id = a.match_id
+                WHERE a.is_active = 1 AND m.match_date >= ?
+            ) ranked
+            WHERE rn <= 3
+        ", [now()->subHours(3)]);
+
+        $venueAnimations = collect($upcomingRows)->groupBy('bar_id');
+
+        $matchesById = MatchGame::with(['homeTeam', 'awayTeam'])
+            ->whereIn('id', collect($upcomingRows)->pluck('match_id')->unique())
             ->get()
-            ->groupBy(function($animation) {
-                return \Carbon\Carbon::parse($animation->animation_date)->format('Y-m-d');
-            });
-        
+            ->keyBy('id');
+
         // Récupérer les médias pour les carousels (avec vérification si la table existe)
         $highlights = collect();
         $videos = collect();
-        
+
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('animation_media')) {
                 $highlights = \App\Models\AnimationMedia::photos()->get();
@@ -251,8 +261,8 @@ class HomeController extends Controller
         } catch (\Exception $e) {
             // Table n'existe pas encore, on garde les collections vides
         }
-        
-        return view('map', compact('venues', 'highlights', 'videos', 'animations'));
+
+        return view('map', compact('venues', 'venueAnimations', 'matchesById', 'highlights', 'videos'));
     }
 
     public function dashboard()
@@ -458,41 +468,6 @@ class HomeController extends Controller
     }
 
     /**
-     * Page Calendrier des Animations
-     * Affiche toutes les animations avec filtrage par date et géolocalisation
-     */
-    public function animations(Request $request)
-    {
-        // Récupérer toutes les animations à venir avec les relations
-        $animations = Animation::with(['bar', 'match.homeTeam', 'match.awayTeam'])
-            ->whereHas('match', function($query) {
-                $query->where('match_date', '>=', now()->subHours(3)); // Inclure les matchs récents
-            })
-            ->whereHas('bar', function($query) {
-                $query->where('is_active', true);
-            })
-            ->orderBy('animation_date', 'asc')
-            ->get();
-
-        // Grouper par date
-        $animationsByDate = $animations->groupBy(function($animation) {
-            return \Carbon\Carbon::parse($animation->animation_date)->format('Y-m-d');
-        });
-
-        // Récupérer tous les PDV uniques qui ont des animations
-        $venuesWithAnimations = Bar::whereHas('animations', function($query) {
-            $query->whereHas('match', function($q) {
-                $q->where('match_date', '>=', now()->subHours(3));
-            });
-        })->where('is_active', true)->orderBy('name')->get();
-
-        // Récupérer les types de PDV uniques
-        $venueTypes = $venuesWithAnimations->pluck('type_pdv')->unique()->filter()->values();
-
-        return view('animations', compact('animations', 'animationsByDate', 'venuesWithAnimations', 'venueTypes'));
-    }
-
-    /**
      * Page Temps Forts
      * Filtre les animations par PDV spécifique
      */
@@ -530,7 +505,8 @@ class HomeController extends Controller
             });
         }
 
-        $animations = $query->orderBy('animation_date', 'asc')->get();
+        // Paginé : sans filtre, tous les PDV diffusent tous les matchs (~80 000 lignes)
+        $animations = $query->orderBy('animation_date', 'asc')->paginate(24)->withQueryString();
 
         // Récupérer tous les PDV pour le filtre
         $venues = Bar::whereHas('animations', function($q) {
@@ -545,8 +521,8 @@ class HomeController extends Controller
         // Types de PDV uniques
         $types = $venues->pluck('type_pdv')->unique()->filter()->values();
 
-        // Grouper les animations par date
-        $animationsByDate = $animations->groupBy(function($animation) {
+        // Grouper les animations de la page courante par date
+        $animationsByDate = $animations->getCollection()->groupBy(function($animation) {
             return \Carbon\Carbon::parse($animation->animation_date)->format('Y-m-d');
         });
 

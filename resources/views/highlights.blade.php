@@ -15,7 +15,7 @@
                 </div>
                 <div class="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl shadow-xl">
                     <span class="text-xs text-white/70 font-black uppercase tracking-wider block">Résultats</span>
-                    <span class="text-soboa-orange font-black drop-shadow-md">{{ $animations->count() }}</span>
+                    <span class="text-soboa-orange font-black drop-shadow-md">{{ number_format($animations->total(), 0, ',', ' ') }}</span>
                 </div>
             </div>
         </div>
@@ -234,6 +234,11 @@
                     </div>
                 @endforeach
             </div>
+
+            <!-- Pagination -->
+            <div class="mt-6">
+                {{ $animations->links() }}
+            </div>
         @else
             <div class="text-center py-12 bg-white rounded-xl shadow">
                 <span class="text-6xl"></span>
@@ -245,10 +250,10 @@
             </div>
         @endif
 
-        <!-- Retour au calendrier -->
+        <!-- Retour à la carte -->
         <div class="text-center">
-            <a href="{{ route('animations') }}" class="inline-flex items-center gap-2 text-soboa-blue hover:text-blue-700 font-bold transition">
-                ← Retour au calendrier complet
+            <a href="{{ route('map') }}" class="inline-flex items-center gap-2 text-soboa-blue hover:text-blue-700 font-bold transition">
+                ← Voir la carte des points de vente
             </a>
         </div>
     </div>

@@ -16,7 +16,8 @@ Route::get('/matches', [HomeController::class, 'matches'])->name('matches');
 Route::get('/leaderboard', [HomeController::class, 'leaderboard'])->name('leaderboard');
 Route::get('/map', [HomeController::class, 'map'])->name('map');
 Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
-Route::get('/animations', [HomeController::class, 'animations'])->name('animations');
+// Calendrier des animations retiré : redirection vers la carte des PDV
+Route::redirect('/animations', '/map');
 Route::get('/calendar', [HomeController::class, 'calendar'])->name('calendar');
 Route::get('/conditions', function () {
     return view('terms', ['siteSettings' => \App\Models\SiteSetting::getSettings()]);
@@ -162,6 +163,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::get('/bars/template/download', [AdminController::class, 'downloadBarsTemplate'])->name('download-bars-template');
     Route::post('/bars/import', [AdminController::class, 'importBars'])->name('import-bars');
     Route::post('/bars/{id}/assign-all-matches', [AdminController::class, 'assignAllMatchesToBar'])->name('assign-all-matches');
+    Route::post('/bars/assign-all-matches', [AdminController::class, 'assignAllMatchesToBarsWithoutMatches'])->name('assign-all-matches-bulk');
     Route::get('/bars/{barId}/animations', [AdminController::class, 'barAnimations'])->name('bar-animations');
 
     // Gestion segmentation PDV (nouvelle interface)

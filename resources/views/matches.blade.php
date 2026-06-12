@@ -42,71 +42,7 @@
                 </a>
             </div>
         </div>
-    @else
-        {{-- ========== GEOLOCATION BANNERS ========== --}}
-        <template x-if="venueState === 'near' && nearbyVenue">
-            <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 text-white shadow-elev-1">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
-                        <i data-lucide="map-pin-check" class="w-6 h-6"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-xs text-white/80">Vous êtes proche de</p>
-                        <p class="font-black text-lg" x-text="nearbyVenue?.name"></p>
-                        <p class="text-xs text-white/80 mt-0.5"><strong>+4 points bonus</strong> automatiques sur vos pronostics</p>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <template x-if="venueState === 'far' && closestVenues.length">
-            <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light rounded-2xl p-4 text-white shadow-elev-1">
-                <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="map" class="w-5 h-5"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-bold text-sm mb-2">PDV les plus proches</p>
-                        <div class="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1 -mx-1 px-1">
-                            <template x-for="v in closestVenues" :key="v.id">
-                                <div class="snap-start shrink-0 w-36 bg-white/10 rounded-xl px-3 py-2.5 ring-1 ring-white/15">
-                                    <p class="font-bold text-sm truncate" x-text="v.name"></p>
-                                    <p class="text-lg font-black leading-tight mt-0.5" x-text="v.distance_m < 1000 ? v.distance_m + ' m' : v.distance_km.toFixed(1) + ' km'"></p>
-                                    <p class="text-[10px] text-white/70 uppercase tracking-wide mt-0.5">+4 pts bonus</p>
-                                </div>
-                            </template>
-                        </div>
-                        <p class="text-xs text-white/80 mt-2">Rendez-vous dans un PDV pour gagner <strong>+4 pts bonus</strong> · glissez pour voir plus</p>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        {{-- ========== INFO PANEL ========== --}}
-        <div class="bg-soboa-cream rounded-xl p-4 border-l-4 border-soboa-orange flex items-start gap-3">
-            <div class="w-9 h-9 rounded-full bg-soboa-orange/15 text-soboa-orange flex items-center justify-center flex-shrink-0">
-                <i data-lucide="info" class="w-5 h-5"></i>
-            </div>
-            <div class="text-sm text-soboa-text-dark">
-                <p class="font-bold mb-0.5">Comment ça marche ?</p>
-                <p class="text-soboa-text-dark/80">
-                    Faites vos pronostics. Dans un PDV partenaire (&lt; 200m), recevez automatiquement
-                    <strong class="text-soboa-orange">+4 points bonus</strong> (1× par jour).
-                </p>
-            </div>
-        </div>
     @endif
-
-    {{-- ========== 18+ MENTION ========== --}}
-    <div class="bg-red-50 ring-1 ring-red-200 rounded-lg p-3 flex items-center justify-center gap-3">
-        <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-white font-black text-[10px]">18+</span>
-        </div>
-        <p class="text-red-700 text-sm">
-            Jeu réservé aux plus de 18 ans.
-            <a href="{{ route('terms') }}" class="underline font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 rounded">Conditions</a>
-        </p>
-    </div>
 
     @if($matchesByPhase->count() > 0)
         {{-- ========== RECHERCHE ========== --}}
@@ -131,7 +67,7 @@
         </div>
 
         {{-- ========== PHASE TABS (sticky) ========== --}}
-        <nav class="sticky top-[68px] lg:top-[80px] z-sticky -mx-4 px-4 py-2 bg-white/85 backdrop-blur-md ring-1 ring-gray-200 rounded-2xl"
+        <nav class="sticky top-[84px] md:top-[104px] z-sticky -mx-4 px-4 py-2 bg-white/85 backdrop-blur-md ring-1 ring-gray-200 rounded-2xl"
              aria-label="Phases du tournoi">
             <div class="flex gap-1.5 overflow-x-auto scrollbar-hide" role="tablist">
                 @foreach($phaseOrder as $phaseKey => $phaseName)
@@ -168,8 +104,8 @@
             @if(isset($matchesByPhase[$phaseKey]) && $matchesByPhase[$phaseKey]->count() > 0)
                 <section x-show="activePhase === '{{ $phaseKey }}'" x-cloak role="tabpanel" aria-label="{{ $phaseName }}">
                     @if($phaseKey === 'group_stage' && $groupStageByGroup->count() > 0)
-                        {{-- Group sub-pills --}}
-                        <div class="group-pills flex flex-wrap gap-1.5 mb-4">
+                        {{-- Group sub-pills (épinglées sous les onglets de phase au scroll) --}}
+                        <div class="group-pills sticky top-[140px] md:top-[160px] z-sticky -mx-4 px-4 py-2 bg-white/85 backdrop-blur-md ring-1 ring-gray-200 rounded-2xl flex flex-wrap gap-1.5 mb-4">
                             @foreach($groupStageByGroup as $groupName => $_)
                                 <button type="button"
                                         @click="activeGroup = '{{ $groupName }}'"
@@ -218,6 +154,73 @@
             <p class="text-gray-600 mt-2">Revenez bientôt pour de nouveaux matchs !</p>
         </div>
     @endif
+
+    {{-- ========== SECTION INFOS (sous la liste des matchs) ========== --}}
+    @unless($tournamentEnded)
+        {{-- Geolocation banners --}}
+        <template x-if="venueState === 'near' && nearbyVenue">
+            <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 text-white shadow-elev-1">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                        <i data-lucide="map-pin-check" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs text-white/80">Vous êtes proche de</p>
+                        <p class="font-black text-lg" x-text="nearbyVenue?.name"></p>
+                        <p class="text-xs text-white/80 mt-0.5"><strong>+4 points bonus</strong> automatiques sur vos pronostics</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="venueState === 'far' && closestVenues.length">
+            <div class="bg-gradient-to-r from-soboa-blue to-soboa-blue-light rounded-2xl p-4 text-white shadow-elev-1">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="map" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold text-sm mb-2">PDV les plus proches</p>
+                        <div class="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1 -mx-1 px-1">
+                            <template x-for="v in closestVenues" :key="v.id">
+                                <div class="snap-start shrink-0 w-36 bg-white/10 rounded-xl px-3 py-2.5 ring-1 ring-white/15">
+                                    <p class="font-bold text-sm truncate" x-text="v.name"></p>
+                                    <p class="text-lg font-black leading-tight mt-0.5" x-text="v.distance_m < 1000 ? v.distance_m + ' m' : v.distance_km.toFixed(1) + ' km'"></p>
+                                    <p class="text-[10px] text-white/70 uppercase tracking-wide mt-0.5">+4 pts bonus</p>
+                                </div>
+                            </template>
+                        </div>
+                        <p class="text-xs text-white/80 mt-2">Rendez-vous dans un PDV pour gagner <strong>+4 pts bonus</strong> · glissez pour voir plus</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        {{-- Info panel --}}
+        <div class="bg-soboa-cream rounded-xl p-4 border-l-4 border-soboa-orange flex items-start gap-3">
+            <div class="w-9 h-9 rounded-full bg-soboa-orange/15 text-soboa-orange flex items-center justify-center flex-shrink-0">
+                <i data-lucide="info" class="w-5 h-5"></i>
+            </div>
+            <div class="text-sm text-soboa-text-dark">
+                <p class="font-bold mb-0.5">Comment ça marche ?</p>
+                <p class="text-soboa-text-dark/80">
+                    Faites vos pronostics. Dans un PDV partenaire (&lt; 200m), recevez automatiquement
+                    <strong class="text-soboa-orange">+4 points bonus</strong> (1× par jour).
+                </p>
+            </div>
+        </div>
+    @endunless
+
+    {{-- 18+ mention --}}
+    <div class="bg-red-50 ring-1 ring-red-200 rounded-lg p-3 flex items-center justify-center gap-3">
+        <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-white font-black text-[10px]">18+</span>
+        </div>
+        <p class="text-red-700 text-sm">
+            Jeu réservé aux plus de 18 ans.
+            <a href="{{ route('terms') }}" class="underline font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 rounded">Conditions</a>
+        </p>
+    </div>
 
     {{-- ========== PREDICTION MODAL ========== --}}
     <div x-show="modal.open" x-cloak
