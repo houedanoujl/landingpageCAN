@@ -99,7 +99,8 @@
       "PowerShell(php -l app/Console/Commands/DedupeBars.php)",
       "PowerShell(php -l database/migrations/2026_06_12_000001_add_dedup_key_to_bars_table.php)",
       "PowerShell(php -l routes/web.php)",
-      "PowerShell($path = \"C:\\\\Users\\\\socialmedia\\\\Documents\\\\GitHub\\\\landingpageCAN\\\\resources\\\\views\\\\map.blade.php\"; $lines = [System.IO.File]::ReadAllLines\\($path\\); $new = $lines[0..542] + $lines[959..\\($lines.Count-1\\)]; [System.IO.File]::WriteAllLines\\($path, $new\\); Write-Output \"avant: $\\($lines.Count\\) apres: $\\($new.Count\\)\")"
+      "PowerShell($path = \"C:\\\\Users\\\\socialmedia\\\\Documents\\\\GitHub\\\\landingpageCAN\\\\resources\\\\views\\\\map.blade.php\"; $lines = [System.IO.File]::ReadAllLines\\($path\\); $new = $lines[0..542] + $lines[959..\\($lines.Count-1\\)]; [System.IO.File]::WriteAllLines\\($path, $new\\); Write-Output \"avant: $\\($lines.Count\\) apres: $\\($new.Count\\)\")",
+      "Bash(sleep 15 && cat \"/c/Users/SOCIAL~1/AppData/Local/Temp/claude/C--Users-socialmedia-Documents-GitHub-landingpageCAN/d27e2b89-4696-4d1f-b3b5-be6aa72eb249/tasks/b1ko5cled.output\" 2>/dev/null || echo \"pas encore fini\")"
     ]
   }
 }

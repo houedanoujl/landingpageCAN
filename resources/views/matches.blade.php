@@ -1,6 +1,6 @@
 <x-layouts.app title="Pronostics">
 <x-skeleton-screen type="matches" :cards="6" />
-<div x-data="matchesPage()" x-init="init()" :class="{ 'searching': search.trim().length > 0 }" class="space-y-6">
+<div x-data="matchesPage()" x-init="init()" :class="{ 'searching': search.trim().length > 0 }" class="space-y-6 w-full max-w-7xl mx-auto px-3 fold:px-4 sm:px-6 lg:px-8">
 
     {{-- ========== HEADER ========== --}}
     <header class="relative py-section-sm px-6 rounded-2xl overflow-hidden shadow-elev-2">

@@ -551,7 +551,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main id="main-content" tabindex="-1" class="flex-grow pt-[100px] w-full max-w-7xl mx-auto px-3 fold:px-4 sm:px-6 lg:px-8">
+    <main id="main-content" tabindex="-1" class="flex-grow pt-[100px]">
         {{ $slot }}
     </main>
 
