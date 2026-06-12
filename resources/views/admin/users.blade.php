@@ -38,10 +38,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
+                    <select name="connected" onchange="this.form.submit()"
+                            class="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue font-medium text-gray-700">
+                        <option value="">Tous les utilisateurs</option>
+                        <option value="yes" {{ ($connected ?? '') === 'yes' ? 'selected' : '' }}>Déjà connectés</option>
+                        <option value="no" {{ ($connected ?? '') === 'no' ? 'selected' : '' }}>Jamais connectés</option>
+                    </select>
                     <button type="submit" class="bg-soboa-blue hover:bg-soboa-blue/90 text-white font-bold py-3 px-6 rounded-lg transition">
                         Rechercher
                     </button>
-                    @if($search)
+                    @if($search || ($connected ?? ''))
                     <a href="{{ route('admin.users') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition">
                         Effacer
                     </a>
@@ -72,6 +78,8 @@
                             <th class="px-4 py-3 text-center text-sm font-bold">Points</th>
                             <th class="px-4 py-3 text-center text-sm font-bold">Rôle</th>
                             <th class="px-4 py-3 text-left text-sm font-bold">Inscrit le</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold">Dernière connexion</th>
+                            <th class="px-4 py-3 text-center text-sm font-bold">Code SMS</th>
                             <th class="px-4 py-3 text-center text-sm font-bold">Actions</th>
                         </tr>
                     </thead>
@@ -110,10 +118,40 @@
                                 @endif
                             </td>
                             <td class="px-4 py-4 text-gray-500 text-sm">{{ $user->created_at->format('d/m/Y') }}</td>
+                            <td class="px-4 py-4 text-sm">
+                                @if($user->last_login_at)
+                                    <span class="text-gray-600">{{ $user->last_login_at->format('d/m/Y H:i') }}</span>
+                                @else
+                                    <span class="bg-gray-100 text-gray-500 font-bold px-2 py-1 rounded-full text-xs">Jamais</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-4 text-center">
-                                <a href="{{ route('admin.edit-user', $user->id) }}" class="text-soboa-orange hover:underline text-sm font-bold">
-                                    Modifier
-                                </a>
+                                @php $sms = $smsStatus[$user->phone] ?? null; @endphp
+                                @if($sms === 'sent')
+                                    <span class="bg-green-100 text-green-700 font-bold px-2 py-1 rounded-full text-xs" title="Code personnel délivré par SMS">✅ Reçu</span>
+                                @elseif($sms === 'failed')
+                                    <span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded-full text-xs" title="Échec d'envoi du SMS, jamais délivré">❌ Échec</span>
+                                @else
+                                    <span class="bg-blue-50 text-blue-600 font-bold px-2 py-1 rounded-full text-xs" title="Aucun SMS envoyé : code affiché à l'écran à l'inscription">🖥 À l'écran</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('admin.edit-user', $user->id) }}" class="text-soboa-orange hover:underline text-sm font-bold">
+                                        Modifier
+                                    </a>
+                                    @if($sms !== 'sent' && $user->plain_password)
+                                    <form method="POST" action="{{ route('admin.resend-user-password-sms', $user->id) }}"
+                                          onsubmit="return confirm('Envoyer le code personnel par SMS à {{ $user->name }} ({{ $user->phone }}) ? 1 crédit SMS sera consommé.');">
+                                        @csrf
+                                        <button type="submit"
+                                                class="text-white bg-soboa-blue hover:bg-soboa-blue/90 text-xs font-bold px-2 py-1 rounded-lg transition"
+                                                title="{{ $sms === 'failed' ? 'Renvoyer le code par SMS (échec précédent)' : 'Envoyer le code par SMS' }}">
+                                            📤 SMS
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @endforeach

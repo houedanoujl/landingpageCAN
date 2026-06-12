@@ -114,6 +114,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::post('/matches/{id}/calculate-points', [AdminController::class, 'calculatePoints'])->name('calculate-points');
     Route::post('/matches/import-json', [AdminController::class, 'importMatchesJson'])->name('import-matches-json');
     Route::post('/matches/sync-knockout-teams', [AdminController::class, 'syncKnockoutTeams'])->name('sync-knockout-teams');
+    Route::post('/matches/map-external-ids', [AdminController::class, 'mapExternalIds'])->name('map-external-ids');
 
     // Match-Venue Management (AJAX)
     Route::get('/matches/{matchId}/venues', [AdminController::class, 'getMatchVenues'])->name('match-venues');
@@ -140,6 +141,7 @@ Route::prefix('admin')->name('admin.')->middleware('check.admin')->group(functio
     Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('update-user');
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('delete-user');
     Route::post('/users/{id}/reset-points', [AdminController::class, 'resetUserPoints'])->name('reset-user-points');
+    Route::post('/users/{id}/resend-password-sms', [AdminController::class, 'resendUserPasswordSms'])->name('resend-user-password-sms');
     
     // Historique des points (logs)
     Route::get('/point-logs', [AdminController::class, 'pointLogs'])->name('point-logs');

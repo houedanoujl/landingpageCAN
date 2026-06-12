@@ -483,6 +483,34 @@ class AdminController extends Controller
     }
 
     /**
+     * Lie les matchs locaux à football-data.org sans passer par SSH :
+     * lance le mapping des matchs de poules (par équipes + date) puis le
+     * mapping/remplissage des matchs à élimination directe. Idempotent.
+     * (Bouton sur la page Gestion des Matchs.)
+     */
+    public function mapExternalIds()
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('matches:map-external-ids');
+            $output = "=== Mapping des matchs (poules) ===\n" . trim(\Illuminate\Support\Facades\Artisan::output());
+
+            \Illuminate\Support\Facades\Artisan::call('matches:sync-knockout-teams');
+            $output .= "\n\n=== Matchs à élimination directe ===\n" . trim(\Illuminate\Support\Facades\Artisan::output());
+
+            return redirect()->route('admin.matches')
+                ->with('success', 'Liaison avec l\'API exécutée.')
+                ->with('sync_output', $output);
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.matches')
+                ->with('error', 'Échec de la liaison : ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Récupère les équipes des matchs à élimination directe depuis
      * football-data.org (bouton sur la page Gestion des Matchs).
      * Ne remplit que les côtés encore "à déterminer" — jamais d'écrasement
@@ -723,6 +751,7 @@ class AdminController extends Controller
         }
 
         $search = $request->get('search');
+        $connected = $request->get('connected'); // '' | 'yes' | 'no'
 
         $query = User::orderBy('points_total', 'desc');
 
@@ -734,9 +763,62 @@ class AdminController extends Controller
             });
         }
 
-        $users = $query->paginate(50)->appends(['search' => $search]);
+        // Filtre connexion : un utilisateur est "connecté" s'il a au moins
+        // une connexion enregistrée (last_login_at, posé au login et à
+        // l'inscription).
+        if ($connected === 'yes') {
+            $query->whereNotNull('last_login_at');
+        } elseif ($connected === 'no') {
+            $query->whereNull('last_login_at');
+        }
 
-        return view('admin.users', compact('users', 'search'));
+        $users = $query->paginate(50)->appends(['search' => $search, 'connected' => $connected]);
+
+        // Statut de délivrance du code personnel par SMS pour les utilisateurs
+        // de la page (1 requête) : 'sent' (reçu), 'failed' (échec sans envoi
+        // réussi postérieur), null (jamais envoyé — code affiché à l'écran).
+        $passwordScope = function ($q) {
+            $q->where('context', 'like', 'password%')
+              ->orWhere('message', 'like', '%code personnel%')
+              ->orWhere('message', 'like', '%mot de passe%');
+        };
+        $smsStatus = \App\Models\SmsLog::whereIn('to_number', $users->pluck('phone')->filter())
+            ->where($passwordScope)
+            ->orderBy('id')
+            ->get()
+            ->groupBy('to_number')
+            ->map(function ($logs) {
+                return $logs->contains('status', 'sent') ? 'sent'
+                    : ($logs->contains('status', 'failed') ? 'failed' : null);
+            });
+
+        return view('admin.users', compact('users', 'search', 'connected', 'smsStatus'));
+    }
+
+    /**
+     * Renvoie (ou envoie) par SMS le code personnel d'un utilisateur précis
+     * (bouton sur Admin > Utilisateurs).
+     */
+    public function resendUserPasswordSms($id)
+    {
+        if (!$this->checkAdmin()) {
+            return redirect('/')->with('error', 'Accès non autorisé.');
+        }
+
+        $user = User::findOrFail($id);
+
+        if (!$user->plain_password) {
+            return back()->with('error', "Code de {$user->name} non récupérable (ancien compte OTP). L'utilisateur doit passer par « Code oublié ».");
+        }
+
+        $result = app(\App\Services\PasswordSmsService::class)
+            ->send($user->phone, $user->plain_password, $user->name, 'password_resend');
+
+        if ($result['success']) {
+            return back()->with('success', "Code personnel envoyé par SMS à {$user->name} ({$user->phone}).");
+        }
+
+        return back()->with('error', "Échec de l'envoi à {$user->name} ({$user->phone}) : " . ($result['error'] ?? 'erreur inconnue'));
     }
 
     /**

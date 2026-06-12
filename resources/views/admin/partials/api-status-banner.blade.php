@@ -54,7 +54,7 @@
     ][$tone];
 @endphp
 
-<div class="border rounded-xl px-4 py-3 mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 {{ $styles['wrap'] }}">
+<div class="border rounded-xl px-4 py-3 mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 {{ $styles['wrap'] }}">
     <span class="flex items-center gap-2 font-bold">
         <span class="w-2.5 h-2.5 rounded-full shrink-0 {{ $styles['dot'] }}"></span>
         {{ $title }}
@@ -66,4 +66,15 @@
             · {{ $liveWindowCount }} en fenêtre live
         @endif
     </span>
+    @if($apiEnabled && $mappedMatches < $totalMatches)
+        <form method="POST" action="{{ route('admin.map-external-ids') }}" class="shrink-0"
+              onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').innerText = 'Liaison en cours…';">
+            @csrf
+            <button type="submit"
+                    class="bg-soboa-blue hover:bg-soboa-blue/90 text-white text-sm font-bold py-2 px-4 rounded-lg transition"
+                    title="Associe les matchs locaux aux matchs football-data.org (poules par équipes+date, knockout par phase+horaire). Sans risque : ne touche ni scores ni équipes placées manuellement.">
+                🔗 Lier les matchs à l'API
+            </button>
+        </form>
+    @endif
 </div>
