@@ -146,6 +146,11 @@
                                         <div>
                                             <div class="text-sm font-medium text-gray-900">{{ $prediction->user->name }}</div>
                                             <div class="text-sm text-gray-500">{{ $prediction->user->phone }}</div>
+                                            <button type="button"
+                                                onclick="showPointsHistory({{ $prediction->user->id }}, '{{ addslashes($prediction->user->name) }}')"
+                                                class="mt-1 text-xs text-soboa-orange hover:underline font-semibold">
+                                                📜 Historique des points
+                                            </button>
                                         </div>
                                     </div>
                                 </td>
@@ -172,15 +177,26 @@
                                     </div>
                                 </td>
                                 @if($match->status === 'finished')
+                                @php
+                                    $breakdown = $pointsBreakdown[$prediction->user_id] ?? collect();
+                                    $earned = (int) $prediction->points_earned;
+                                @endphp
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    @if($prediction->points_awarded !== null)
                                     <span class="px-3 py-1 inline-flex text-sm font-bold rounded-full
-                                        {{ $prediction->points_awarded > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
-                                        {{ $prediction->points_awarded > 0 ? '+' : '' }}{{ $prediction->points_awarded }} pts
+                                        {{ $earned > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                                        +{{ $earned }} pts
                                     </span>
-                                    @else
-                                    <span class="text-sm text-gray-400">-</span>
-                                    @endif
+                                    <div class="mt-1 flex flex-wrap gap-1 justify-center">
+                                        @if($breakdown->get('prediction_participation'))
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Participation +{{ $breakdown->get('prediction_participation') }}</span>
+                                        @endif
+                                        @if($breakdown->get('prediction_winner'))
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Vainqueur +{{ $breakdown->get('prediction_winner') }}</span>
+                                        @endif
+                                        @if($breakdown->get('prediction_exact'))
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-800">Score exact +{{ $breakdown->get('prediction_exact') }}</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 @endif
                             </tr>
@@ -193,29 +209,34 @@
                 @if($match->status === 'finished' && $predictions->isNotEmpty())
                 <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
                     <h3 class="font-bold text-gray-700 mb-3">Statistiques</h3>
+                    @php
+                        $winnerCount = $pointsBreakdown->filter(fn ($b) => $b->get('prediction_winner'))->count();
+                        $exactCount = $pointsBreakdown->filter(fn ($b) => $b->get('prediction_exact'))->count();
+                        $totalDistributed = (int) $predictions->sum('points_earned');
+                    @endphp
                     <div class="grid grid-cols-4 gap-4 text-sm">
                         <div>
                             <p class="text-gray-500">Pronostics corrects (vainqueur)</p>
                             <p class="text-lg font-bold text-green-600">
-                                {{ $predictions->where('points_awarded', '>', 0)->count() }} / {{ $predictions->count() }}
+                                {{ $winnerCount }} / {{ $predictions->count() }}
                             </p>
                         </div>
                         <div>
                             <p class="text-gray-500">Scores exacts</p>
                             <p class="text-lg font-bold text-blue-600">
-                                {{ $predictions->where('score_a', $match->score_a)->where('score_b', $match->score_b)->count() }}
+                                {{ $exactCount }}
                             </p>
                         </div>
                         <div>
                             <p class="text-gray-500">Points moyens</p>
                             <p class="text-lg font-bold text-soboa-orange">
-                                {{ number_format($predictions->avg('points_awarded'), 1) }} pts
+                                {{ $predictions->count() ? number_format($totalDistributed / $predictions->count(), 1) : '0.0' }} pts
                             </p>
                         </div>
                         <div>
                             <p class="text-gray-500">Total points distribués</p>
                             <p class="text-lg font-bold text-purple-600">
-                                {{ $predictions->sum('points_awarded') }} pts
+                                {{ $totalDistributed }} pts
                             </p>
                         </div>
                     </div>
@@ -226,4 +247,88 @@
 
         </div>
     </div>
+
+    <!-- Modale historique des points -->
+    <div id="pointsHistoryModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                <div>
+                    <h3 class="text-lg font-black text-soboa-blue">📜 Historique des points</h3>
+                    <p id="pointsHistoryUser" class="text-sm text-gray-500"></p>
+                </div>
+                <button type="button" onclick="closePointsHistory()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div id="pointsHistoryBody" class="overflow-y-auto px-6 py-4 flex-1">
+                <p class="text-center text-gray-400 py-8">Chargement…</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function closePointsHistory() {
+            const modal = document.getElementById('pointsHistoryModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function showPointsHistory(userId, userName) {
+            const modal = document.getElementById('pointsHistoryModal');
+            const body = document.getElementById('pointsHistoryBody');
+            const userEl = document.getElementById('pointsHistoryUser');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            userEl.textContent = userName;
+            body.innerHTML = '<p class="text-center text-gray-400 py-8">Chargement…</p>';
+
+            try {
+                const res = await fetch(`/admin/users/${userId}/points-history`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+
+                userEl.textContent = `${data.user.name} · ${data.user.phone} · ${data.user.points_total} pts au total`;
+
+                if (!data.logs.length) {
+                    body.innerHTML = '<p class="text-center text-gray-400 py-8">Aucun point enregistré.</p>';
+                    return;
+                }
+
+                const rows = data.logs.map(log => `
+                    <tr class="border-b border-gray-100">
+                        <td class="py-2 pr-3 text-sm text-gray-500 whitespace-nowrap">${log.date}</td>
+                        <td class="py-2 pr-3">
+                            <div class="text-sm font-medium text-gray-800">${log.source_label}</div>
+                            ${log.match ? `<div class="text-xs text-gray-400">${log.match}</div>` : ''}
+                            ${log.bar ? `<div class="text-xs text-gray-400">${log.bar}</div>` : ''}
+                        </td>
+                        <td class="py-2 text-right font-bold ${log.points > 0 ? 'text-green-600' : 'text-red-600'}">${log.points > 0 ? '+' : ''}${log.points}</td>
+                    </tr>
+                `).join('');
+
+                body.innerHTML = `
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="text-left text-xs uppercase text-gray-400">
+                                <th class="py-2 pr-3">Date</th>
+                                <th class="py-2 pr-3">Source</th>
+                                <th class="py-2 text-right">Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } catch (e) {
+                body.innerHTML = '<p class="text-center text-red-500 py-8">Erreur de chargement de l\'historique.</p>';
+            }
+        }
+
+        document.getElementById('pointsHistoryModal').addEventListener('click', function (e) {
+            if (e.target === this) closePointsHistory();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closePointsHistory();
+        });
+    </script>
 </x-layouts.app>

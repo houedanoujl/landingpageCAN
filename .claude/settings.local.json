@@ -117,7 +117,14 @@
       "Bash(sed -n '55,80p' resources/views/auth/login.blade.php)",
       "Bash(php -l app/Services/PasswordSmsService.php)",
       "Bash(php -l app/Console/Commands/SendPasswordSms.php)",
-      "Bash(cd \"C:\\\\Users\\\\socialmedia\\\\Documents\\\\GitHub\\\\landingpageCAN\" && php -l app/Http/Controllers/Web/AdminController.php && docker compose exec -T laravel.test sh -c 'cd /app && php artisan route:clear >/dev/null && php artisan route:list 2>/dev/null | grep map-external && echo \"include \\\\\"scripts/test_map_button.php\\\\\";\" | php artisan tinker && php artisan view:cache 2>&1 | tail -1' > /tmp/map_btn.txt 2>&1; grep -aE \"No syntax|map-external|avant|flash|après|extrait|Mapping|mapped|Rollback|cached|rror\" /tmp/map_btn.txt | head -15)"
+      "Bash(cd \"C:\\\\Users\\\\socialmedia\\\\Documents\\\\GitHub\\\\landingpageCAN\" && php -l app/Http/Controllers/Web/AdminController.php && docker compose exec -T laravel.test sh -c 'cd /app && php artisan route:clear >/dev/null && php artisan route:list 2>/dev/null | grep map-external && echo \"include \\\\\"scripts/test_map_button.php\\\\\";\" | php artisan tinker && php artisan view:cache 2>&1 | tail -1' > /tmp/map_btn.txt 2>&1; grep -aE \"No syntax|map-external|avant|flash|après|extrait|Mapping|mapped|Rollback|cached|rror\" /tmp/map_btn.txt | head -15)",
+      "Bash(which php *)",
+      "Bash(/Applications/MAMP/bin/php/php8.3.14/bin/php artisan tinker '--execute= *)",
+      "Bash(/Applications/MAMP/bin/php/php8.3.14/bin/php -l app/Http/Controllers/Web/AdminController.php)",
+      "Bash(/Applications/MAMP/bin/php/php8.3.14/bin/php -l routes/web.php)",
+      "Bash(/Applications/MAMP/bin/php/php8.3.14/bin/php artisan *)",
+      "Bash(/Applications/MAMP/bin/php/php8.3.14/bin/php -r ' *)",
+      "Bash(/Applications/MAMP/bin/php/php8.3.14/bin/php -l app/Console/Commands/SyncMatchScores.php)"
     ]
   }
 }

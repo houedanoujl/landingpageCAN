@@ -2642,7 +2642,68 @@ class AdminController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('admin.match-predictions', compact('match', 'predictions'));
+        // Détail des points attribués pour CE match, indexé par utilisateur
+        // puis par source (prediction_participation / prediction_winner /
+        // prediction_exact). Permet d'afficher le détail et des stats fiables.
+        $pointsBreakdown = PointLog::where('match_id', $id)
+            ->whereIn('source', ['prediction_participation', 'prediction_winner', 'prediction_exact'])
+            ->get()
+            ->groupBy('user_id')
+            ->map(fn ($rows) => $rows->pluck('points', 'source'));
+
+        return view('admin.match-predictions', compact('match', 'predictions', 'pointsBreakdown'));
+    }
+
+    /**
+     * Return a user's full points history as JSON (for the admin modal).
+     */
+    public function userPointsHistory($id)
+    {
+        if (!$this->checkAdmin()) {
+            return response()->json(['error' => 'Accès non autorisé.'], 403);
+        }
+
+        $user = User::findOrFail($id);
+
+        $logs = PointLog::where('user_id', $id)
+            ->with(['match.homeTeam', 'match.awayTeam', 'bar'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $labels = [
+            'login' => 'Connexion quotidienne',
+            'daily_activity' => 'Activité quotidienne',
+            'bar_visit' => 'Visite point de vente',
+            'venue_visit' => 'Pronostic en point de vente',
+            'prediction_participation' => 'Participation pronostic',
+            'prediction_winner' => 'Bon vainqueur',
+            'prediction_exact' => 'Score exact',
+        ];
+
+        return response()->json([
+            'user' => [
+                'name' => $user->name,
+                'phone' => $user->phone,
+                'points_total' => (int) $user->points_total,
+            ],
+            'logs' => $logs->map(function ($log) use ($labels) {
+                $matchLabel = null;
+                if ($log->match) {
+                    $home = $log->match->homeTeam->name ?? $log->match->team_a ?? '?';
+                    $away = $log->match->awayTeam->name ?? $log->match->team_b ?? '?';
+                    $matchLabel = "{$home} vs {$away}";
+                }
+
+                return [
+                    'date' => $log->created_at->locale('fr')->isoFormat('D MMM YYYY [à] HH:mm'),
+                    'source' => $log->source,
+                    'source_label' => $labels[$log->source] ?? $log->source,
+                    'points' => (int) $log->points,
+                    'match' => $matchLabel,
+                    'bar' => $log->bar->name ?? null,
+                ];
+            }),
+        ]);
     }
 
     /**

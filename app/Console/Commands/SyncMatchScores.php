@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\ProcessMatchPoints;
 use App\Models\MatchGame;
 use App\Services\FootballDataService;
 use Carbon\Carbon;
@@ -74,6 +75,7 @@ class SyncMatchScores extends Command
 
             $score = $external['score']['fullTime'] ?? null;
             $status = strtoupper($external['status'] ?? '');
+            $justFinalized = false;
 
             // Update scores when available (live or finished).
             if (is_array($score) && $score['home'] !== null && $score['away'] !== null) {
@@ -88,12 +90,21 @@ class SyncMatchScores extends Command
             if ($status === 'FINISHED' && $match->status !== 'finished') {
                 $match->status = 'finished';
                 $finalized++;
+                $justFinalized = true;
             } elseif (in_array($status, ['IN_PLAY', 'PAUSED', 'LIVE'], true) && $match->status !== 'live') {
                 $match->status = 'live';
             }
 
             $match->last_synced_at = now();
             $match->save();
+
+            // Attribution immédiate des points dès que l'API marque le match
+            // terminé (mêmes garanties que le workflow admin). Idempotent grâce
+            // au garde-fou PointLog dans ProcessMatchPoints ; évite d'attendre
+            // le cron de secours matches:process-finished.
+            if ($justFinalized && $match->score_a !== null && $match->score_b !== null) {
+                ProcessMatchPoints::dispatchSync($match->id);
+            }
         }
 
         $this->info(sprintf(
