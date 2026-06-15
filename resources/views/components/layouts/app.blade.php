@@ -1257,7 +1257,7 @@
     <div x-data="fraudNotice()" x-show="open" x-cloak style="display:none;"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-         class="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <div x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-4 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100"
              class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
@@ -1269,7 +1269,7 @@
             </div>
             <div class="px-6 py-5 space-y-3 text-sm text-gray-700">
                 <p>Pour garantir l'équité du jeu, le classement est <strong>surveillé en permanence</strong>.</p>
-                <p>Le bonus <strong>+4 points</strong> en point de vente partenaire est accordé <strong>uniquement si un pronostic est enregistré</strong> sur place, dans la limite d'<strong>un seul bonus par point de vente et par jour</strong>.</p>
+                <p>Le bonus <strong>+4 points</strong> est accordé <strong>uniquement lorsqu'un pronostic est enregistré sur place</strong>, dans un point de vente partenaire. Il se <strong>cumule entre différents points de vente</strong>. Un simple passage sans pronostic ne rapporte aucun point.</p>
                 <div class="bg-amber-50 border-l-4 border-amber-400 rounded p-3 flex items-start gap-2">
                     <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"></i>
                     <p class="text-amber-800">En cas de <strong>check-ins abusifs</strong>, les points concernés pourront faire l'objet d'un <strong>recomptage</strong>.</p>

@@ -110,7 +110,7 @@
                         </div>
                     </div>
                     <p class="text-gray-600 text-sm mb-4">
-                        Visitez nos points de vente partenaires et gagnez 4 points bonus par jour !
+                        Faites vos pronostics dans nos points de vente partenaires et gagnez 4 points bonus !
                     </p>
                     <a href="/map" class="inline-flex items-center gap-2 text-green-600 font-bold text-sm hover:text-green-700 transition-colors">
                         Trouver un lieu <span>→</span>

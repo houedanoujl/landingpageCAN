@@ -59,11 +59,12 @@ class PointsService
 
     /**
      * Sources qui comptent toutes pour le bonus venue de +4.
-     * RÈGLE MÉTIER 2026 : +4 points PAR point de vente visité et par jour
-     * (check-in vérifié sur place). Un utilisateur qui visite plusieurs PDV
-     * dans la journée cumule un bonus par PDV ; le plafond est par couple
-     * (utilisateur, PDV, jour), partagé entre les deux sources historiques
-     * pour interdire un double +4 dans le même PDV.
+     * RÈGLE MÉTIER 2026 : le +4 est accordé UNIQUEMENT lorsqu'un pronostic est
+     * enregistré sur place dans un PDV partenaire. Un simple check-in (passage)
+     * sans pronostic ne rapporte aucun point — c'est ce qui bloque les check-ins
+     * abusifs. Le bonus se cumule entre PDV différents ; le plafond est par
+     * couple (utilisateur, PDV, jour) pour interdire un double +4 dans le même
+     * PDV le même jour. 'bar_visit' n'est conservé que pour les logs historiques.
      */
     private const VENUE_BONUS_SOURCES = ['venue_visit', 'bar_visit'];
 
@@ -78,47 +79,6 @@ class PointsService
             ->when($barId, fn ($q) => $q->where('bar_id', $barId))
             ->whereDate('created_at', Carbon::today())
             ->exists();
-    }
-
-    /**
-     * Award points for bar visit (geofencing).
-     *
-     * +4 points par PDV visité et par jour : attribués dès le check-in
-     * vérifié sur place. Visiter plusieurs PDV le même jour cumule les bonus.
-     *
-     * @param int|null $barId The ID of the bar visited
-     * @return int Points awarded (0 if already awarded today for this bar)
-     */
-    public function awardBarVisitPoints(User $user, ?int $barId = null): int
-    {
-        // Check if tournament has ended - no more points
-        if (!SiteSetting::isPointsEnabled()) {
-            return 0;
-        }
-
-        if (!$this->hasVenueBonusToday($user, $barId)) {
-            try {
-                DB::transaction(function () use ($user, $barId) {
-                    $user->increment('points_total', 4);
-                    PointLog::create([
-                        'user_id' => $user->id,
-                        'bar_id' => $barId,
-                        'source' => 'bar_visit',
-                        'points' => 4,
-                    ]);
-                });
-                return 4;
-            } catch (QueryException $e) {
-                // Doublon bloqué par l'index uniq_venue_bonus_per_day (race condition).
-                // La transaction a rollback : aucun point ajouté. On dégrade en 0.
-                if ($this->isDuplicateKey($e)) {
-                    return 0;
-                }
-                throw $e;
-            }
-        }
-
-        return 0;
     }
 
     /**

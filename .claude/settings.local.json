@@ -128,7 +128,16 @@
       "Bash(grep -n '@if\\($isAdmin\\)\\\\|@if\\($isSoboa\\)\\\\|@elseif\\\\|@else\\\\|@endif\\\\|route\\('\\\\''admin')",
       "Bash(php -l resources/views/components/layouts/app.blade.php)",
       "Bash(grep -rniE \"visite.{0,15}\\(lieu|partenaire|pdv|bar\\)|\\(lieu|partenaire|pdv|bar\\).{0,15}visit|\\\\+ ?4 ?\\(pts|points\\)|check.?in.{0,20}\\(point|\\\\+4|4 ?pt\\)|4 ?\\(pts|points\\).{0,20}\\(visite|lieu|partenaire|bar|pdv\\)\" --include=\"*.blade.php\" --include=\"*.php\" --include=\"*.vue\" --include=\"*.js\" resources/ app/)",
-      "Bash(grep -rniE \"visit.{0,12}\\(lieu|partenaire|pdv\\).{0,12}\\(\\\\+?4|bonus|point\\)|\\(\\\\+?4|bonus\\).{0,12}\\(par |/\\)?visit|visite lieu|par visite\" --include=\"*.blade.php\" resources/)"
+      "Bash(grep -rniE \"visit.{0,12}\\(lieu|partenaire|pdv\\).{0,12}\\(\\\\+?4|bonus|point\\)|\\(\\\\+?4|bonus\\).{0,12}\\(par |/\\)?visit|visite lieu|par visite\" --include=\"*.blade.php\" resources/)",
+      "PowerShell(docker compose ps --format \"table {{.Service}}\\\\t{{.State}}\")",
+      "PowerShell(docker compose exec -u root laravel.test sh -c \"chown -R application:application /app/storage /app/bootstrap/cache && chmod -R ug+rwX /app/storage /app/bootstrap/cache && echo DONE\")",
+      "PowerShell(docker compose exec laravel.test sh -c \"php artisan view:clear && php artisan cache:clear && php artisan config:clear && echo OK\")",
+      "PowerShell(docker compose exec -w /app laravel.test sh -c \"php artisan view:clear && php artisan cache:clear && php artisan config:clear && echo OK\")",
+      "Bash(grep -o \"z-\\\\[2000\\\\]\\\\|\\\\.z-\\\\[2000\\\\]\\\\|z-2000\\\\|\\\\\\\\\\\\\\\\[2000\\\\\\\\\\\\\\\\]\" public/build/assets/app-BaKLmvML.css)",
+      "Bash(grep -o \"z-\\\\[10\\\\]\\\\|z-\\\\\\\\\\\\\\\\[10\\\\\\\\\\\\\\\\]\" public/build/assets/app-BaKLmvML.css)",
+      "Bash(grep -o '\\\\.z-\\\\\\\\\\\\[[0-9]*\\\\\\\\\\\\]' app-BaKLmvML.css)",
+      "PowerShell(docker compose exec -w /app laravel.test php artisan view:clear)",
+      "PowerShell(docker compose exec -w /app laravel.test sh -c \"php -l app/Services/PointsService.php && php artisan view:clear\")"
     ]
   }
 }
