@@ -173,7 +173,8 @@
       "Bash(git check-ignore *)",
       "Bash(grep -A 30 \"CREATE TABLE \\\\`archived_rankings\\\\`\" \"C:\\\\Users\\\\socialmedia\\\\Documents\\\\GitHub\\\\landingpageCAN\\\\can_prod.sql\")",
       "Bash(php -v)",
-      "Bash(awk '/CREATE TABLE `predictions`/,/ENGINE=/' /c/Users/socialmedia/Documents/GitHub/landingpageCAN/can_prod.sql)"
+      "Bash(awk '/CREATE TABLE `predictions`/,/ENGINE=/' /c/Users/socialmedia/Documents/GitHub/landingpageCAN/can_prod.sql)",
+      "Bash(php -r '$v=[\"name\"=>\"</script><script>alert\\(1\\)</script>\"]; echo json_encode\\($v\\), \"\\\\n---\\\\n\", json_encode\\($v, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT\\), \"\\\\n\";')"
     ],
     "additionalDirectories": [
       "\\tmp",

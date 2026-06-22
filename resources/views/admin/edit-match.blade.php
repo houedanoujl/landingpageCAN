@@ -28,9 +28,9 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">Équipe domicile *</label>
-                            <select name="home_team_id" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
+                            <select name="home_team_id" id="home_team_id" required onchange="updateScoreFlag('home')" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                                 @foreach($teams as $team)
-                                <option value="{{ $team->id }}" {{ old('home_team_id', $match->home_team_id) == $team->id ? 'selected' : '' }}>
+                                <option value="{{ $team->id }}" data-iso="{{ $team->iso_code }}" data-name="{{ $team->display_name }}" {{ old('home_team_id', $match->home_team_id) == $team->id ? 'selected' : '' }}>
                                     {{ $team->name }}
                                 </option>
                                 @endforeach
@@ -38,9 +38,9 @@
                         </div>
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">Équipe extérieur *</label>
-                            <select name="away_team_id" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
+                            <select name="away_team_id" id="away_team_id" required onchange="updateScoreFlag('away')" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-soboa-blue focus:border-soboa-blue">
                                 @foreach($teams as $team)
-                                <option value="{{ $team->id }}" {{ old('away_team_id', $match->away_team_id) == $team->id ? 'selected' : '' }}>
+                                <option value="{{ $team->id }}" data-iso="{{ $team->iso_code }}" data-name="{{ $team->display_name }}" {{ old('away_team_id', $match->away_team_id) == $team->id ? 'selected' : '' }}>
                                     {{ $team->name }}
                                 </option>
                                 @endforeach
@@ -179,27 +179,37 @@
 
                     <!-- Scores -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-4">Score Final</label>
-                        <div class="flex items-center justify-center gap-4">
-                            <div class="text-center">
-                                <label class="text-xs text-gray-500 block mb-2">Domicile</label>
-                                <input type="number" 
-                                       name="score_a" 
+                        <label class="block text-sm font-bold text-gray-700 mb-4">Score Final (saisie manuelle)</label>
+                        <div class="flex items-start justify-center gap-4">
+                            <div class="text-center w-28">
+                                <img id="flag-score-home"
+                                     src="{{ $match->homeTeam?->flag_url_80 ?? '' }}"
+                                     alt=""
+                                     class="w-16 h-12 object-cover rounded shadow mx-auto mb-2"
+                                     onerror="this.style.visibility='hidden'">
+                                <span id="name-score-home" class="block text-xs font-bold text-gray-700 mb-2 truncate">{{ $match->homeTeam?->display_name ?? 'Domicile' }}</span>
+                                <input type="number"
+                                       name="score_a"
                                        id="score_a"
                                        value="{{ old('score_a', $match->score_a) }}"
-                                       min="0" 
+                                       min="0"
                                        max="20"
                                        onchange="checkForPenalties()"
                                        class="w-20 h-16 text-center text-3xl font-black border-2 border-gray-300 rounded-xl focus:border-soboa-orange focus:ring-soboa-orange">
                             </div>
-                            <span class="text-3xl font-bold text-gray-400 mt-6">-</span>
-                            <div class="text-center">
-                                <label class="text-xs text-gray-500 block mb-2">Extérieur</label>
-                                <input type="number" 
-                                       name="score_b" 
+                            <span class="text-3xl font-bold text-gray-400 mt-16">-</span>
+                            <div class="text-center w-28">
+                                <img id="flag-score-away"
+                                     src="{{ $match->awayTeam?->flag_url_80 ?? '' }}"
+                                     alt=""
+                                     class="w-16 h-12 object-cover rounded shadow mx-auto mb-2"
+                                     onerror="this.style.visibility='hidden'">
+                                <span id="name-score-away" class="block text-xs font-bold text-gray-700 mb-2 truncate">{{ $match->awayTeam?->display_name ?? 'Extérieur' }}</span>
+                                <input type="number"
+                                       name="score_b"
                                        id="score_b"
                                        value="{{ old('score_b', $match->score_b) }}"
-                                       min="0" 
+                                       min="0"
                                        max="20"
                                        onchange="checkForPenalties()"
                                        class="w-20 h-16 text-center text-3xl font-black border-2 border-gray-300 rounded-xl focus:border-soboa-orange focus:ring-soboa-orange">
@@ -361,6 +371,37 @@
             checkForPenalties();
             togglePenaltyWinner();
         });
+
+        // Construire l'URL du drapeau (même logique que Team::flagUrl).
+        function flagUrlFromIso(iso) {
+            iso = (iso || '').toLowerCase();
+            if (iso === '') return '';
+            if (iso.includes('-')) {
+                // Subdivision (ex. gb-eng) : flagicons.lipis.dev sert du SVG.
+                return 'https://flagicons.lipis.dev/flags/4x3/' + iso + '.svg';
+            }
+            return 'https://flagcdn.com/w80/' + iso + '.png';
+        }
+
+        // Mettre à jour le drapeau + nom au-dessus du score quand l'équipe change.
+        function updateScoreFlag(side) {
+            const select = document.getElementById(side + '_team_id');
+            const opt = select.options[select.selectedIndex];
+            const iso = opt ? opt.dataset.iso : '';
+            const name = opt ? (opt.dataset.name || opt.text.trim()) : '';
+
+            const flag = document.getElementById('flag-score-' + side);
+            const label = document.getElementById('name-score-' + side);
+            const url = flagUrlFromIso(iso);
+
+            if (url) {
+                flag.src = url;
+                flag.style.visibility = 'visible';
+            } else {
+                flag.style.visibility = 'hidden';
+            }
+            label.textContent = name || (side === 'home' ? 'Domicile' : 'Extérieur');
+        }
 
         // Vérifier si les scores sont égaux pour afficher la section TAB
         function checkForPenalties() {
