@@ -8,7 +8,9 @@ use App\Models\MatchGame;
 use App\Models\Prediction;
 use App\Models\PointLog;
 use App\Models\SiteSetting;
+use App\Models\AdminAuditLog;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 
@@ -269,5 +271,106 @@ class PointsService
 
         // Calcul immédiat et garanti (sans dépendre d'un worker de queue)
         \App\Jobs\ProcessMatchPoints::dispatchSync($match->id);
+    }
+
+    /**
+     * Sources de points qui dépendent du RÉSULTAT d'un match.
+     * Ce sont les SEULES annulées lors d'une correction de score. Les bonus de
+     * check-in (venue_visit / bar_visit) et les points de connexion (login /
+     * daily_activity) ne dépendent pas du score et ne doivent JAMAIS être retirés
+     * ici.
+     */
+    private const MATCH_RESULT_SOURCES = [
+        'prediction_participation',
+        'prediction_winner',
+        'prediction_exact',
+    ];
+
+    /**
+     * Corrige (recalcule) les points d'un match déjà terminé après modification
+     * du score par l'admin — typiquement quand l'API s'est trompée.
+     *
+     * Le cœur du recalcul vit dans ProcessMatchPoints, qui est AUTO-CORRECTIF
+     * (il annule les points de résultat existants puis réattribue selon le score
+     * enregistré). Cette méthode ne fait donc que l'ENROBER pour l'usage admin :
+     *   - garde-fou « points désactivés » (tournoi terminé) ;
+     *   - mesure de l'écart avant/après ;
+     *   - traçabilité (AdminAuditLog) de l'action manuelle ;
+     *   - résumé renvoyé à l'UI / la commande.
+     *
+     * Idempotent et sûr à rejouer : appelée deux fois de suite sans changement de
+     * score, elle reproduit exactement le même état.
+     *
+     * @return array{
+     *     skipped: bool,
+     *     reason?: string,
+     *     users_affected: int,
+     *     points_before: int,
+     *     points_after: int,
+     *     points_removed: int
+     * }
+     */
+    public function recalculateMatchPoints(MatchGame $match): array
+    {
+        $before = (int) PointLog::where('match_id', $match->id)
+            ->whereIn('source', self::MATCH_RESULT_SOURCES)
+            ->sum('points');
+
+        // Si l'attribution des points est désactivée (tournoi terminé), ne rien
+        // faire : ProcessMatchPoints s'arrêterait sur ce même interrupteur sans
+        // réattribuer. On évite ainsi tout retrait de points sans contrepartie.
+        if (!SiteSetting::isPointsEnabled()) {
+            return [
+                'skipped'        => true,
+                'reason'         => 'points_disabled',
+                'users_affected' => 0,
+                'points_before'  => $before,
+                'points_after'   => $before,
+                'points_removed' => 0,
+            ];
+        }
+
+        // Recalcul délégué au job auto-correctif : annule les points de résultat
+        // existants puis réattribue selon le score enregistré, en une transaction.
+        if ($match->status === 'finished' && $match->score_a !== null && $match->score_b !== null) {
+            \App\Jobs\ProcessMatchPoints::dispatchSync($match->id);
+        }
+
+        $after = (int) PointLog::where('match_id', $match->id)
+            ->whereIn('source', self::MATCH_RESULT_SOURCES)
+            ->sum('points');
+
+        $removed = max(0, $before - $after);
+
+        $usersAffected = (int) PointLog::where('match_id', $match->id)
+            ->whereIn('source', self::MATCH_RESULT_SOURCES)
+            ->distinct()
+            ->count('user_id');
+
+        // Traçabilité : qui a recalculé, quand, et l'écart de points.
+        AdminAuditLog::record(
+            'match.recalculate_points',
+            "Recalcul des points — match #{$match->id} : {$match->team_a} {$match->score_a}-{$match->score_b} {$match->team_b}",
+            $match,
+            [
+                'score_a'        => $match->score_a,
+                'score_b'        => $match->score_b,
+                'winner'         => $match->winner,
+                'points_before'  => $before,
+                'points_after'   => $after,
+                'points_removed' => $removed,
+            ]
+        );
+
+        // Le classement a potentiellement changé.
+        Cache::forget('leaderboard_top_5');
+
+        return [
+            'skipped'        => false,
+            'users_affected' => $usersAffected,
+            'points_before'  => $before,
+            'points_after'   => $after,
+            'points_removed' => $removed,
+        ];
     }
 }

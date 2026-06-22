@@ -23,6 +23,18 @@ class ProcessMatchPoints implements ShouldQueue
     protected int $matchId;
 
     /**
+     * Sources de points qui dépendent du RÉSULTAT d'un match. Ce sont les seules
+     * annulées/réattribuées à chaque exécution. On ne touche jamais aux bonus de
+     * check-in (venue_visit/bar_visit) ni aux points de connexion : ils ne
+     * dépendent pas du score.
+     */
+    private const RESULT_SOURCES = [
+        'prediction_participation',
+        'prediction_winner',
+        'prediction_exact',
+    ];
+
+    /**
      * Create a new job instance.
      */
     public function __construct(int $matchId)
@@ -79,25 +91,46 @@ class ProcessMatchPoints implements ShouldQueue
 
         Log::info("ProcessMatchPoints: Processing {$predictions->count()} predictions for match {$this->matchId}");
 
-        // Pré-charger en une seule requête tous les PointLogs déjà attribués
-        // pour ce match, indexés par utilisateur puis par source.
-        // Évite 3 requêtes "exists()" par pronostic (N+1).
-        $existingLogs = PointLog::where('match_id', $this->matchId)
-            ->whereIn('source', ['prediction_participation', 'prediction_winner', 'prediction_exact'])
-            ->get(['user_id', 'source'])
-            ->groupBy('user_id')
-            ->map(fn ($rows) => $rows->pluck('source')->flip());
-
         $now = now();
-        $newLogs = [];          // lignes PointLog à insérer en masse
-        $userDeltas = [];       // user_id => points à ajouter au total
 
-        foreach ($predictions as $prediction) {
-            $userId = $prediction->user_id;
-            $awarded = $existingLogs->get($userId) ?? collect();
+        // Recalcul ATOMIQUE en deux temps : on ANNULE d'abord les points de
+        // résultat déjà attribués pour ce match (participation / bon vainqueur /
+        // score exact), puis on RÉATTRIBUE selon le score actuellement enregistré.
+        //
+        // Pourquoi annuler d'abord : sinon le job serait purement additif et ne
+        // corrigerait jamais un score erroné (mauvaise valeur reçue de l'API ou
+        // saisie admin corrigée ensuite). En repartant de zéro à chaque exécution,
+        // le job devient à la fois IDEMPOTENT et AUTO-CORRECTIF : rejouable autant
+        // de fois que voulu, il converge toujours vers le résultat juste pour le
+        // score enregistré, peu importe le chemin qui le déclenche (admin, sync
+        // API, import, cron de secours).
+        DB::transaction(function () use ($predictions, $actualWinner, $matchHadPenalties, $match, $now) {
+            // 1) ANNULER les points de résultat existants pour ce match et
+            //    décrémenter le total de chaque joueur concerné.
+            $oldResultLogs = PointLog::where('match_id', $this->matchId)
+                ->whereIn('source', self::RESULT_SOURCES)
+                ->get(['id', 'user_id', 'points']);
 
-            // 1. Participation (+1 point, une seule fois par match)
-            if (!$awarded->has('prediction_participation')) {
+            foreach ($oldResultLogs->groupBy('user_id') as $userId => $rows) {
+                $sum = (int) $rows->sum('points');
+                if ($sum !== 0) {
+                    User::where('id', $userId)->decrement('points_total', $sum);
+                }
+            }
+
+            if ($oldResultLogs->isNotEmpty()) {
+                PointLog::whereIn('id', $oldResultLogs->pluck('id'))->delete();
+            }
+
+            // 2) RÉATTRIBUER selon le score actuel (aucun log de résultat ne reste,
+            //    donc on attribue tout sans risque de doublon).
+            $newLogs = [];
+            $userDeltas = [];
+
+            foreach ($predictions as $prediction) {
+                $userId = $prediction->user_id;
+
+                // Participation (+1) — pour tout pronostic.
                 $newLogs[] = [
                     'user_id' => $userId,
                     'source' => 'prediction_participation',
@@ -107,68 +140,62 @@ class ProcessMatchPoints implements ShouldQueue
                     'updated_at' => $now,
                 ];
                 $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 1;
+
+                // Vainqueur prédit (gère les tirs au but).
+                $userPredictedPenalties = $prediction->predict_draw && $prediction->penalty_winner;
+                if ($matchHadPenalties && $userPredictedPenalties) {
+                    $predictedWinner = $prediction->penalty_winner;
+                } elseif ($matchHadPenalties && !$userPredictedPenalties) {
+                    $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
+                } elseif (!$matchHadPenalties && $userPredictedPenalties) {
+                    $predictedWinner = $prediction->penalty_winner;
+                } else {
+                    $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
+                }
+
+                // Bon vainqueur (+3).
+                if ($predictedWinner === $actualWinner) {
+                    $newLogs[] = [
+                        'user_id' => $userId,
+                        'source' => 'prediction_winner',
+                        'points' => 3,
+                        'match_id' => $this->matchId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                    $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 3;
+                }
+
+                // Score exact (+3) — jamais si le match s'est joué aux tirs au but.
+                if (!$matchHadPenalties
+                    && $prediction->score_a == $match->score_a
+                    && $prediction->score_b == $match->score_b
+                ) {
+                    $newLogs[] = [
+                        'user_id' => $userId,
+                        'source' => 'prediction_exact',
+                        'points' => 3,
+                        'match_id' => $this->matchId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                    $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 3;
+                }
             }
 
-            // Vérifier si l'utilisateur a prédit des tirs au but
-            $userPredictedPenalties = $prediction->predict_draw && $prediction->penalty_winner;
-
-            // 2. Correct Winner (+3 points)
-            if ($matchHadPenalties && $userPredictedPenalties) {
-                $predictedWinner = $prediction->penalty_winner;
-            } elseif ($matchHadPenalties && !$userPredictedPenalties) {
-                $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
-            } elseif (!$matchHadPenalties && $userPredictedPenalties) {
-                $predictedWinner = $prediction->penalty_winner;
-            } else {
-                $predictedWinner = $this->determineWinner($prediction->score_a, $prediction->score_b);
-            }
-
-            if ($predictedWinner === $actualWinner && !$awarded->has('prediction_winner')) {
-                $newLogs[] = [
-                    'user_id' => $userId,
-                    'source' => 'prediction_winner',
-                    'points' => 3,
-                    'match_id' => $this->matchId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-                $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 3;
-            }
-
-            // 3. Exact Score (+3 points extra)
-            // RÈGLE: pas de score exact si le match s'est joué aux tirs au but.
-            if (!$matchHadPenalties
-                && $prediction->score_a == $match->score_a
-                && $prediction->score_b == $match->score_b
-                && !$awarded->has('prediction_exact')
-            ) {
-                $newLogs[] = [
-                    'user_id' => $userId,
-                    'source' => 'prediction_exact',
-                    'points' => 3,
-                    'match_id' => $this->matchId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-                $userDeltas[$userId] = ($userDeltas[$userId] ?? 0) + 3;
-            }
-        }
-
-        // Tout est écrit en une transaction, avec des opérations groupées.
-        DB::transaction(function () use ($newLogs, $userDeltas, $predictions) {
-            // Insertion en masse des nouveaux points (1 requête)
+            // Insertion en masse des points recalculés (1 requête).
             if (!empty($newLogs)) {
                 PointLog::insert($newLogs);
             }
 
-            // Mise à jour des totaux utilisateurs (uniquement ceux qui ont gagné des points)
+            // Mise à jour des totaux utilisateurs.
             foreach ($userDeltas as $userId => $delta) {
                 if ($delta > 0) {
                     User::where('id', $userId)->increment('points_total', $delta);
                 }
             }
 
-            // Recalcule points_earned par pronostic à partir des point_logs (1 requête agrégée)
+            // Recalcule points_earned par pronostic à partir des point_logs (1 requête agrégée).
             $totalsByUser = PointLog::where('match_id', $this->matchId)
                 ->whereIn('user_id', $predictions->pluck('user_id'))
                 ->selectRaw('user_id, SUM(points) as total')

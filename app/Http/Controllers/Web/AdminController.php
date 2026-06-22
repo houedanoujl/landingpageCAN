@@ -325,11 +325,24 @@ class AdminController extends Controller
             }
         }
 
-        // Calcul automatique des points si le match vient d'être terminé.
+        // Calcul / recalcul automatique des points dès que le match est terminé,
+        // chiffré, ET que le résultat a changé — qu'il s'agisse de la 1re
+        // finalisation OU de la correction d'un score déjà saisi (ex. mauvaise
+        // valeur reçue de l'API). ProcessMatchPoints annule puis rejoue : il
+        // corrige le score erroné sans dédoubler les points.
         // dispatchSync : calcul immédiat et garanti, sans dépendre d'un worker de queue.
-        if ($nowFinished && $request->score_a !== null && $request->score_b !== null && !$wasFinished) {
+        if ($match->status === 'finished'
+            && $match->score_a !== null
+            && $match->score_b !== null
+            && $match->wasChanged(['score_a', 'score_b', 'winner', 'status'])
+        ) {
             ProcessMatchPoints::dispatchSync($match->id);
-            return redirect()->route('admin.matches')->with('success', 'Match terminé ! Les points ont été attribués.');
+
+            $message = $wasFinished
+                ? 'Match mis à jour et points recalculés selon le nouveau score.'
+                : 'Match terminé ! Les points ont été attribués.';
+
+            return redirect()->route('admin.matches')->with('success', $message);
         }
 
         return redirect()->route('admin.matches')->with('success', 'Match mis à jour avec succès.');
@@ -473,15 +486,26 @@ class AdminController extends Controller
             return back()->with('error', 'Le match doit être terminé pour calculer les points.');
         }
 
-        // Recalcul immédiat et garanti (sans dépendre d'un worker de queue)
-        ProcessMatchPoints::dispatchSync($match->id);
+        // Recalcul « annuler puis rejouer » : retire les points de résultat déjà
+        // attribués pour ce match et les réattribue selon le score enregistré,
+        // puis trace l'action (AdminAuditLog). Corrige donc un score erroné sans
+        // dédoubler les points. Immédiat et garanti (dispatchSync interne).
+        $summary = app(\App\Services\PointsService::class)->recalculateMatchPoints($match);
 
-        // Traiter immédiatement la queue si possible (mode sync)
-        if (config('queue.default') === 'sync') {
-            return back()->with('success', 'Points recalculés avec succès !');
+        if ($summary['skipped'] ?? false) {
+            return back()->with('error', "L'attribution des points est désactivée (tournoi terminé). Réactivez-la pour recalculer.");
         }
 
-        return back()->with('success', 'Calcul des points en cours... Rafraîchissez la page dans quelques secondes.');
+        $delta = $summary['points_after'] - $summary['points_before'];
+
+        return back()->with('success', sprintf(
+            'Points recalculés : %d joueur(s) concerné(s), %d pts attribués (avant : %d, variation : %s%d).',
+            $summary['users_affected'],
+            $summary['points_after'],
+            $summary['points_before'],
+            $delta >= 0 ? '+' : '',
+            $delta
+        ));
     }
 
     /**

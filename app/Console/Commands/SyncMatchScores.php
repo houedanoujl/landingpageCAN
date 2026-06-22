@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Log;
 class SyncMatchScores extends Command
 {
     protected $signature = 'matches:sync-scores
-                            {--force : Bypass active-window filter and sync all known matches}';
+                            {--force : Lève le filtre de fenêtre temporelle et synchronise tous les matchs NON terminés. Les matchs terminés ne sont JAMAIS synchronisés (le score saisi/corrigé par l\'admin fait foi).}';
 
     protected $description = 'Fetch live scores from football-data.org for matches in the active window';
 
@@ -122,16 +122,24 @@ class SyncMatchScores extends Command
      * kicked off recently (< 4 h ago) or are about to (within 2 h). The 2-hour
      * pre-window catches early "LIVE" status changes from the API. The 4-hour
      * post-window covers extra time + penalties + admin lag.
+     *
+     * BLINDAGE : un match TERMINÉ n'est JAMAIS candidat à la synchro — son score
+     * fait foi, qu'il provienne de l'API au coup de sifflet final ou d'une
+     * correction manuelle de l'admin. L'option --force ne lève QUE le filtre de
+     * fenêtre temporelle ; elle ne touche jamais un match terminé. Ainsi la sync
+     * ne peut pas réécrire un score corrigé à la main.
      */
     private function candidateMatches()
     {
+        $base = MatchGame::whereNotNull('external_id')
+            ->where('status', '!=', 'finished');
+
         if ($this->option('force')) {
-            return MatchGame::whereNotNull('external_id')->get();
+            return $base->get();
         }
 
         $now = Carbon::now();
-        return MatchGame::whereNotNull('external_id')
-            ->where('status', '!=', 'finished')
+        return $base
             ->whereBetween('match_date', [$now->copy()->subHours(4), $now->copy()->addHours(2)])
             ->get();
     }
